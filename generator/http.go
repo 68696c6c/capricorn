@@ -2,9 +2,8 @@ package generator
 
 import (
 	"github.com/jinzhu/inflection"
-	"github.com/sirupsen/logrus"
-
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 )
 
 const (

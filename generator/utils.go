@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"go/build"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"text/template"
@@ -97,4 +98,60 @@ func snakeToUnexportedName(input string) string {
 
 func snakeToExportedName(input string) string {
 	return snakeToCamel(input, true)
+}
+
+func FMT(path string) error {
+	err := os.Chdir(path)
+	if err != nil {
+		return errors.Wrap(err, "failed to navigate to dir to format")
+	}
+
+	cmd := exec.Command("gofmt", "-w", "-s", ".")
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	err = cmd.Run()
+	if err != nil {
+		return errors.Wrap(err, "failed to format dir")
+	}
+
+	return nil
+}
+
+func InitModule(path string) error {
+	err := os.Chdir(path)
+	if err != nil {
+		return errors.Wrap(err, "failed to navigate to dir to initialize module")
+	}
+
+	err = os.Setenv("GO111MODULE", "on")
+	if err != nil {
+		return errors.Wrap(err, "failed to enable go modules")
+	}
+	defer os.Unsetenv("GO111MODULE")
+
+	cmd := exec.Command("go", "mod", "init")
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	err = cmd.Run()
+	if err != nil {
+		return errors.Wrap(err, "failed to init go modules")
+	}
+
+	cmd = exec.Command("go", "mod", "tidy")
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	err = cmd.Run()
+	if err != nil {
+		return errors.Wrap(err, "failed to run go mod tidy")
+	}
+
+	cmd = exec.Command("go", "mod", "vendor")
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	err = cmd.Run()
+	if err != nil {
+		return errors.Wrap(err, "failed to run go mod vendor")
+	}
+
+	return nil
 }
