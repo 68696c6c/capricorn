@@ -197,7 +197,49 @@ func (h {{.StructNameLower}}) Delete(c *gin.Context) {
 	goat.RespondData(c, {{.ResourceNameLower}}Response{m})
 }`
 
-func CreateHTTP(spec Spec, logger *logrus.Logger) error {
+const routesTemplate = `
+package handlers
+
+import (
+	"github.com/68696c6c/goat"
+	"github.com/gin-gonic/gin"
+)
+
+func InitRoutes(router *goat.Router, getApp goat.AppInitializer) {
+	a := getApp()
+
+	router.Engine.GET("/health", Health)
+	router.Engine.GET("/version", Version)
+	api := router.Engine.Group("/api")
+	api.Use()
+	{
+		{{- range $key, $value := .RoutesTemplates }}
+		{{ $value }}
+		{{- end }}
+	}
+}
+
+func Health(c *gin.Context) {
+	goat.RespondMessage(c, "ok")
+}
+
+func Version(c *gin.Context) {
+	// @TODO show version.
+	goat.RespondMessage(c, "something helpful here")
+}
+`
+
+const routeGroupTemplate = `
+		{{.ControllerName}} := {{.ControllerConstructor}}(a)
+		{{.GroupName}} := api.Group("/{{.GroupName}}")
+		{{.GroupName}}.GET("", {{.ControllerName}}.List)
+		{{.GroupName}}.GET("/:id", {{.ControllerName}}.Get)
+		{{.GroupName}}.POST("", goat.BindRequestMiddleware(createBuildRequest{}), {{.ControllerName}}.Create)
+		{{.GroupName}}.PUT("/:id", goat.BindRequestMiddleware(createBuildRequest{}), {{.ControllerName}}.Update)
+		{{.GroupName}}.DELETE("/:id", {{.ControllerName}}.Delete)
+`
+
+func CreateHTTP(spec *Spec, logger *logrus.Logger) error {
 	logPrefix := "CreateHTTP | "
 
 	err := createDir(spec.Paths.HTTP)
@@ -226,9 +268,12 @@ func CreateHTTP(spec Spec, logger *logrus.Logger) error {
 		resourceLower := snakeToUnexportedName(single)
 		resourceLowerPlural := snakeToUnexportedName(plural)
 
+		upperControllerName := resourceUpperPlural + "Controller"
+		lowerControllerName := resourceLowerPlural + "Controller"
+
 		c.FileName = plural
-		c.StructNameUpper = resourceUpperPlural + "Controller"
-		c.StructNameLower = resourceLowerPlural + "Controller"
+		c.StructNameUpper = upperControllerName
+		c.StructNameLower = lowerControllerName
 		c.ResourceNameUpper = resourceUpper
 		c.ResourceNameUpperPlural = resourceUpperPlural
 		c.ResourceNameLower = resourceLower
@@ -276,6 +321,10 @@ func CreateHTTP(spec Spec, logger *logrus.Logger) error {
 					return errors.Wrap(err, "failed to generate controller handler 'create'")
 				}
 				c.HandlerTemplates = append(c.HandlerTemplates, handler)
+				c.Routes = append(c.Routes, Route{
+					Method: "POST",
+					URI:    "",
+				})
 
 			case handlerUpdate:
 				handler, err := parseTemplateToString("handler_update", handlerUpdateTemplate, c)
@@ -283,6 +332,10 @@ func CreateHTTP(spec Spec, logger *logrus.Logger) error {
 					return errors.Wrap(err, "failed to generate controller handler 'update'")
 				}
 				c.HandlerTemplates = append(c.HandlerTemplates, handler)
+				c.Routes = append(c.Routes, Route{
+					Method: "PUT",
+					URI:    "/:id",
+				})
 
 			case handlerGet:
 				handler, err := parseTemplateToString("handler_get", handlerGetTemplate, c)
@@ -290,6 +343,10 @@ func CreateHTTP(spec Spec, logger *logrus.Logger) error {
 					return errors.Wrap(err, "failed to generate controller handler 'get'")
 				}
 				c.HandlerTemplates = append(c.HandlerTemplates, handler)
+				c.Routes = append(c.Routes, Route{
+					Method: "GET",
+					URI:    "/:id",
+				})
 
 			case handlerList:
 				handler, err := parseTemplateToString("handler_list", handlerListTemplate, c)
@@ -297,6 +354,10 @@ func CreateHTTP(spec Spec, logger *logrus.Logger) error {
 					return errors.Wrap(err, "failed to generate controller handler 'list'")
 				}
 				c.HandlerTemplates = append(c.HandlerTemplates, handler)
+				c.Routes = append(c.Routes, Route{
+					Method: "GET",
+					URI:    "",
+				})
 
 			case handlerDelete:
 				handler, err := parseTemplateToString("handler_delete", handlerDeleteTemplate, c)
@@ -304,13 +365,39 @@ func CreateHTTP(spec Spec, logger *logrus.Logger) error {
 					return errors.Wrap(err, "failed to generate controller handler 'delete'")
 				}
 				c.HandlerTemplates = append(c.HandlerTemplates, handler)
+				c.Routes = append(c.Routes, Route{
+					Method: "DELETE",
+					URI:    "/:id",
+				})
 			}
 		}
+
+		group := RouteGroup{
+			ControllerConstructor: "new" + upperControllerName,
+			ControllerName:        lowerControllerName,
+			GroupName:             resourceLowerPlural,
+			Routes:                c.Routes,
+		}
+		logger.Debug(logPrefix, "route group: ", group)
+		spec.HTTP.Routes = append(spec.HTTP.Routes, group)
+
+		routeGroup, err := parseTemplateToString("route_group", routeGroupTemplate, group)
+		if err != nil {
+			return errors.Wrap(err, "failed to generate route group")
+		}
+		logger.Debug(logPrefix, "routeGroup: ", routeGroup)
+		spec.HTTP.RoutesTemplates = append(spec.HTTP.RoutesTemplates, routeGroup)
 
 		err = generateFile(spec.Paths.HTTP, c.FileName, controllerTemplate, *c)
 		if err != nil {
 			return errors.Wrap(err, "failed to generate controller")
 		}
+	}
+
+	// Create routes.
+	err = generateFile(spec.Paths.HTTP, "routes", routesTemplate, spec.HTTP)
+	if err != nil {
+		return errors.Wrap(err, "failed to generate controller")
 	}
 
 	return nil

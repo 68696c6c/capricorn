@@ -99,8 +99,10 @@ type Repo struct {
 
 // HTTP
 type HTTP struct {
-	Middlewares []*middleware
-	Controllers []*controller
+	Middlewares     []*middleware
+	Controllers     []*controller
+	Routes          []RouteGroup
+	RoutesTemplates []string
 }
 
 type middleware struct {
@@ -126,6 +128,20 @@ type controller struct {
 	ResourceNameUpperPlural string
 	ResourceNameLower       string
 	ResourceNameLowerPlural string
+
+	Routes []Route
+}
+
+type RouteGroup struct {
+	ControllerConstructor string
+	ControllerName        string
+	GroupName             string
+	Routes                []Route
+}
+
+type Route struct {
+	Method string
+	URI    string
 }
 
 type handler struct {

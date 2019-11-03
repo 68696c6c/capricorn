@@ -42,7 +42,7 @@ var newProject = &cobra.Command{
 		err = generator.CreateRepos(spec, logger)
 		handleError(err)
 
-		err = generator.CreateHTTP(spec, logger)
+		err = generator.CreateHTTP(&spec, logger)
 		handleError(err)
 
 		err = generator.FMT(spec.Paths.Root)
