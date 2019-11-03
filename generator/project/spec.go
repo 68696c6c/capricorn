@@ -17,6 +17,8 @@ const (
 	packageRepos  = "repos"
 )
 
+// Note: all structs and fields are exported so that the Spec.String() function can use yaml.Marshal to print the spec.
+
 type Spec struct {
 	Name       string
 	Module     string
@@ -30,6 +32,14 @@ type Spec struct {
 	Models []*Model
 	Repos  []*Repo
 	HTTP   HTTP
+}
+
+func (s Spec) String() string {
+	out, err := yaml.Marshal(&s)
+	if err != nil {
+		return "failed to marshal spec to yaml"
+	}
+	return string(out)
 }
 
 type AuthorConfig struct {
@@ -56,37 +66,66 @@ type Packages struct {
 
 // Models
 type field struct {
-	Name      string
+	Name     string
+	Type     string
+	Required bool
+	// Internal fields.
 	FieldName string
-	Type      string
-	Required  bool
 	Tag       string
 }
 
 type Model struct {
-	Name       string
+	Name      string
+	Fields    []*field
+	BelongsTo []string `yaml:"belongs_to"`
+	HasMany   []string `yaml:"has_many"`
+	// Internal fields.
 	StructName string
-	Fields     []*field
-	BelongsTo  []string `yaml:"belongs_to"`
-	HasMany    []string `yaml:"has_many"`
 }
 
 // Repos
 type Repo struct {
+	Model   string
+	Methods []string
+	// Internal fields.
 	Name                     string
-	InterfaceName            string
 	StructName               string
-	Model                    string
+	InterfaceName            string
 	ModelStructName          string
 	ModelsImportPath         string
-	Methods                  []string
 	MethodTemplates          []string
 	InterfaceTemplateMethods []string
 }
 
 // HTTP
+type HTTP struct {
+	Middlewares []*middleware
+	Controllers []*controller
+}
+
 type middleware struct {
-	name string
+	Name string
+}
+
+type controller struct {
+	Resource string
+	Handlers []string
+
+	// Internal fields.
+	FileName         string
+	StructNameUpper  string
+	StructNameLower  string
+	AppImportPath    string
+	ModelsImportPath string
+
+	HandlerTemplates  []string
+	RequestTemplates  []string
+	ResponseTemplates []string
+
+	ResourceNameUpper       string
+	ResourceNameUpperPlural string
+	ResourceNameLower       string
+	ResourceNameLowerPlural string
 }
 
 type handler struct {
@@ -95,27 +134,16 @@ type handler struct {
 	middlewares  []middleware
 }
 
-type controller struct {
-	name       string
-	structName string
-	handlers   []handler
-}
-
-type HTTP struct {
-	controllers []controller
-	handlers    []handler
-}
-
 func NewSpecFromFilePath(filePath string) (Spec, error) {
 	file, err := ioutil.ReadFile(filePath)
 	if err != nil {
-		return Spec{}, errors.Wrap(err, "failed read yml spec file")
+		return Spec{}, errors.Wrap(err, "failed to read yaml spec file")
 	}
 
 	spec := Spec{}
 	err = yaml.Unmarshal(file, &spec)
 	if err != nil {
-		return Spec{}, errors.Wrap(err, "failed parse project spec")
+		return Spec{}, errors.Wrap(err, "failed to parse project spec")
 	}
 
 	// Set the module name.

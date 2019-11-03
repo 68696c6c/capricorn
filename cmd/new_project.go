@@ -19,6 +19,7 @@ var newProject = &cobra.Command{
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		logger := logrus.New()
+		logger.SetLevel(logrus.DebugLevel)
 
 		specFile := args[0]
 		spec, err := project.NewSpecFromFilePath(specFile)
@@ -41,13 +42,14 @@ var newProject = &cobra.Command{
 		err = project.CreateRepos(spec, logger)
 		handleError(err)
 
-		// err = project.CreateHTTP(spec)
-		// handleError(err)
+		err = project.CreateHTTP(spec, logger)
+		handleError(err)
 		//
 		// fmtProject()
 		//
 		// initModule()
 
+		// logger.Debugf("project spec: %s", spec.String())
 		os.Exit(0)
 	},
 }

@@ -34,3 +34,14 @@ repos:
     methods:
       - save
       - list
+http:
+  middlewares:
+    - name: auth
+  controllers:
+    - resource: organization
+    - resource: user
+      handlers:
+        - create
+        - list
+        - get
+        - update

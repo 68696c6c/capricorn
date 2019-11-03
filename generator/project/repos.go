@@ -6,6 +6,15 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+const (
+	repoMethodCreate = "create"
+	repoMethodUpdate = "update"
+	repoMethodSave   = "save"
+	repoMethodGet    = "get"
+	repoMethodList   = "list"
+	repoMethodDelete = "delete"
+)
+
 const repoTemplate = `
 package repos
 
@@ -92,7 +101,7 @@ func CreateRepos(spec Spec, logger *logrus.Logger) error {
 		logger.Debug(logPrefix, "repo ", r)
 		logger.Debug(logPrefix, "repo model ", r.Model)
 
-		model := snakeToCamel(r.Model)
+		model := snakeToExportedName(r.Model)
 		plural := inflection.Plural(model)
 		r.Name = inflection.Plural(r.Model) + "_repo"
 		r.InterfaceName = plural + "Repo"
@@ -103,10 +112,10 @@ func CreateRepos(spec Spec, logger *logrus.Logger) error {
 		// If no methods were specified, default to all.
 		if len(r.Methods) == 0 {
 			r.Methods = []string{
-				"save",
-				"get",
-				"list",
-				"delete",
+				repoMethodSave,
+				repoMethodGet,
+				repoMethodList,
+				repoMethodDelete,
 			}
 		}
 
@@ -114,11 +123,11 @@ func CreateRepos(spec Spec, logger *logrus.Logger) error {
 			logger.Debug(logPrefix, "method ", m)
 
 			switch m {
-			case "create":
+			case repoMethodCreate:
 				fallthrough
-			case "update":
+			case repoMethodUpdate:
 				fallthrough
-			case "save":
+			case repoMethodSave:
 				method, err := parseTemplateToString("repo_save", repoSaveTemplate, r)
 				if err != nil {
 					return errors.Wrap(err, "failed to generate repo method 'save'")
@@ -130,7 +139,7 @@ func CreateRepos(spec Spec, logger *logrus.Logger) error {
 				}
 				r.InterfaceTemplateMethods = append(r.InterfaceTemplateMethods, intMethod)
 
-			case "get":
+			case repoMethodGet:
 				method, err := parseTemplateToString("repo_get", repoGetByIDTemplate, r)
 				if err != nil {
 					return errors.Wrap(err, "failed to generate repo method 'get'")
@@ -142,7 +151,7 @@ func CreateRepos(spec Spec, logger *logrus.Logger) error {
 				}
 				r.InterfaceTemplateMethods = append(r.InterfaceTemplateMethods, intMethod)
 
-			case "list":
+			case repoMethodList:
 				method, err := parseTemplateToString("repo_list", repoListTemplate, r)
 				if err != nil {
 					return errors.Wrap(err, "failed to generate repo method 'list'")
@@ -154,7 +163,7 @@ func CreateRepos(spec Spec, logger *logrus.Logger) error {
 				}
 				r.InterfaceTemplateMethods = append(r.InterfaceTemplateMethods, intMethod)
 
-			case "delete":
+			case repoMethodDelete:
 				method, err := parseTemplateToString("repo_delete", repoDeleteTemplate, r)
 				if err != nil {
 					return errors.Wrap(err, "failed to generate repo method 'delete'")

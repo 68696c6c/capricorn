@@ -69,11 +69,11 @@ func parseTemplateToString(name, temp string, data interface{}) (string, error) 
 	return tpl.String(), nil
 }
 
-func snakeToCamel(input string) string {
+func snakeToCamel(input string, leadingCap bool) string {
 	isToUpper := false
 	var output string
 	for k, v := range input {
-		if k == 0 {
+		if k == 0 && leadingCap {
 			output = strings.ToUpper(string(input[0]))
 		} else {
 			if isToUpper {
@@ -89,4 +89,12 @@ func snakeToCamel(input string) string {
 		}
 	}
 	return output
+}
+
+func snakeToUnexportedName(input string) string {
+	return snakeToCamel(input, false)
+}
+
+func snakeToExportedName(input string) string {
+	return snakeToCamel(input, true)
 }

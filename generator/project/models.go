@@ -34,7 +34,7 @@ func CreateModels(spec Spec, logger *logrus.Logger) error {
 
 	// Create models.
 	for _, m := range spec.Models {
-		m.StructName = snakeToCamel(m.Name)
+		m.StructName = snakeToExportedName(m.Name)
 
 		// Build relations.
 		if len(m.BelongsTo) > 0 {
@@ -45,7 +45,7 @@ func CreateModels(spec Spec, logger *logrus.Logger) error {
 
 				f := &field{
 					Name:      fmt.Sprintf("%s_id", r),
-					FieldName: fmt.Sprintf("%sID", snakeToCamel(r)),
+					FieldName: fmt.Sprintf("%sID", snakeToExportedName(r)),
 					Type:      "goat.ID",
 				}
 				m.Fields = append([]*field{f}, m.Fields...)
@@ -60,8 +60,8 @@ func CreateModels(spec Spec, logger *logrus.Logger) error {
 				t := inflection.Singular(r)
 				f := &field{
 					Name:      r,
-					FieldName: snakeToCamel(r),
-					Type:      fmt.Sprintf("[]*%s", snakeToCamel(t)),
+					FieldName: snakeToExportedName(r),
+					Type:      fmt.Sprintf("[]*%s", snakeToExportedName(t)),
 				}
 				m.Fields = append(m.Fields, f)
 			}
@@ -70,7 +70,7 @@ func CreateModels(spec Spec, logger *logrus.Logger) error {
 		// Set field names and annotations.
 		for _, f := range m.Fields {
 			if f.FieldName == "" {
-				f.FieldName = snakeToCamel(f.Name)
+				f.FieldName = snakeToExportedName(f.Name)
 			}
 			var extra string
 			if f.Required {
