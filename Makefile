@@ -1,5 +1,5 @@
 
-EXAMPLE_SPEC_PATH ?= generator/example.yml
+EXAMPLE_SPEC_PATH ?= example.yml
 EXAMPLE_APP_PATH ?= ~/Code/Go/src/github.com/68696c6c/capricorn-test
 
 .PHONY: image dep cli local-down test migrate

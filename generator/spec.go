@@ -1,4 +1,4 @@
-package project
+package generator
 
 import (
 	"io/ioutil"

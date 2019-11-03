@@ -3,7 +3,7 @@ package cmd
 import (
 	"os"
 
-	"github.com/68696c6c/capricorn/generator/project"
+	"github.com/68696c6c/capricorn/generator"
 
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -22,27 +22,27 @@ var newProject = &cobra.Command{
 		logger.SetLevel(logrus.DebugLevel)
 
 		specFile := args[0]
-		spec, err := project.NewSpecFromFilePath(specFile)
+		spec, err := generator.NewSpecFromFilePath(specFile)
 		handleError(err)
 
 		logger.Infof("creating project %s from config %s", spec.ModuleName, specFile)
 
-		err = project.CreateProject(spec)
+		err = generator.CreateProject(spec)
 		handleError(err)
 
-		err = project.CreateApp(spec)
+		err = generator.CreateApp(spec)
 		handleError(err)
 
-		err = project.CreateCMD(spec)
+		err = generator.CreateCMD(spec)
 		handleError(err)
 
-		err = project.CreateModels(spec, logger)
+		err = generator.CreateModels(spec, logger)
 		handleError(err)
 
-		err = project.CreateRepos(spec, logger)
+		err = generator.CreateRepos(spec, logger)
 		handleError(err)
 
-		err = project.CreateHTTP(spec, logger)
+		err = generator.CreateHTTP(spec, logger)
 		handleError(err)
 		//
 		// fmtProject()

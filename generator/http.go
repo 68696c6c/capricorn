@@ -1,4 +1,4 @@
-package project
+package generator
 
 import (
 	"github.com/jinzhu/inflection"
