@@ -1,6 +1,8 @@
-package generator
+package src
 
 import (
+	"github.com/68696c6c/capricorn/generator/utils"
+
 	"github.com/jinzhu/inflection"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
@@ -89,10 +91,10 @@ func (r {{.StructName}}) Delete(model *models.{{.ModelStructName}}) []error {
 }
 `
 
-func CreateRepos(spec Spec, logger *logrus.Logger) error {
+func CreateRepos(spec utils.Spec, logger *logrus.Logger) error {
 	logPrefix := "CreateRepos | "
 
-	err := createDir(spec.Paths.Repos)
+	err := utils.CreateDir(spec.Paths.Repos)
 	if err != nil {
 		return errors.Wrapf(err, "failed to create repos directory '%s'", spec.Paths.Repos)
 	}
@@ -101,7 +103,7 @@ func CreateRepos(spec Spec, logger *logrus.Logger) error {
 		logger.Debug(logPrefix, "repo ", r)
 		logger.Debug(logPrefix, "repo model ", r.Model)
 
-		model := snakeToExportedName(r.Model)
+		model := utils.SnakeToExportedName(r.Model)
 		plural := inflection.Plural(model)
 		r.Name = inflection.Plural(r.Model) + "_repo"
 		r.InterfaceName = plural + "Repo"
@@ -128,48 +130,48 @@ func CreateRepos(spec Spec, logger *logrus.Logger) error {
 			case repoMethodUpdate:
 				fallthrough
 			case repoMethodSave:
-				method, err := parseTemplateToString("repo_save", repoSaveTemplate, r)
+				method, err := utils.ParseTemplateToString("repo_save", repoSaveTemplate, r)
 				if err != nil {
 					return errors.Wrap(err, "failed to generate repo method 'save'")
 				}
 				r.MethodTemplates = append(r.MethodTemplates, method)
-				intMethod, err := parseTemplateToString("repo_interface_save", repoInterfaceSaveTemplate, r)
+				intMethod, err := utils.ParseTemplateToString("repo_interface_save", repoInterfaceSaveTemplate, r)
 				if err != nil {
 					return errors.Wrap(err, "failed to generate repo interface method 'save'")
 				}
 				r.InterfaceTemplateMethods = append(r.InterfaceTemplateMethods, intMethod)
 
 			case repoMethodGet:
-				method, err := parseTemplateToString("repo_get", repoGetByIDTemplate, r)
+				method, err := utils.ParseTemplateToString("repo_get", repoGetByIDTemplate, r)
 				if err != nil {
 					return errors.Wrap(err, "failed to generate repo method 'get'")
 				}
 				r.MethodTemplates = append(r.MethodTemplates, method)
-				intMethod, err := parseTemplateToString("repo_interface_get", repoInterfaceGetTemplate, r)
+				intMethod, err := utils.ParseTemplateToString("repo_interface_get", repoInterfaceGetTemplate, r)
 				if err != nil {
 					return errors.Wrap(err, "failed to generate repo interface method 'get'")
 				}
 				r.InterfaceTemplateMethods = append(r.InterfaceTemplateMethods, intMethod)
 
 			case repoMethodList:
-				method, err := parseTemplateToString("repo_list", repoListTemplate, r)
+				method, err := utils.ParseTemplateToString("repo_list", repoListTemplate, r)
 				if err != nil {
 					return errors.Wrap(err, "failed to generate repo method 'list'")
 				}
 				r.MethodTemplates = append(r.MethodTemplates, method)
-				intMethod, err := parseTemplateToString("repo_interface_list", repoInterfaceListTemplate, r)
+				intMethod, err := utils.ParseTemplateToString("repo_interface_list", repoInterfaceListTemplate, r)
 				if err != nil {
 					return errors.Wrap(err, "failed to generate repo interface method 'list'")
 				}
 				r.InterfaceTemplateMethods = append(r.InterfaceTemplateMethods, intMethod)
 
 			case repoMethodDelete:
-				method, err := parseTemplateToString("repo_delete", repoDeleteTemplate, r)
+				method, err := utils.ParseTemplateToString("repo_delete", repoDeleteTemplate, r)
 				if err != nil {
 					return errors.Wrap(err, "failed to generate repo method 'delete'")
 				}
 				r.MethodTemplates = append(r.MethodTemplates, method)
-				intMethod, err := parseTemplateToString("repo_interface_delete", repoInterfaceDeleteTemplate, r)
+				intMethod, err := utils.ParseTemplateToString("repo_interface_delete", repoInterfaceDeleteTemplate, r)
 				if err != nil {
 					return errors.Wrap(err, "failed to generate repo interface method 'delete'")
 				}
@@ -177,7 +179,7 @@ func CreateRepos(spec Spec, logger *logrus.Logger) error {
 			}
 		}
 
-		err = generateFile(spec.Paths.Repos, r.Name, repoTemplate, *r)
+		err = utils.GenerateGoFile(spec.Paths.Repos, r.Name, repoTemplate, *r)
 		if err != nil {
 			return errors.Wrap(err, "failed to generate repo")
 		}

@@ -1,4 +1,4 @@
-package generator
+package utils
 
 import (
 	"io/ioutil"
@@ -9,6 +9,9 @@ import (
 )
 
 const (
+	pathDocker = "docker"
+	pathOPS    = "ops"
+
 	packageSRC    = "src"
 	packageApp    = "app"
 	packageCMD    = "cmd"
@@ -48,7 +51,8 @@ type AuthorConfig struct {
 }
 
 type Paths struct {
-	Root string
+	Root   string
+	Docker string
 	Packages
 }
 
@@ -65,7 +69,7 @@ type Packages struct {
 }
 
 // Models
-type field struct {
+type Field struct {
 	Name     string
 	Type     string
 	Required bool
@@ -76,7 +80,7 @@ type field struct {
 
 type Model struct {
 	Name      string
-	Fields    []*field
+	Fields    []*Field
 	BelongsTo []string `yaml:"belongs_to"`
 	HasMany   []string `yaml:"has_many"`
 	// Internal fields.
@@ -166,15 +170,16 @@ func NewSpecFromFilePath(filePath string) (Spec, error) {
 	spec.ModuleName = filepath.Base(spec.Module)
 
 	// Get the absolute path to the project (e.g. within $GOPATH)
-	rootPath, err := getProjectPath()
+	rootPath, err := GetProjectPath()
 	if err != nil {
 		return Spec{}, errors.Wrap(err, "failed to determine project path")
 	}
-	projectPath := joinPath(rootPath, spec.Module)
+	projectPath := JoinPath(rootPath, spec.Module)
 
 	// Set the project pacakge paths.
 	spec.Paths = Paths{
 		Root:     projectPath,
+		Docker:   JoinPath(projectPath, pathDocker),
 		Packages: newPackages(projectPath),
 	}
 
@@ -187,12 +192,12 @@ func NewSpecFromFilePath(filePath string) (Spec, error) {
 }
 
 func newPackages(base string) Packages {
-	srcPath := joinPath(base, packageSRC)
+	srcPath := JoinPath(base, packageSRC)
 	return Packages{
-		App:    joinPath(srcPath, packageApp),
-		CMD:    joinPath(srcPath, packageCMD),
-		HTTP:   joinPath(srcPath, packageHTTP),
-		Models: joinPath(srcPath, packageModels),
-		Repos:  joinPath(srcPath, packageRepos),
+		App:    JoinPath(srcPath, packageApp),
+		CMD:    JoinPath(srcPath, packageCMD),
+		HTTP:   JoinPath(srcPath, packageHTTP),
+		Models: JoinPath(srcPath, packageModels),
+		Repos:  JoinPath(srcPath, packageRepos),
 	}
 }

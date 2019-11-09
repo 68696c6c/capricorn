@@ -1,11 +1,13 @@
-package generator
+package src
 
 import (
 	"fmt"
-	"github.com/sirupsen/logrus"
+
+	"github.com/68696c6c/capricorn/generator/utils"
 
 	"github.com/jinzhu/inflection"
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 )
 
 const modelTemplate = `
@@ -24,17 +26,17 @@ type {{ .StructName }} struct {
 
 `
 
-func CreateModels(spec Spec, logger *logrus.Logger) error {
+func CreateModels(spec utils.Spec, logger *logrus.Logger) error {
 	logPrefix := "CreateModels | "
 
-	err := createDir(spec.Paths.Models)
+	err := utils.CreateDir(spec.Paths.Models)
 	if err != nil {
 		return errors.Wrapf(err, "failed to create models directory '%s'", spec.Paths.Models)
 	}
 
 	// Create models.
 	for _, m := range spec.Models {
-		m.StructName = snakeToExportedName(m.Name)
+		m.StructName = utils.SnakeToExportedName(m.Name)
 
 		// Build relations.
 		if len(m.BelongsTo) > 0 {
@@ -43,12 +45,12 @@ func CreateModels(spec Spec, logger *logrus.Logger) error {
 			for _, r := range m.BelongsTo {
 				logger.Debug(logPrefix, "relation: ", r)
 
-				f := &field{
+				f := &utils.Field{
 					Name:      fmt.Sprintf("%s_id", r),
-					FieldName: fmt.Sprintf("%sID", snakeToExportedName(r)),
+					FieldName: fmt.Sprintf("%sID", utils.SnakeToExportedName(r)),
 					Type:      "goat.ID",
 				}
-				m.Fields = append([]*field{f}, m.Fields...)
+				m.Fields = append([]*utils.Field{f}, m.Fields...)
 			}
 		}
 		if len(m.HasMany) > 0 {
@@ -58,10 +60,10 @@ func CreateModels(spec Spec, logger *logrus.Logger) error {
 				logger.Debug(logPrefix, "relation: ", r)
 
 				t := inflection.Singular(r)
-				f := &field{
+				f := &utils.Field{
 					Name:      r,
-					FieldName: snakeToExportedName(r),
-					Type:      fmt.Sprintf("[]*%s", snakeToExportedName(t)),
+					FieldName: utils.SnakeToExportedName(r),
+					Type:      fmt.Sprintf("[]*%s", utils.SnakeToExportedName(t)),
 				}
 				m.Fields = append(m.Fields, f)
 			}
@@ -70,7 +72,7 @@ func CreateModels(spec Spec, logger *logrus.Logger) error {
 		// Set field names and annotations.
 		for _, f := range m.Fields {
 			if f.FieldName == "" {
-				f.FieldName = snakeToExportedName(f.Name)
+				f.FieldName = utils.SnakeToExportedName(f.Name)
 			}
 			var extra string
 			if f.Required {
@@ -79,7 +81,7 @@ func CreateModels(spec Spec, logger *logrus.Logger) error {
 			f.Tag = fmt.Sprintf(`json:"%s"%s`, f.Name, extra)
 		}
 
-		err = generateFile(spec.Paths.Models, m.Name, modelTemplate, *m)
+		err = utils.GenerateGoFile(spec.Paths.Models, m.Name, modelTemplate, *m)
 		if err != nil {
 			return errors.Wrap(err, "failed to generate model")
 		}

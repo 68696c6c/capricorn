@@ -1,6 +1,10 @@
-package generator
+package src
 
-import "github.com/pkg/errors"
+import (
+	"github.com/68696c6c/capricorn/generator/utils"
+
+	"github.com/pkg/errors"
+)
 
 const containerTemplate = `
 package app
@@ -49,14 +53,14 @@ func GetApp() (goat.App, error) {
 
 `
 
-func CreateApp(spec Spec) error {
-	err := createDir(spec.Paths.App)
+func CreateApp(spec utils.Spec) error {
+	err := utils.CreateDir(spec.Paths.App)
 	if err != nil {
 		return errors.Wrapf(err, "failed to create app directory '%s'", spec.Paths.App)
 	}
 
 	// Create a service container.
-	err = generateFile(spec.Paths.App, "container", containerTemplate, spec)
+	err = utils.GenerateGoFile(spec.Paths.App, "container", containerTemplate, spec)
 	if err != nil {
 		return errors.Wrap(err, "failed to create container")
 	}

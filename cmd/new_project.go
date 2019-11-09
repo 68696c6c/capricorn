@@ -3,7 +3,9 @@ package cmd
 import (
 	"os"
 
-	"github.com/68696c6c/capricorn/generator"
+	"github.com/68696c6c/capricorn/generator/ops"
+	"github.com/68696c6c/capricorn/generator/src"
+	"github.com/68696c6c/capricorn/generator/utils"
 
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -22,33 +24,38 @@ var newProject = &cobra.Command{
 		logger.SetLevel(logrus.DebugLevel)
 
 		specFile := args[0]
-		spec, err := generator.NewSpecFromFilePath(specFile)
+		spec, err := utils.NewSpecFromFilePath(specFile)
 		handleError(err)
 
 		logger.Infof("creating project %s from config %s", spec.ModuleName, specFile)
 
-		err = generator.CreateProject(spec)
+		// SRC
+		err = src.CreateProject(spec)
 		handleError(err)
 
-		err = generator.CreateApp(spec)
+		err = src.CreateApp(spec)
 		handleError(err)
 
-		err = generator.CreateCMD(spec)
+		err = src.CreateCMD(spec)
 		handleError(err)
 
-		err = generator.CreateModels(spec, logger)
+		err = src.CreateModels(spec, logger)
 		handleError(err)
 
-		err = generator.CreateRepos(spec, logger)
+		err = src.CreateRepos(spec, logger)
 		handleError(err)
 
-		err = generator.CreateHTTP(&spec, logger)
+		err = src.CreateHTTP(&spec, logger)
 		handleError(err)
 
-		err = generator.FMT(spec.Paths.Root)
+		err = src.FMT(spec.Paths.Root)
 		handleError(err)
 
-		err = generator.InitModule(spec.Paths.Root)
+		// OPS
+		err = ops.CreateDocker(spec, logger)
+		handleError(err)
+
+		err = ops.InitModule(spec.Paths.Root)
 		handleError(err)
 
 		logger.Debugf("project spec: %s", spec.String())

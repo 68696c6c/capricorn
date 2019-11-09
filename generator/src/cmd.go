@@ -1,6 +1,10 @@
-package generator
+package src
 
-import "github.com/pkg/errors"
+import (
+	"github.com/68696c6c/capricorn/generator/utils"
+
+	"github.com/pkg/errors"
+)
 
 const rootTemplate = `
 package cmd
@@ -63,20 +67,20 @@ var serverCommand = &cobra.Command{
 
 `
 
-func CreateCMD(spec Spec) error {
-	err := createDir(spec.Paths.CMD)
+func CreateCMD(spec utils.Spec) error {
+	err := utils.CreateDir(spec.Paths.CMD)
 	if err != nil {
 		return errors.Wrapf(err, "failed to create cmd directory '%s'", spec.Paths.CMD)
 	}
 
 	// Create root command.
-	err = generateFile(spec.Paths.CMD, "root", rootTemplate, spec)
+	err = utils.GenerateGoFile(spec.Paths.CMD, "root", rootTemplate, spec)
 	if err != nil {
 		return errors.Wrap(err, "failed to create root command")
 	}
 
 	// Create server command.
-	err = generateFile(spec.Paths.CMD, "server", serverTemplate, spec)
+	err = utils.GenerateGoFile(spec.Paths.CMD, "server", serverTemplate, spec)
 	if err != nil {
 		return errors.Wrap(err, "failed to create server command")
 	}

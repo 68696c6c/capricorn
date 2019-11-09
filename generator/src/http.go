@@ -1,6 +1,8 @@
-package generator
+package src
 
 import (
+	"github.com/68696c6c/capricorn/generator/utils"
+
 	"github.com/jinzhu/inflection"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
@@ -198,7 +200,7 @@ func (h {{.StructNameLower}}) Delete(c *gin.Context) {
 }`
 
 const routesTemplate = `
-package handlers
+package http
 
 import (
 	"github.com/68696c6c/goat"
@@ -239,10 +241,10 @@ const routeGroupTemplate = `
 		{{.GroupName}}.DELETE("/:id", {{.ControllerName}}.Delete)
 `
 
-func CreateHTTP(spec *Spec, logger *logrus.Logger) error {
+func CreateHTTP(spec *utils.Spec, logger *logrus.Logger) error {
 	logPrefix := "CreateHTTP | "
 
-	err := createDir(spec.Paths.HTTP)
+	err := utils.CreateDir(spec.Paths.HTTP)
 	if err != nil {
 		return errors.Wrapf(err, "failed to create http directory '%s'", spec.Paths.HTTP)
 	}
@@ -262,11 +264,11 @@ func CreateHTTP(spec *Spec, logger *logrus.Logger) error {
 		single := inflection.Singular(c.Resource)
 		plural := inflection.Plural(c.Resource)
 
-		resourceUpper := snakeToExportedName(single)
-		resourceUpperPlural := snakeToExportedName(plural)
+		resourceUpper := utils.SnakeToExportedName(single)
+		resourceUpperPlural := utils.SnakeToExportedName(plural)
 
-		resourceLower := snakeToUnexportedName(single)
-		resourceLowerPlural := snakeToUnexportedName(plural)
+		resourceLower := utils.SnakeToUnexportedName(single)
+		resourceLowerPlural := utils.SnakeToUnexportedName(plural)
 
 		upperControllerName := resourceUpperPlural + "Controller"
 		lowerControllerName := resourceLowerPlural + "Controller"
@@ -280,20 +282,20 @@ func CreateHTTP(spec *Spec, logger *logrus.Logger) error {
 		c.ResourceNameLowerPlural = resourceLowerPlural
 
 		// Create requests.
-		request, err := parseTemplateToString("create_request", createRequestTemplate, c)
+		request, err := utils.ParseTemplateToString("create_request", createRequestTemplate, c)
 		if err != nil {
 			return errors.Wrap(err, "failed to generate controller request 'create'")
 		}
 		c.RequestTemplates = append(c.RequestTemplates, request)
 
 		// Create responses.
-		getResponse, err := parseTemplateToString("get_response", resourceResponseTemplate, c)
+		getResponse, err := utils.ParseTemplateToString("get_response", resourceResponseTemplate, c)
 		if err != nil {
 			return errors.Wrap(err, "failed to generate controller response 'get'")
 		}
 		c.ResponseTemplates = append(c.ResponseTemplates, getResponse)
 
-		listResponse, err := parseTemplateToString("list_response", listResponseTemplate, c)
+		listResponse, err := utils.ParseTemplateToString("list_response", listResponseTemplate, c)
 		if err != nil {
 			return errors.Wrap(err, "failed to generate controller response 'list'")
 		}
@@ -316,63 +318,63 @@ func CreateHTTP(spec *Spec, logger *logrus.Logger) error {
 
 			switch h {
 			case handlerCreate:
-				handler, err := parseTemplateToString("handler_create", handlerCreateTemplate, c)
+				handler, err := utils.ParseTemplateToString("handler_create", handlerCreateTemplate, c)
 				if err != nil {
 					return errors.Wrap(err, "failed to generate controller handler 'create'")
 				}
 				c.HandlerTemplates = append(c.HandlerTemplates, handler)
-				c.Routes = append(c.Routes, Route{
+				c.Routes = append(c.Routes, utils.Route{
 					Method: "POST",
 					URI:    "",
 				})
 
 			case handlerUpdate:
-				handler, err := parseTemplateToString("handler_update", handlerUpdateTemplate, c)
+				handler, err := utils.ParseTemplateToString("handler_update", handlerUpdateTemplate, c)
 				if err != nil {
 					return errors.Wrap(err, "failed to generate controller handler 'update'")
 				}
 				c.HandlerTemplates = append(c.HandlerTemplates, handler)
-				c.Routes = append(c.Routes, Route{
+				c.Routes = append(c.Routes, utils.Route{
 					Method: "PUT",
 					URI:    "/:id",
 				})
 
 			case handlerGet:
-				handler, err := parseTemplateToString("handler_get", handlerGetTemplate, c)
+				handler, err := utils.ParseTemplateToString("handler_get", handlerGetTemplate, c)
 				if err != nil {
 					return errors.Wrap(err, "failed to generate controller handler 'get'")
 				}
 				c.HandlerTemplates = append(c.HandlerTemplates, handler)
-				c.Routes = append(c.Routes, Route{
+				c.Routes = append(c.Routes, utils.Route{
 					Method: "GET",
 					URI:    "/:id",
 				})
 
 			case handlerList:
-				handler, err := parseTemplateToString("handler_list", handlerListTemplate, c)
+				handler, err := utils.ParseTemplateToString("handler_list", handlerListTemplate, c)
 				if err != nil {
 					return errors.Wrap(err, "failed to generate controller handler 'list'")
 				}
 				c.HandlerTemplates = append(c.HandlerTemplates, handler)
-				c.Routes = append(c.Routes, Route{
+				c.Routes = append(c.Routes, utils.Route{
 					Method: "GET",
 					URI:    "",
 				})
 
 			case handlerDelete:
-				handler, err := parseTemplateToString("handler_delete", handlerDeleteTemplate, c)
+				handler, err := utils.ParseTemplateToString("handler_delete", handlerDeleteTemplate, c)
 				if err != nil {
 					return errors.Wrap(err, "failed to generate controller handler 'delete'")
 				}
 				c.HandlerTemplates = append(c.HandlerTemplates, handler)
-				c.Routes = append(c.Routes, Route{
+				c.Routes = append(c.Routes, utils.Route{
 					Method: "DELETE",
 					URI:    "/:id",
 				})
 			}
 		}
 
-		group := RouteGroup{
+		group := utils.RouteGroup{
 			ControllerConstructor: "new" + upperControllerName,
 			ControllerName:        lowerControllerName,
 			GroupName:             resourceLowerPlural,
@@ -381,21 +383,21 @@ func CreateHTTP(spec *Spec, logger *logrus.Logger) error {
 		logger.Debug(logPrefix, "route group: ", group)
 		spec.HTTP.Routes = append(spec.HTTP.Routes, group)
 
-		routeGroup, err := parseTemplateToString("route_group", routeGroupTemplate, group)
+		routeGroup, err := utils.ParseTemplateToString("route_group", routeGroupTemplate, group)
 		if err != nil {
 			return errors.Wrap(err, "failed to generate route group")
 		}
 		logger.Debug(logPrefix, "routeGroup: ", routeGroup)
 		spec.HTTP.RoutesTemplates = append(spec.HTTP.RoutesTemplates, routeGroup)
 
-		err = generateFile(spec.Paths.HTTP, c.FileName, controllerTemplate, *c)
+		err = utils.GenerateGoFile(spec.Paths.HTTP, c.FileName, controllerTemplate, *c)
 		if err != nil {
 			return errors.Wrap(err, "failed to generate controller")
 		}
 	}
 
 	// Create routes.
-	err = generateFile(spec.Paths.HTTP, "routes", routesTemplate, spec.HTTP)
+	err = utils.GenerateGoFile(spec.Paths.HTTP, "routes", routesTemplate, spec.HTTP)
 	if err != nil {
 		return errors.Wrap(err, "failed to generate controller")
 	}
