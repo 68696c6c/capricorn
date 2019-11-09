@@ -25,6 +25,7 @@ import (
 
 	"github.com/68696c6c/goat"
 	"github.com/68696c6c/goat/query"
+	"github.com/gin-gonic/gin"
 )
 
 type {{.StructNameLower}} struct {
