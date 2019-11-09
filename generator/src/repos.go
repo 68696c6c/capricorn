@@ -26,6 +26,7 @@ import (
 	"{{.ModelsImportPath}}"
 
 	"github.com/68696c6c/goat"
+	"github.com/68696c6c/goat/query"
 	"github.com/jinzhu/gorm"
 )
 
@@ -39,7 +40,7 @@ type {{.StructName}} struct {
 	db *gorm.DB
 }
 
-func New{{.StructName}}(d *gorm.DB) {{.StructName}} {
+func {{.ConstructorName}}(d *gorm.DB) {{.StructName}} {
 	return {{.StructName}}{
 		db: d,
 	}
@@ -73,14 +74,34 @@ func (r {{.StructName}}) GetByID(id goat.ID) (*models.{{.ModelStructName}}, []er
 }
 `
 
-const repoInterfaceListTemplate = `List() ([]*models.{{.ModelStructName}}, []error)`
+const repoInterfaceListTemplate = `
+	List() ([]*models.{{.ModelStructName}}, []error)
+	SetQueryTotal(q *query.Query) (errs []error)`
 const repoListTemplate = `
 func (r {{.StructName}}) List() ([]*models.{{.ModelStructName}}, []error) {
 	var m []*models.{{.ModelStructName}}
 	errs := r.db.Find(&m).GetErrors()
 	return m, errs
 }
-`
+
+func (r {{.StructName}}) SetQueryTotal(q *query.Query) (errs []error) {
+	base := r.db.Model(&models.{{.ModelStructName}}{})
+
+	qr, err := q.ApplyToGormCount(base)
+	if err != nil {
+		return []error{err}
+	}
+
+	var count uint
+	errs = qr.Count(&count).GetErrors()
+	if len(errs) > 0 {
+		return errs
+	}
+
+	q.Pagination.Total = count
+
+	return []error{}
+}`
 
 const repoInterfaceDeleteTemplate = `Delete(model *models.{{.ModelStructName}}) []error`
 const repoDeleteTemplate = `
@@ -91,7 +112,7 @@ func (r {{.StructName}}) Delete(model *models.{{.ModelStructName}}) []error {
 }
 `
 
-func CreateRepos(spec utils.Spec, logger *logrus.Logger) error {
+func CreateRepos(spec *utils.Spec, logger *logrus.Logger) error {
 	logPrefix := "CreateRepos | "
 
 	err := utils.CreateDir(spec.Paths.Repos)
@@ -110,6 +131,7 @@ func CreateRepos(spec utils.Spec, logger *logrus.Logger) error {
 		r.StructName = plural + "RepoGORM"
 		r.ModelsImportPath = spec.Imports.Models
 		r.ModelStructName = model
+		r.ConstructorName = "New" + r.InterfaceName
 
 		// If no methods were specified, default to all.
 		if len(r.Methods) == 0 {

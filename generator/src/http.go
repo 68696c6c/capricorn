@@ -153,7 +153,7 @@ const handlerListTemplate = `
 func (h {{.StructNameLower}}) List(c *gin.Context) {
 	q := query.NewQueryBuilder(c)
 
-	result, errs := h.app.{{.ResourceNameUpperPlural}}Repo.GetAll(q)
+	result, errs := h.app.{{.ResourceNameUpperPlural}}Repo.List(q)
 	if len(errs) > 0 {
 		h.app.Errors.HandleErrorsM(c, errs, "failed to get {{.ResourceNameLowerPlural}}", goat.RespondServerError)
 		return

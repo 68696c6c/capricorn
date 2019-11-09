@@ -95,6 +95,7 @@ type Repo struct {
 	Name                     string
 	StructName               string
 	InterfaceName            string
+	ConstructorName          string
 	ModelStructName          string
 	ModelsImportPath         string
 	MethodTemplates          []string
