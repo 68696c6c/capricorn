@@ -55,6 +55,9 @@ var newProject = &cobra.Command{
 		err = ops.CreateDocker(spec, logger)
 		handleError(err)
 
+		err = ops.CreateMakefile(spec, logger)
+		handleError(err)
+
 		err = ops.InitModule(spec.Paths.Root)
 		handleError(err)
 
