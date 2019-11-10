@@ -68,7 +68,7 @@ services:
     #  - .secret.env
     environment:
       VIRTUAL_HOST: capricorn.local
-      ENV: debug
+      ENV: local
       LISTEN_PORT: 80
     networks:
       default:
