@@ -35,11 +35,11 @@ package cmd
 
 import (
 	"{{.Imports.Packages.App}}"
+	"{{.Imports.Packages.HTTP}}"
 
 	"github.com/68696c6c/goat"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 )
 
 func init() {
@@ -51,17 +51,21 @@ var serverCommand = &cobra.Command{
 	Short: "Runs the API web server.",
 	Long:  "Runs the API web server.",
 	Run: func(cmd *cobra.Command, args []string) {
+		goat.Init()
 
-		g := goat.Init()
+		logger := goat.GetLogger()
 
-		// Initialize router.
-		router := goat.NewRouter(handlers.InitRoutes, app.GetApp)
-
-		// Run the server.
-		err = router.Run(port)
+		db, err := goat.GetMainDB()
 		if err != nil {
-			goat.ExitWithError(errors.Wrap(err, "error starting server"))
+			goat.ExitError(errors.Wrap(err, "failed to initialize database connection"))
 		}
+
+		services, err := app.GetApp(db, logger)
+		if err != nil {
+			goat.ExitError(errors.Wrap(err, "failed to initialize service container"))
+		}
+
+		http.InitRouter(services)
 	},
 }
 

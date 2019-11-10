@@ -138,10 +138,12 @@ type controller struct {
 }
 
 type RouteGroup struct {
-	ControllerConstructor string
-	ControllerName        string
-	GroupName             string
-	Routes                []Route
+	ControllerConstructor   string
+	ControllerName          string
+	GroupName               string
+	Routes                  []Route
+	CreateRequestStructName string
+	UpdateRequestStructName string
 }
 
 type Route struct {

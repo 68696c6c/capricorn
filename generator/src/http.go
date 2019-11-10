@@ -57,6 +57,11 @@ type create{{.ResourceNameUpper}}Request struct {
 	models.{{.ResourceNameUpper}}
 }`
 
+const updateRequestTemplate = `
+type update{{.ResourceNameUpper}}Request struct {
+	models.{{.ResourceNameUpper}}
+}`
+
 const resourceResponseTemplate = `
 type {{.ResourceNameLower}}Response struct {
 	models.{{.ResourceNameUpper}}
@@ -79,7 +84,7 @@ func (h {{.StructNameLower}}) Create(c *gin.Context) {
 
 	// @TODO generate model factories.
 	// @TODO generate model validators.
-	m := models.{{.ResourceNameUpper}}{}
+	m := req.{{.ResourceNameUpper}}{}
 	errs := h.app.{{.ResourceNameUpperPlural}}Repo.Save(&m)
 	if len(errs) > 0 {
 		h.app.Errors.HandleErrorsM(c, errs, "failed to save {{.ResourceNameLower}}", goat.RespondServerError)
@@ -98,7 +103,7 @@ func (h {{.StructNameLower}}) Update(c *gin.Context) {
 		return
 	}
 
-	m, errs := h.app.{{.ResourceNameUpperPlural}}Repo.GetByID(id, true)
+	_, errs := h.app.{{.ResourceNameUpperPlural}}Repo.GetByID(id)
 	if len(errs) > 0 {
 		if goat.RecordNotFound(errs) {
 			h.app.Errors.HandleMessage(c, "{{.ResourceNameLower}} does not exist", goat.RespondNotFoundError)
@@ -117,13 +122,13 @@ func (h {{.StructNameLower}}) Update(c *gin.Context) {
 
 	// @TODO generate model factories.
 	// @TODO generate model validators.
-	errs := h.app.{{.ResourceNameUpperPlural}}Repo.Save(&m)
+	errs = h.app.{{.ResourceNameUpperPlural}}Repo.Save(&req.{{.ResourceNameUpper}})
 	if len(errs) > 0 {
 		h.app.Errors.HandleErrorsM(c, errs, "failed to save {{.ResourceNameLower}}", goat.RespondServerError)
 		return
 	}
 
-	goat.RespondData(c, {{.ResourceNameLower}}Response{m})
+	goat.RespondData(c, {{.ResourceNameLower}}Response{req.{{.ResourceNameUpper}}})
 }`
 
 const handlerGetTemplate = `
@@ -135,7 +140,7 @@ func (h {{.StructNameLower}}) Get(c *gin.Context) {
 		return
 	}
 
-	m, errs := h.app.{{.ResourceNameUpperPlural}}Repo.GetByID(id, true)
+	m, errs := h.app.{{.ResourceNameUpperPlural}}Repo.GetByID(id)
 	if len(errs) > 0 {
 		if goat.RecordNotFound(errs) {
 			h.app.Errors.HandleMessage(c, "{{.ResourceNameLower}} does not exist", goat.RespondNotFoundError)
@@ -146,7 +151,7 @@ func (h {{.StructNameLower}}) Get(c *gin.Context) {
 		}
 	}
 
-	goat.RespondData(c, {{.ResourceNameLower}}Response{m})
+	goat.RespondData(c, {{.ResourceNameLower}}Response{*m})
 }`
 
 const handlerListTemplate = `
@@ -178,7 +183,7 @@ func (h {{.StructNameLower}}) Delete(c *gin.Context) {
 		return
 	}
 
-	m, errs := h.app.{{.ResourceNameUpperPlural}}Repo.GetByID(id, true)
+	m, errs := h.app.{{.ResourceNameUpperPlural}}Repo.GetByID(id)
 	if len(errs) > 0 {
 		if goat.RecordNotFound(errs) {
 			h.app.Errors.HandleMessage(c, "{{.ResourceNameLower}} does not exist", goat.RespondNotFoundError)
@@ -191,34 +196,43 @@ func (h {{.StructNameLower}}) Delete(c *gin.Context) {
 
 	// @TODO generate model factories.
 	// @TODO generate model validators.
-	errs := h.app.{{.ResourceNameUpperPlural}}Repo.Delete(&m)
+	errs = h.app.{{.ResourceNameUpperPlural}}Repo.Delete(m)
 	if len(errs) > 0 {
 		h.app.Errors.HandleErrorsM(c, errs, "failed to delete {{.ResourceNameLower}}", goat.RespondServerError)
 		return
 	}
 
-	goat.RespondData(c, {{.ResourceNameLower}}Response{m})
+	goat.RespondData(c, {{.ResourceNameLower}}Response{*m})
 }`
 
 const routesTemplate = `
 package http
 
 import (
+	"{{.Imports.Packages.App}}"
+
 	"github.com/68696c6c/goat"
 	"github.com/gin-gonic/gin"
+	"github.com/pkg/errors"
 )
 
-func InitRoutes(router *goat.Router, getApp goat.AppInitializer) {
-	a := getApp()
+func InitRouter(services app.ServiceContainer) {
+	router := goat.GetRouter()
+	engine := router.GetEngine()
 
-	router.Engine.GET("/health", Health)
-	router.Engine.GET("/version", Version)
-	api := router.Engine.Group("/api")
+	engine.GET("/health", Health)
+	engine.GET("/version", Version)
+	api := engine.Group("/api")
 	api.Use()
 	{
-		{{- range $key, $value := .RoutesTemplates }}
+		{{- range $key, $value := .HTTP.RoutesTemplates }}
 		{{ $value }}
 		{{- end }}
+	}
+
+	err := router.Run()
+	if err != nil {
+		goat.ExitError(errors.Wrap(err, "error starting server"))
 	}
 }
 
@@ -233,12 +247,12 @@ func Version(c *gin.Context) {
 `
 
 const routeGroupTemplate = `
-		{{.ControllerName}} := {{.ControllerConstructor}}(a)
+		{{.ControllerName}} := {{.ControllerConstructor}}(services)
 		{{.GroupName}} := api.Group("/{{.GroupName}}")
 		{{.GroupName}}.GET("", {{.ControllerName}}.List)
 		{{.GroupName}}.GET("/:id", {{.ControllerName}}.Get)
-		{{.GroupName}}.POST("", goat.BindRequestMiddleware(createBuildRequest{}), {{.ControllerName}}.Create)
-		{{.GroupName}}.PUT("/:id", goat.BindRequestMiddleware(createBuildRequest{}), {{.ControllerName}}.Update)
+		{{.GroupName}}.POST("", goat.BindRequestMiddleware({{.CreateRequestStructName}}{}), {{.ControllerName}}.Create)
+		{{.GroupName}}.PUT("/:id", goat.BindRequestMiddleware({{.UpdateRequestStructName}}{}), {{.ControllerName}}.Update)
 		{{.GroupName}}.DELETE("/:id", {{.ControllerName}}.Delete)
 `
 
@@ -283,11 +297,17 @@ func CreateHTTP(spec *utils.Spec, logger *logrus.Logger) error {
 		c.ResourceNameLowerPlural = resourceLowerPlural
 
 		// Create requests.
-		request, err := utils.ParseTemplateToString("create_request", createRequestTemplate, c)
+		createRequest, err := utils.ParseTemplateToString("create_request", createRequestTemplate, c)
 		if err != nil {
 			return errors.Wrap(err, "failed to generate controller request 'create'")
 		}
-		c.RequestTemplates = append(c.RequestTemplates, request)
+		c.RequestTemplates = append(c.RequestTemplates, createRequest)
+
+		updateRequest, err := utils.ParseTemplateToString("update_request", updateRequestTemplate, c)
+		if err != nil {
+			return errors.Wrap(err, "failed to generate controller request 'update'")
+		}
+		c.RequestTemplates = append(c.RequestTemplates, updateRequest)
 
 		// Create responses.
 		getResponse, err := utils.ParseTemplateToString("get_response", resourceResponseTemplate, c)
@@ -376,10 +396,12 @@ func CreateHTTP(spec *utils.Spec, logger *logrus.Logger) error {
 		}
 
 		group := utils.RouteGroup{
-			ControllerConstructor: "new" + upperControllerName,
-			ControllerName:        lowerControllerName,
-			GroupName:             resourceLowerPlural,
-			Routes:                c.Routes,
+			ControllerConstructor:   "new" + upperControllerName,
+			ControllerName:          lowerControllerName,
+			GroupName:               resourceLowerPlural,
+			Routes:                  c.Routes,
+			CreateRequestStructName: "create" + resourceUpper + "Request",
+			UpdateRequestStructName: "update" + resourceUpper + "Request",
 		}
 		logger.Debug(logPrefix, "route group: ", group)
 		spec.HTTP.Routes = append(spec.HTTP.Routes, group)
@@ -398,7 +420,7 @@ func CreateHTTP(spec *utils.Spec, logger *logrus.Logger) error {
 	}
 
 	// Create routes.
-	err = utils.GenerateGoFile(spec.Paths.HTTP, "routes", routesTemplate, spec.HTTP)
+	err = utils.GenerateGoFile(spec.Paths.HTTP, "routes", routesTemplate, spec)
 	if err != nil {
 		return errors.Wrap(err, "failed to generate controller")
 	}

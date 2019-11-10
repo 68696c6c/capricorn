@@ -74,14 +74,19 @@ func (r {{.StructName}}) GetByID(id goat.ID) (*models.{{.ModelStructName}}, []er
 }
 `
 
-const repoInterfaceListTemplate = `
-	List() ([]*models.{{.ModelStructName}}, []error)
+const repoInterfaceListTemplate = `List(q *query.Query) (m []*models.{{.ModelStructName}}, errs []error)
 	SetQueryTotal(q *query.Query) (errs []error)`
 const repoListTemplate = `
-func (r {{.StructName}}) List() ([]*models.{{.ModelStructName}}, []error) {
-	var m []*models.{{.ModelStructName}}
-	errs := r.db.Find(&m).GetErrors()
-	return m, errs
+func (r {{.StructName}}) List(q *query.Query) (m []*models.{{.ModelStructName}}, errs []error) {
+	base := r.db.Model(&models.{{.ModelStructName}}{})
+
+	qr, err := q.ApplyToGorm(base)
+	if err != nil {
+		return m, []error{err}
+	}
+
+	errs = qr.Find(&m).GetErrors()
+	return
 }
 
 func (r {{.StructName}}) SetQueryTotal(q *query.Query) (errs []error) {

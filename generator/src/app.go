@@ -39,16 +39,9 @@ func (a ServiceContainer) GetLogger() *logrus.Logger {
 }
 
 // Initializes the service container if it hasn't been already.
-func GetApp() (goat.App, error) {
+func GetApp(db *gorm.DB, logger *logrus.Logger) (ServiceContainer, error) {
 	if container != (ServiceContainer{}) {
 		return container, nil
-	}
-
-	logger := goat.NewSTDOutLogger()
-
-	db, err := goat.GetMainDB()
-	if err != nil {
-		return ServiceContainer{}, err
 	}
 
 	container = ServiceContainer{
