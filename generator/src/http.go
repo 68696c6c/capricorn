@@ -251,8 +251,8 @@ const routeGroupTemplate = `
 		{{.GroupName}} := api.Group("/{{.GroupName}}")
 		{{.GroupName}}.GET("", {{.ControllerName}}.List)
 		{{.GroupName}}.GET("/:id", {{.ControllerName}}.Get)
-		{{.GroupName}}.POST("", goat.BindRequestMiddleware({{.CreateRequestStructName}}{}), {{.ControllerName}}.Create)
-		{{.GroupName}}.PUT("/:id", goat.BindRequestMiddleware({{.UpdateRequestStructName}}{}), {{.ControllerName}}.Update)
+		{{.GroupName}}.POST("", goat.BindMiddleware({{.CreateRequestStructName}}{}), {{.ControllerName}}.Create)
+		{{.GroupName}}.PUT("/:id", goat.BindMiddleware({{.UpdateRequestStructName}}{}), {{.ControllerName}}.Update)
 		{{.GroupName}}.DELETE("/:id", {{.ControllerName}}.Delete)
 `
 
