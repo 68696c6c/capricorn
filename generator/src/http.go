@@ -84,7 +84,7 @@ func (h {{.StructNameLower}}) Create(c *gin.Context) {
 
 	// @TODO generate model factories.
 	// @TODO generate model validators.
-	m := req.{{.ResourceNameUpper}}{}
+	m := req.{{.ResourceNameUpper}}
 	errs := h.app.{{.ResourceNameUpperPlural}}Repo.Save(&m)
 	if len(errs) > 0 {
 		h.app.Errors.HandleErrorsM(c, errs, "failed to save {{.ResourceNameLower}}", goat.RespondServerError)

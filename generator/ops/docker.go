@@ -61,13 +61,13 @@ services:
     working_dir: /go/src/capricorn-test
     ports:
       - "80"
-    #env_file:
-    #  - .app.env
+    env_file:
+      - .app.env
     #  - .secret.env
     environment:
       VIRTUAL_HOST: capricorn.local
       ENV: local
-      LISTEN_PORT: 80
+      HTTP_PORT: 80
     networks:
       default:
         aliases:
@@ -82,6 +82,15 @@ services:
       - "${HOST_DB_PORT:-3310}:3306"
     volumes:
       - db-volume:/var/lib/mysql
+`
+
+const appEnvTemplate = `
+DB_HOST=db
+DB_PORT=3306
+DB_USERNAME=root
+DB_PASSWORD=secret
+DB_DATABASE=build
+DB_DEBUG=1
 `
 
 func CreateDocker(spec utils.Spec, logger *logrus.Logger) error {
@@ -101,6 +110,11 @@ func CreateDocker(spec utils.Spec, logger *logrus.Logger) error {
 	err = utils.GenerateFile(spec.Paths.Root, "docker-compose.yml", dockerComposeTemplate, spec)
 	if err != nil {
 		return errors.Wrap(err, "failed to create docker-compose.yml")
+	}
+
+	err = utils.GenerateFile(spec.Paths.Root, ".app.env", appEnvTemplate, spec)
+	if err != nil {
+		return errors.Wrap(err, "failed to create .app.env")
 	}
 
 	return nil
