@@ -119,7 +119,7 @@ func ParseTemplateToString(name, temp string, data interface{}) (string, error) 
 	return tpl.String(), nil
 }
 
-func snakeToCamel(input string, leadingCap bool) string {
+func separatedToCamel(input string, leadingCap bool) string {
 	isToUpper := false
 	var output string
 	for k, v := range input {
@@ -130,10 +130,10 @@ func snakeToCamel(input string, leadingCap bool) string {
 				output += strings.ToUpper(string(v))
 				isToUpper = false
 			} else {
-				if v == '_' {
+				if v == '_' || v == '-' {
 					isToUpper = true
 				} else {
-					output += string(v)
+					output += strings.ToLower(string(v))
 				}
 			}
 		}
@@ -141,10 +141,30 @@ func snakeToCamel(input string, leadingCap bool) string {
 	return output
 }
 
-func SnakeToUnexportedName(input string) string {
-	return snakeToCamel(input, false)
+func SeparatedToUnexported(input string) string {
+	return separatedToCamel(input, false)
 }
 
-func SnakeToExportedName(input string) string {
-	return snakeToCamel(input, true)
+func SeparatedToExported(input string) string {
+	return separatedToCamel(input, true)
+}
+
+func separatedToSeparated(input string, separator rune) string {
+	var output string
+	for _, v := range input {
+		if v == '_' || v == '-' {
+			output += string(separator)
+		} else {
+			output += strings.ToLower(string(v))
+		}
+	}
+	return output
+}
+
+func SeparatedToSnake(input string) string {
+	return separatedToSeparated(input, '_')
+}
+
+func SeparatedToKebob(input string) string {
+	return separatedToSeparated(input, '-')
 }

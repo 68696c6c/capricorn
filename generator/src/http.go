@@ -279,11 +279,11 @@ func CreateHTTP(spec *utils.Spec, logger *logrus.Logger) error {
 		single := inflection.Singular(c.Resource)
 		plural := inflection.Plural(c.Resource)
 
-		resourceUpper := utils.SnakeToExportedName(single)
-		resourceUpperPlural := utils.SnakeToExportedName(plural)
+		resourceUpper := utils.SeparatedToExported(single)
+		resourceUpperPlural := utils.SeparatedToExported(plural)
 
-		resourceLower := utils.SnakeToUnexportedName(single)
-		resourceLowerPlural := utils.SnakeToUnexportedName(plural)
+		resourceLower := utils.SeparatedToUnexported(single)
+		resourceLowerPlural := utils.SeparatedToUnexported(plural)
 
 		upperControllerName := resourceUpperPlural + "Controller"
 		lowerControllerName := resourceLowerPlural + "Controller"

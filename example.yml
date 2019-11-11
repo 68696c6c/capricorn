@@ -1,47 +1,91 @@
 name: "Capricorn Test"
 module: "github.com/68696c6c/capricorn-test"
+
 license: "MIT"
 author:
   name: Aaron Hill
   email: 68696c6c@gmail.com
-models:
-  - name: user
-    belongs_to:
-      - organization
-    fields:
-      - name: first_name
-        type: string
-        required: true
-      - name: last_name
-        type: string
-        required: false
-      - name: email
-        type: string
-        required: true
-  - name: organization
-    has_many:
-      - users
-    fields:
-      - name: name
-        type: string
-        required: true
-      - name: website
-        type: string
-        required: false
-repos:
-  - model: organization
-  - model: user
-    methods:
-      - save
-      - list
-http:
-  middlewares:
-    - name: auth
-  controllers:
-    - resource: organization
-    - resource: user
-      handlers:
-        - create
-        - list
-        - get
-        - update
+
+resources:
+
+- name: user
+  belongs_to:
+  - organization
+  fields:
+  - name: first_name
+    type: string
+    required: true
+  - name: last_name
+    type: string
+    required: false
+  - name: email
+    type: string
+    required: true
+  actions:
+  - list
+  - view
+  - create
+  - update
+  - delete≤
+
+- name: organization
+  has_many:
+  - users
+  fields:
+  - name: name
+    type: string
+    required: true
+  - name: website
+    type: string
+    required: false
+  actions:
+  - list
+  - view
+  - create
+  - update
+  - delete
+
+
+#models:
+#- name: user
+#  belongs_to:
+#  - organization
+#  fields:
+#  - name: first_name
+#    type: string
+#    required: true
+#  - name: last_name
+#    type: string
+#    required: false
+#  - name: email
+#    type: string
+#    required: true
+#- name: organization
+#  has_many:
+#  - users
+#  fields:
+#  - name: name
+#    type: string
+#    required: true
+#  - name: website
+#    type: string
+#    required: false
+#
+#repos:
+#- model: organization
+#- model: user
+#  methods:
+#  - save
+#  - list
+#
+#http:
+#  middlewares:
+#  - name: auth
+#  controllers:
+#  - resource: organization
+#  - resource: user
+#    handlers:
+#    - create
+#    - list
+#    - get
+#    - update

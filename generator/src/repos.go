@@ -129,7 +129,7 @@ func CreateRepos(spec *utils.Spec, logger *logrus.Logger) error {
 		logger.Debug(logPrefix, "repo ", r)
 		logger.Debug(logPrefix, "repo model ", r.Model)
 
-		model := utils.SnakeToExportedName(r.Model)
+		model := utils.SeparatedToExported(r.Model)
 		plural := inflection.Plural(model)
 		r.Name = inflection.Plural(r.Model) + "_repo"
 		r.InterfaceName = plural + "Repo"

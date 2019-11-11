@@ -26,5 +26,4 @@ test:
 	go test ./... -cover
 
 new: build
-	rm -rf $(EXAMPLE_APP_PATH)
 	capricorn new $(EXAMPLE_SPEC_PATH)
