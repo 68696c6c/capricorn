@@ -1,6 +1,7 @@
 package src
 
 import (
+	"github.com/68696c6c/capricorn/generator/models"
 	"github.com/68696c6c/capricorn/generator/utils"
 	"github.com/sirupsen/logrus"
 
@@ -11,7 +12,7 @@ const containerTemplate = `
 package app
 
 import (
-	"{{.Imports.Packages.Repos}}"
+	"{{.Imports.Repos}}"
 
 	"github.com/68696c6c/goat"
 	"github.com/jinzhu/gorm"
@@ -26,7 +27,7 @@ type ServiceContainer struct {
 	Errors goat.ErrorHandler
 
 {{- range $key, $value := .Repos }}
-{{ $value.InterfaceName }} repos.{{ $value.InterfaceName }}
+{{ $value.Interface }} repos.{{ $value.Interface }}
 {{- end }}
 }
 
@@ -49,7 +50,7 @@ func GetApp(db *gorm.DB, logger *logrus.Logger) (ServiceContainer, error) {
 		Logger: logger,
 		Errors: goat.NewErrorHandler(logger),
 {{- range $key, $value := .Repos }}
-{{ $value.InterfaceName }}: repos.{{ $value.ConstructorName }}(db),
+{{ $value.Interface }}: repos.{{ $value.Constructor }}(db),
 {{- end }}
 	}
 
@@ -58,17 +59,17 @@ func GetApp(db *gorm.DB, logger *logrus.Logger) (ServiceContainer, error) {
 
 `
 
-func CreateApp(spec utils.Spec, logger *logrus.Logger) error {
-	// logPrefix := "CreateApp | "
-	// logger.Debug(logPrefix, "repo ", r)
-
+func CreateApp(spec models.Project, logger *logrus.Logger) error {
+	logPrefix := "CreateApp | "
+	logger.Debug(logPrefix, "creating service container")
+	//
 	err := utils.CreateDir(spec.Paths.App)
 	if err != nil {
 		return errors.Wrapf(err, "failed to create app directory '%s'", spec.Paths.App)
 	}
 
 	// Create a service container.
-	err = utils.GenerateGoFile(spec.Paths.App, "container", containerTemplate, spec)
+	err = utils.GenerateFile(spec.Paths.App, "container.go", containerTemplate, spec)
 	if err != nil {
 		return errors.Wrap(err, "failed to create container")
 	}

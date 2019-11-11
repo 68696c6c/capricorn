@@ -2,20 +2,12 @@ package src
 
 import (
 	"fmt"
+
 	"github.com/68696c6c/capricorn/generator/models"
 	"github.com/68696c6c/capricorn/generator/utils"
 
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-)
-
-const (
-	repoMethodCreate = "create"
-	repoMethodUpdate = "update"
-	repoMethodSave   = "save"
-	repoMethodGet    = "get"
-	repoMethodList   = "list"
-	repoMethodDelete = "delete"
 )
 
 const repoTemplate = `
