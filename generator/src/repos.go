@@ -14,8 +14,6 @@ const repoTemplate = `
 package repos
 
 import (
-	"time"
-
 	{{- range $key, $value := .Imports }}
 	"{{ $value }}"
 	{{- end }}
@@ -60,8 +58,8 @@ func (r {{.Receiver}}) {{.Signature}} {
 
 const repoGetByIDTemplate = `
 func (r {{.Receiver}}) {{.Signature}} {
-	m := &models.{{.Resource.Single.Exported}}{}
-	errs := r.db.First(m, "id = ?", id).GetErrors()
+	m := models.{{.Resource.Single.Exported}}{}
+	errs := r.db.First(&m, "id = ?", id).GetErrors()
 	return m, errs
 }`
 
@@ -100,9 +98,7 @@ func (r {{.Receiver}}) {{.Signature}} {
 
 const repoDeleteTemplate = `
 func (r {{.Receiver}}) {{.Signature}} {
-	n := time.Now()
-	model.DeletedAt = &n
-	return r.db.Save(model).GetErrors()
+	return r.db.Delete(m).GetErrors()
 }`
 
 func CreateRepos(spec models.Project, logger *logrus.Logger) error {

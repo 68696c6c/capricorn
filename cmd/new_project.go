@@ -1,10 +1,11 @@
 package cmd
 
 import (
-	"github.com/68696c6c/capricorn/generator/src"
 	"os"
 
 	"github.com/68696c6c/capricorn/generator/models"
+	"github.com/68696c6c/capricorn/generator/ops"
+	"github.com/68696c6c/capricorn/generator/src"
 
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
@@ -49,16 +50,16 @@ var newProject = &cobra.Command{
 
 		err = src.FMT(spec.Paths.Root)
 		handleError(err)
-		//
-		// // OPS
-		// err = ops.CreateDocker(spec, logger)
-		// handleError(err)
-		//
-		// err = ops.CreateMakefile(spec, logger)
-		// handleError(err)
-		//
-		// err = ops.InitModule(spec.Paths.Root)
-		// handleError(err)
+
+		// OPS
+		err = ops.CreateDocker(spec, logger)
+		handleError(err)
+
+		err = ops.CreateMakefile(spec, logger)
+		handleError(err)
+
+		err = ops.InitModule(spec.Paths.Root)
+		handleError(err)
 
 		logger.Infof("project spec: %s", spec.String())
 		os.Exit(0)

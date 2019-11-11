@@ -1,17 +1,18 @@
 package ops
 
 import (
+	"github.com/68696c6c/capricorn/generator/models"
 	"github.com/68696c6c/capricorn/generator/utils"
-	"github.com/sirupsen/logrus"
 
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 )
 
 const makefileTemplate = `
 NETWORK_NAME ?= docker-dev
 APP_NAME = app
 DB_NAME = db
-MODULE = {{.Module}}
+MODULE = {{.Config.Module}}
 
 DOC_PATH_BASE = docs/swagger.json
 DOC_PATH_FINAL = docs/api-spec.json
@@ -86,7 +87,7 @@ lint:
 
 `
 
-func CreateMakefile(spec utils.Spec, logger *logrus.Logger) error {
+func CreateMakefile(spec models.Project, logger *logrus.Logger) error {
 	logPrefix := "CreateMakefile | "
 	logger.Debug(logPrefix, "generating makefile")
 

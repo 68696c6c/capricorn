@@ -371,7 +371,8 @@ func makeRepo(r ProjectResource, config Resource, imports Paths) Repo {
 			saveDone = true
 			break
 		case "delete":
-			del := makeMethod(r, repoName, "Delete", []string{"id goat.ID"}, []string{"[]error"})
+			arg := fmt.Sprintf("m *models.%s", r.Single.Exported)
+			del := makeMethod(r, repoName, "Delete", []string{arg}, []string{"[]error"})
 			methods = append(methods, del)
 			break
 		case "view":

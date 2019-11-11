@@ -198,13 +198,13 @@ func (h {{.Receiver}}) {{.Signature}} {
 
 	// @TODO generate model factories.
 	// @TODO generate model validators.
-	errs = h.app.{{.Resource.Plural.Exported}}Repo.Delete(m)
+	errs = h.app.{{.Resource.Plural.Exported}}Repo.Delete(&m)
 	if len(errs) > 0 {
 		h.app.Errors.HandleErrorsM(c, errs, "failed to delete {{.Resource.Single.Snake}}", goat.RespondServerError)
 		return
 	}
 
-	goat.RespondData(c, {{.Resource.Single.Unexported}}Response{*m})
+	goat.RespondValid(c)
 }`
 
 const routesTemplate = `

@@ -1,0 +1,5 @@
+
+	gopkg.in/gin-contrib/cors.v1 v1.0.0-20170318125340-cf4846e6a636 // indirect
+)
+
+replace github.com/ugorji/go v1.1.4 => github.com/ugorji/go v0.0.0-20190204201341-e444a5086c43

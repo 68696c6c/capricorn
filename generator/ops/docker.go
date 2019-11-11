@@ -1,10 +1,11 @@
 package ops
 
 import (
+	"github.com/68696c6c/capricorn/generator/models"
 	"github.com/68696c6c/capricorn/generator/utils"
-	"github.com/sirupsen/logrus"
 
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 )
 
 const dockerfileTemplate = `
@@ -93,7 +94,7 @@ DB_DATABASE=build
 DB_DEBUG=1
 `
 
-func CreateDocker(spec utils.Spec, logger *logrus.Logger) error {
+func CreateDocker(spec models.Project, logger *logrus.Logger) error {
 	logPrefix := "CreateDocker | "
 	logger.Debug(logPrefix, "generating docker files")
 
