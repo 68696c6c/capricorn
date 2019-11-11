@@ -1,9 +1,10 @@
 package src
 
 import (
+	"fmt"
+	"github.com/68696c6c/capricorn/generator/models"
 	"github.com/68696c6c/capricorn/generator/utils"
 
-	"github.com/jinzhu/inflection"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )
@@ -23,25 +24,27 @@ package repos
 import (
 	"time"
 
-	"{{.ModelsImportPath}}"
+	{{- range $key, $value := .Imports }}
+	"{{ $value }}"
+	{{- end }}
 
 	"github.com/68696c6c/goat"
 	"github.com/68696c6c/goat/query"
 	"github.com/jinzhu/gorm"
 )
 
-type {{.InterfaceName}} interface {
-	{{- range $key, $value := .InterfaceTemplateMethods }}
+type {{.Interface}} interface {
+	{{- range $key, $value := .InterfaceTemplates }}
 	{{ $value }}
 	{{- end }}
 }
 
-type {{.StructName}} struct {
+type {{.Name.Exported}} struct {
 	db *gorm.DB
 }
 
-func {{.ConstructorName}}(d *gorm.DB) {{.StructName}} {
-	return {{.StructName}}{
+func {{.Constructor}}(d *gorm.DB) {{.Name.Exported}} {
+	return {{.Name.Exported}}{
 		db: d,
 	}
 }
@@ -53,32 +56,26 @@ func {{.ConstructorName}}(d *gorm.DB) {{.StructName}} {
 
 `
 
-const repoInterfaceSaveTemplate = `Save(model *models.{{.ModelStructName}}) (errs []error)`
 const repoSaveTemplate = `
-func (r {{.StructName}}) Save(model *models.{{.ModelStructName}}) (errs []error) {
-	if model.Model.ID.Valid() {
-		errs = r.db.Save(model).GetErrors()
+func (r {{.Receiver}}) {{.Signature}} {
+	if m.Model.ID.Valid() {
+		errs = r.db.Save(m).GetErrors()
 	} else {
-		errs = r.db.Create(model).GetErrors()
+		errs = r.db.Create(m).GetErrors()
 	}
 	return
-}
-`
+}`
 
-const repoInterfaceGetTemplate = `GetByID(id goat.ID) (*models.{{.ModelStructName}}, []error)`
 const repoGetByIDTemplate = `
-func (r {{.StructName}}) GetByID(id goat.ID) (*models.{{.ModelStructName}}, []error) {
-	m := &models.{{.ModelStructName}}{}
+func (r {{.Receiver}}) {{.Signature}} {
+	m := &models.{{.Resource.Single.Exported}}{}
 	errs := r.db.First(m, "id = ?", id).GetErrors()
 	return m, errs
-}
-`
+}`
 
-const repoInterfaceListTemplate = `List(q *query.Query) (m []*models.{{.ModelStructName}}, errs []error)
-	SetQueryTotal(q *query.Query) (errs []error)`
 const repoListTemplate = `
-func (r {{.StructName}}) List(q *query.Query) (m []*models.{{.ModelStructName}}, errs []error) {
-	base := r.db.Model(&models.{{.ModelStructName}}{})
+func (r {{.Receiver}}) {{.Signature}} {
+	base := r.db.Model(&models.{{.Resource.Single.Exported}}{})
 
 	qr, err := q.ApplyToGorm(base)
 	if err != nil {
@@ -87,10 +84,11 @@ func (r {{.StructName}}) List(q *query.Query) (m []*models.{{.ModelStructName}},
 
 	errs = qr.Find(&m).GetErrors()
 	return
-}
+}`
 
-func (r {{.StructName}}) SetQueryTotal(q *query.Query) (errs []error) {
-	base := r.db.Model(&models.{{.ModelStructName}}{})
+const repoSetQueryTotalTemplate = `
+func (r {{.Receiver}}) {{.Signature}} {
+	base := r.db.Model(&models.{{.Resource.Single.Exported}}{})
 
 	qr, err := q.ApplyToGormCount(base)
 	if err != nil {
@@ -98,7 +96,7 @@ func (r {{.StructName}}) SetQueryTotal(q *query.Query) (errs []error) {
 	}
 
 	var count uint
-	errs = qr.Count(&count).GetErrors()
+	errs := qr.Count(&count).GetErrors()
 	if len(errs) > 0 {
 		return errs
 	}
@@ -108,16 +106,14 @@ func (r {{.StructName}}) SetQueryTotal(q *query.Query) (errs []error) {
 	return []error{}
 }`
 
-const repoInterfaceDeleteTemplate = `Delete(model *models.{{.ModelStructName}}) []error`
 const repoDeleteTemplate = `
-func (r {{.StructName}}) Delete(model *models.{{.ModelStructName}}) []error {
+func (r {{.Receiver}}) {{.Signature}} {
 	n := time.Now()
 	model.DeletedAt = &n
 	return r.db.Save(model).GetErrors()
-}
-`
+}`
 
-func CreateRepos(spec *utils.Spec, logger *logrus.Logger) error {
+func CreateRepos(spec models.Project, logger *logrus.Logger) error {
 	logPrefix := "CreateRepos | "
 
 	err := utils.CreateDir(spec.Paths.Repos)
@@ -126,87 +122,55 @@ func CreateRepos(spec *utils.Spec, logger *logrus.Logger) error {
 	}
 
 	for _, r := range spec.Repos {
-		logger.Debug(logPrefix, "repo ", r)
-		logger.Debug(logPrefix, "repo model ", r.Model)
-
-		model := utils.SeparatedToExported(r.Model)
-		plural := inflection.Plural(model)
-		r.Name = inflection.Plural(r.Model) + "_repo"
-		r.InterfaceName = plural + "Repo"
-		r.StructName = plural + "RepoGORM"
-		r.ModelsImportPath = spec.Imports.Models
-		r.ModelStructName = model
-		r.ConstructorName = "New" + r.InterfaceName
-
-		// If no methods were specified, default to all.
-		if len(r.Methods) == 0 {
-			r.Methods = []string{
-				repoMethodSave,
-				repoMethodGet,
-				repoMethodList,
-				repoMethodDelete,
-			}
-		}
+		logger.Infof(logPrefix, fmt.Sprintf("creating repo %s", r.Filename))
 
 		for _, m := range r.Methods {
-			logger.Debug(logPrefix, "method ", m)
+			logger.Infof(logPrefix, fmt.Sprintf("creating repo method %s", m.Name))
 
-			switch m {
-			case repoMethodCreate:
-				fallthrough
-			case repoMethodUpdate:
-				fallthrough
-			case repoMethodSave:
-				method, err := utils.ParseTemplateToString("repo_save", repoSaveTemplate, r)
+			switch m.Name {
+			case "Save":
+				mt, err := utils.ParseTemplateToString("repo_save", repoSaveTemplate, m)
 				if err != nil {
-					return errors.Wrap(err, "failed to generate repo method 'save'")
+					return errors.Wrap(err, "failed to generate repo method 'Save'")
 				}
-				r.MethodTemplates = append(r.MethodTemplates, method)
-				intMethod, err := utils.ParseTemplateToString("repo_interface_save", repoInterfaceSaveTemplate, r)
-				if err != nil {
-					return errors.Wrap(err, "failed to generate repo interface method 'save'")
-				}
-				r.InterfaceTemplateMethods = append(r.InterfaceTemplateMethods, intMethod)
+				r.MethodTemplates = append(r.MethodTemplates, mt)
+				r.InterfaceTemplates = append(r.InterfaceTemplates, m.Signature)
 
-			case repoMethodGet:
-				method, err := utils.ParseTemplateToString("repo_get", repoGetByIDTemplate, r)
+			case "GetByID":
+				mt, err := utils.ParseTemplateToString("repo_get", repoGetByIDTemplate, m)
 				if err != nil {
-					return errors.Wrap(err, "failed to generate repo method 'get'")
+					return errors.Wrap(err, "failed to generate repo method 'GetByID'")
 				}
-				r.MethodTemplates = append(r.MethodTemplates, method)
-				intMethod, err := utils.ParseTemplateToString("repo_interface_get", repoInterfaceGetTemplate, r)
-				if err != nil {
-					return errors.Wrap(err, "failed to generate repo interface method 'get'")
-				}
-				r.InterfaceTemplateMethods = append(r.InterfaceTemplateMethods, intMethod)
+				r.MethodTemplates = append(r.MethodTemplates, mt)
+				r.InterfaceTemplates = append(r.InterfaceTemplates, m.Signature)
 
-			case repoMethodList:
-				method, err := utils.ParseTemplateToString("repo_list", repoListTemplate, r)
+			case "List":
+				mt, err := utils.ParseTemplateToString("repo_list", repoListTemplate, m)
 				if err != nil {
-					return errors.Wrap(err, "failed to generate repo method 'list'")
+					return errors.Wrap(err, "failed to generate repo method 'List'")
 				}
-				r.MethodTemplates = append(r.MethodTemplates, method)
-				intMethod, err := utils.ParseTemplateToString("repo_interface_list", repoInterfaceListTemplate, r)
-				if err != nil {
-					return errors.Wrap(err, "failed to generate repo interface method 'list'")
-				}
-				r.InterfaceTemplateMethods = append(r.InterfaceTemplateMethods, intMethod)
+				r.MethodTemplates = append(r.MethodTemplates, mt)
+				r.InterfaceTemplates = append(r.InterfaceTemplates, m.Signature)
 
-			case repoMethodDelete:
-				method, err := utils.ParseTemplateToString("repo_delete", repoDeleteTemplate, r)
+			case "SetQueryTotal":
+				mt, err := utils.ParseTemplateToString("query_total", repoSetQueryTotalTemplate, m)
 				if err != nil {
-					return errors.Wrap(err, "failed to generate repo method 'delete'")
+					return errors.Wrap(err, "failed to generate repo method 'SetQueryTotal'")
 				}
-				r.MethodTemplates = append(r.MethodTemplates, method)
-				intMethod, err := utils.ParseTemplateToString("repo_interface_delete", repoInterfaceDeleteTemplate, r)
+				r.MethodTemplates = append(r.MethodTemplates, mt)
+				r.InterfaceTemplates = append(r.InterfaceTemplates, m.Signature)
+
+			case "Delete":
+				mt, err := utils.ParseTemplateToString("repo_delete", repoDeleteTemplate, m)
 				if err != nil {
-					return errors.Wrap(err, "failed to generate repo interface method 'delete'")
+					return errors.Wrap(err, "failed to generate repo method 'Delete'")
 				}
-				r.InterfaceTemplateMethods = append(r.InterfaceTemplateMethods, intMethod)
+				r.MethodTemplates = append(r.MethodTemplates, mt)
+				r.InterfaceTemplates = append(r.InterfaceTemplates, m.Signature)
 			}
 		}
 
-		err = utils.GenerateGoFile(spec.Paths.Repos, r.Name, repoTemplate, *r)
+		err = utils.GenerateFile(spec.Paths.Repos, r.Filename, repoTemplate, r)
 		if err != nil {
 			return errors.Wrap(err, "failed to generate repo")
 		}

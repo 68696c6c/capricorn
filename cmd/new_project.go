@@ -35,9 +35,9 @@ var newProject = &cobra.Command{
 		err = src.CreateModels(spec, logger)
 		handleError(err)
 
-		// err = src.CreateRepos(&spec, logger)
-		// handleError(err)
-		//
+		err = src.CreateRepos(spec, logger)
+		handleError(err)
+
 		// err = src.CreateApp(spec, logger)
 		// handleError(err)
 		//

@@ -21,12 +21,6 @@ resources:
   - name: email
     type: string
     required: true
-  actions:
-  - list
-  - view
-  - create
-  - update
-  - delete≤
 
 - name: organization
   has_many:
@@ -43,7 +37,6 @@ resources:
   - view
   - create
   - update
-  - delete
 
 
 #models:

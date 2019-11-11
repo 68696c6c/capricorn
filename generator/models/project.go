@@ -51,8 +51,11 @@ type Repo struct {
 	Imports     []string        `yaml:"imports,omitempty"`
 	Filename    string          `yaml:"filename,omitempty"`
 	Constructor string          `yaml:"constructor,omitempty"`
+	Interface   string          `yaml:"interface,omitempty"`
 
-	Methods []Method `yaml:"methods,omitempty"`
+	Methods            []Method `yaml:"methods,omitempty"`
+	MethodTemplates    []string `yaml:"-"`
+	InterfaceTemplates []string `yaml:"-"`
 }
 
 type Method struct {
@@ -211,10 +214,21 @@ func NewProject(filePath string) (Project, error) {
 	for _, r := range spec.Config.Resources {
 		resource := makeProjectResource(r.Name)
 
+		// If no methods were specified, default to all.
+		if len(r.Actions) == 0 {
+			r.Actions = []string{
+				"list",
+				"view",
+				"create",
+				"update",
+				"delete",
+			}
+		}
+
 		model := makeModel(resource, r)
 		spec.Models = append(spec.Models, model)
 
-		repo := makeRepo(resource, r)
+		repo := makeRepo(resource, r, spec.Imports)
 		spec.Repos = append(spec.Repos, repo)
 
 		controller := makeController(resource, r)
@@ -311,18 +325,20 @@ func makeModel(r ProjectResource, config Resource) Model {
 	return result
 }
 
-func makeRepo(r ProjectResource, config Resource) Repo {
-	repoName := MakeName(r.Plural.Exported + "_repo")
+func makeRepo(r ProjectResource, config Resource, imports Paths) Repo {
+	repoName := MakeName(r.Plural.Exported + "_repo_GORM")
 	result := Repo{
 		Resource:    r,
 		Name:        repoName,
-		Imports:     []string{},
+		Imports:     []string{imports.Models},
 		Filename:    r.Plural.Kebob + "_repo.go",
 		Constructor: "New" + r.Plural.Exported + "Repo",
+		Interface:   r.Plural.Exported + "Repo",
 	}
 
 	// Build fields.
 	var methods []Method
+	saveDone := false
 
 	for _, a := range config.Actions {
 
@@ -330,9 +346,13 @@ func makeRepo(r ProjectResource, config Resource) Repo {
 		case "create":
 			fallthrough
 		case "update":
+			if saveDone {
+				break
+			}
 			arg := fmt.Sprintf("m *models.%s", r.Single.Exported)
-			save := makeMethod(r, repoName, "Save", []string{arg}, []string{"[]error"})
+			save := makeMethod(r, repoName, "Save", []string{arg}, []string{"errs []error"})
 			methods = append(methods, save)
+			saveDone = true
 			break
 		case "delete":
 			del := makeMethod(r, repoName, "Delete", []string{"id goat.ID"}, []string{"[]error"})
@@ -344,8 +364,8 @@ func makeRepo(r ProjectResource, config Resource) Repo {
 			methods = append(methods, get)
 			break
 		case "list":
-			result := fmt.Sprintf("[]*models.%s", r.Single.Exported)
-			list := makeMethod(r, repoName, "List", []string{"q *query.Query"}, []string{result, "[]error"})
+			result := fmt.Sprintf("m []*models.%s", r.Single.Exported)
+			list := makeMethod(r, repoName, "List", []string{"q *query.Query"}, []string{result, "errs []error"})
 			methods = append(methods, list)
 
 			setTotal := makeMethod(r, repoName, "SetQueryTotal", []string{"q *query.Query"}, []string{"[]error"})

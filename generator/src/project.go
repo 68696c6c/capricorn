@@ -31,7 +31,7 @@ func CreateProject(spec models.Project) error {
 		return errors.Wrapf(err, "failed to create project directory '%s'", spec.Paths.Root)
 	}
 
-	err = utils.GenerateGoFile(spec.Paths.Root, "main", mainTemplate, spec)
+	err = utils.GenerateFile(spec.Paths.Root, "main.go", mainTemplate, spec)
 	if err != nil {
 		return errors.Wrap(err, "failed to create main.go")
 	}
