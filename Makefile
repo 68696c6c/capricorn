@@ -1,16 +1,17 @@
 
 EXAMPLE_SPEC_PATH ?= example.yml
-EXAMPLE_APP_PATH ?= ~/Code/Go/src/github.com/68696c6c/capricorn-remodel
+EXAMPLE_APP_PATH ?= github.com/68696c6c/capricorn-example
 
 .PHONY: image dep cli local-down test migrate
 
 .DEFAULT:
 	@echo 'Invalid target.'
 	@echo
-	@echo '    deps          install dependancies'
-	@echo '    build         build the CLI for the current machine'
-	@echo '    test          run unit tests'
-	@echo '    new           generate a new Goat project'
+	@echo '    deps                                install dependancies'
+	@echo '    build                               build the CLI for the current machine'
+	@echo '    test                                run unit tests'
+	@echo '    SPEC_PATH=/full/path/to/spec new    generate a new Goat project; provide SPEC_PATH'
+	@echo '    example                             generate an example Goat project'
 	@echo
 
 default: .DEFAULT
@@ -26,5 +27,9 @@ test:
 	go test ./... -cover
 
 new: build
-	rm -rf $(EXAMPLE_APP_PATH)
+	capricorn new $(SPEC_PATH)
+
+example: build
+	rm -rf $(GOPATH)/src/$(EXAMPLE_APP_PATH)
 	capricorn new $(EXAMPLE_SPEC_PATH)
+	cd $(GOPATH)/src/$(EXAMPLE_APP_PATH) && make local
