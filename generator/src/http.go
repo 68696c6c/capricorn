@@ -42,26 +42,42 @@ func {{.Constructor}}(a app.ServiceContainer) {{.Name.Exported}} {
 }
 
 {{- range $key, $value := .RequestTemplates }}
-type {{$value}} struct {
-	models.{{.Resource.Single.Exported}}
-}
+{{ $value }}
 {{- end }}
 
 {{- range $key, $value := .ResponseTemplates }}
-type {{$value}} struct {
-	Data             []*models.{{.Resource.Single.Exported}} {{ $tick }}json:"data"{{ $tick }}
-	query.Pagination {{ $tick }}json:"pagination"{{ $tick }}
-}
+{{ $value }}
 {{- end }}
 
 {{- range $key, $value := .HandlerTemplates }}
 {{ $value }}
 {{- end }}
-
 `
 
+const createRequestTemplate = `
+type {{.Name}} struct {
+	models.{{.Model}}
+}`
+
+const updateRequestTemplate = `
+type {{.Name}} struct {
+	models.{{.Model}}
+}`
+
+const viewResponseTemplate = `
+type {{.Name}} struct {
+	models.{{.Model}}
+}`
+
+const listResponseTemplate = `
+{{ $tick := "` + "`" + `" }}
+type {{.Name}} struct {
+	Data             []*models.{{.Model}} {{ $tick }}json:"data"{{ $tick }}
+	query.Pagination {{ $tick }}json:"pagination"{{ $tick }}
+}`
+
 const handlerCreateTemplate = `
-func (r {{.Receiver}}) {{.Signature}} {
+func (h {{.Receiver}}) {{.Signature}} {
 	req, ok := goat.GetRequest(c).(*create{{.Resource.Single.Exported}}Request)
 	if !ok {
 		h.app.Errors.HandleMessage(c, "failed to get request", goat.RespondBadRequestError)
@@ -81,7 +97,7 @@ func (r {{.Receiver}}) {{.Signature}} {
 }`
 
 const handlerUpdateTemplate = `
-func (r {{.Receiver}}) {{.Signature}} {
+func (h {{.Receiver}}) {{.Signature}} {
 	i := c.Param("id")
 	id, err := goat.ParseID(i)
 	if err != nil {
@@ -100,7 +116,7 @@ func (r {{.Receiver}}) {{.Signature}} {
 		}
 	}
 
-	req, ok := goat.GetRequest(c).(*create{{.Resource.Single.Exported}}Request)
+	req, ok := goat.GetRequest(c).(*update{{.Resource.Single.Exported}}Request)
 	if !ok {
 		h.app.Errors.HandleMessage(c, "failed to get request", goat.RespondBadRequestError)
 		return
@@ -118,7 +134,7 @@ func (r {{.Receiver}}) {{.Signature}} {
 }`
 
 const handlerViewTemplate = `
-func (r {{.Receiver}}) {{.Signature}} {
+func (h {{.Receiver}}) {{.Signature}} {
 	i := c.Param("id")
 	id, err := goat.ParseID(i)
 	if err != nil {
@@ -141,7 +157,7 @@ func (r {{.Receiver}}) {{.Signature}} {
 }`
 
 const handlerListTemplate = `
-func (r {{.Receiver}}) {{.Signature}} {
+func (h {{.Receiver}}) {{.Signature}} {
 	q := query.NewQueryBuilder(c)
 
 	result, errs := h.app.{{.Resource.Plural.Exported}}Repo.List(q)
@@ -161,7 +177,7 @@ func (r {{.Receiver}}) {{.Signature}} {
 `
 
 const handlerDeleteTemplate = `
-func (r {{.Receiver}}) {{.Signature}} {
+func (h {{.Receiver}}) {{.Signature}} {
 	i := c.Param("id")
 	id, err := goat.ParseID(i)
 	if err != nil {
@@ -260,31 +276,39 @@ func CreateHTTP(spec models.Project, logger *logrus.Logger) error {
 	for _, c := range spec.Controllers {
 		logger.Debug(logPrefix, "controller: ", c.Filename)
 
-		// // Create requests.
-		// createRequest, err := utils.ParseTemplateToString("create_request", createRequestTemplate, c)
-		// if err != nil {
-		// 	return errors.Wrap(err, "failed to generate controller request 'create'")
-		// }
-		// c.RequestTemplates = append(c.RequestTemplates, createRequest)
-		//
-		// updateRequest, err := utils.ParseTemplateToString("update_request", updateRequestTemplate, c)
-		// if err != nil {
-		// 	return errors.Wrap(err, "failed to generate controller request 'update'")
-		// }
-		// c.RequestTemplates = append(c.RequestTemplates, updateRequest)
-		//
-		// // Create responses.
-		// getResponse, err := utils.ParseTemplateToString("get_response", resourceResponseTemplate, c)
-		// if err != nil {
-		// 	return errors.Wrap(err, "failed to generate controller response 'get'")
-		// }
-		// c.ResponseTemplates = append(c.ResponseTemplates, getResponse)
-		//
-		// listResponse, err := utils.ParseTemplateToString("list_response", listResponseTemplate, c)
-		// if err != nil {
-		// 	return errors.Wrap(err, "failed to generate controller response 'list'")
-		// }
-		// c.ResponseTemplates = append(c.ResponseTemplates, listResponse)
+		// Create requests.
+		if createRequest, ok := c.Requests["create"]; ok {
+			rt, err := utils.ParseTemplateToString("create_request", createRequestTemplate, createRequest)
+			if err != nil {
+				return errors.Wrap(err, "failed to generate controller request 'create'")
+			}
+			c.RequestTemplates = append(c.RequestTemplates, rt)
+		}
+
+		if updateRequest, ok := c.Requests["update"]; ok {
+			rt, err := utils.ParseTemplateToString("update_request", updateRequestTemplate, updateRequest)
+			if err != nil {
+				return errors.Wrap(err, "failed to generate controller request 'update'")
+			}
+			c.RequestTemplates = append(c.RequestTemplates, rt)
+		}
+
+		// Create responses.
+		if viewResponse, ok := c.Responses["view"]; ok {
+			rt, err := utils.ParseTemplateToString("view_response", viewResponseTemplate, viewResponse)
+			if err != nil {
+				return errors.Wrap(err, "failed to generate controller response 'view'")
+			}
+			c.ResponseTemplates = append(c.ResponseTemplates, rt)
+		}
+
+		if listResponse, ok := c.Responses["list"]; ok {
+			rt, err := utils.ParseTemplateToString("list_response", listResponseTemplate, listResponse)
+			if err != nil {
+				return errors.Wrap(err, "failed to generate controller response 'list'")
+			}
+			c.ResponseTemplates = append(c.ResponseTemplates, rt)
+		}
 
 		// Create handlers.
 		for _, h := range c.Handlers {

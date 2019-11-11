@@ -73,13 +73,23 @@ type Controller struct {
 	Filename    string          `yaml:"filename,omitempty"`
 	Constructor string          `yaml:"constructor,omitempty"`
 
-	GroupName         string    `yaml:"group_name,omitempty"`
-	Handlers          []Handler `yaml:"handlers,omitempty"`
-	HandlerTemplates  []string  `yaml:"-"`
-	Requests          []string  `yaml:"requests,omitempty"`
-	RequestTemplates  []string  `yaml:"-"`
-	Responses         []string  `yaml:"responses,omitempty"`
-	ResponseTemplates []string  `yaml:"-"`
+	GroupName         string              `yaml:"group_name,omitempty"`
+	Handlers          []Handler           `yaml:"handlers,omitempty"`
+	HandlerTemplates  []string            `yaml:"-"`
+	Requests          map[string]Request  `yaml:"requests,omitempty"`
+	RequestTemplates  []string            `yaml:"-"`
+	Responses         map[string]Response `yaml:"responses,omitempty"`
+	ResponseTemplates []string            `yaml:"-"`
+}
+
+type Request struct {
+	Name  string
+	Model string
+}
+
+type Response struct {
+	Name  string
+	Model string
 }
 
 type Handler struct {
@@ -399,15 +409,15 @@ func makeController(r ProjectResource, config Resource, imports Paths) Controlle
 	result := Controller{
 		Resource:    r,
 		Name:        controllerName,
-		Imports:     []string{imports.App},
+		Imports:     []string{imports.App, imports.Models},
 		Filename:    r.Plural.Kebob + ".go",
 		Constructor: "new" + r.Plural.Exported + "Controller",
 	}
 
 	// Build fields.
 	var handlers []Handler
-	var requests []string
-	var responses []string
+	requests := map[string]Request{}
+	responses := map[string]Response{}
 
 	for _, a := range config.Actions {
 
@@ -415,12 +425,18 @@ func makeController(r ProjectResource, config Resource, imports Paths) Controlle
 		case "create":
 			create := makeHandler(r, controllerName, "POST", "", "Create")
 			handlers = append(handlers, create)
-			requests = append(requests, "create"+r.Single.Exported+"Request")
+			requests["create"] = Request{
+				Name:  "create" + r.Single.Exported + "Request",
+				Model: r.Single.Exported,
+			}
 			break
 		case "update":
 			update := makeHandler(r, controllerName, "PUT", "/:id", "Update")
 			handlers = append(handlers, update)
-			requests = append(requests, "update"+r.Single.Exported+"Request")
+			requests["update"] = Request{
+				Name:  "update" + r.Single.Exported + "Request",
+				Model: r.Single.Exported,
+			}
 			break
 		case "delete":
 			del := makeHandler(r, controllerName, "DELETE", "/:id", "Delete")
@@ -429,11 +445,18 @@ func makeController(r ProjectResource, config Resource, imports Paths) Controlle
 		case "view":
 			view := makeHandler(r, controllerName, "GET", "/:id", "View")
 			handlers = append(handlers, view)
+			responses["view"] = Response{
+				Name:  r.Single.Unexported + "Response",
+				Model: r.Single.Exported,
+			}
 			break
 		case "list":
 			list := makeHandler(r, controllerName, "GET", "", "List")
 			handlers = append(handlers, list)
-			responses = append(responses, r.Plural.Unexported+"Response")
+			responses["list"] = Response{
+				Name:  r.Plural.Unexported + "Response",
+				Model: r.Single.Exported,
+			}
 			break
 		}
 	}
