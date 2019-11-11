@@ -1,6 +1,7 @@
 package src
 
 import (
+	"github.com/68696c6c/capricorn/generator/models"
 	"github.com/68696c6c/capricorn/generator/utils"
 
 	"github.com/pkg/errors"
@@ -17,25 +18,23 @@ import (
 )
 
 var Root = &cobra.Command{
-	Use:   "{{.ModuleName}}",
-	Short: "Root command for {{.Name}}",
+	Use:   "{{.Module.Kebob}}",
+	Short: "Root command for {{.Config.Name}}",
 }
 
 func init() {
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	viper.AutomaticEnv()
-	viper.SetDefault("author", "{{.Author.Name}} <{{.Author.Email}}>")
-	viper.SetDefault("license", "{{.License}}")
-}
-
-`
+	viper.SetDefault("author", "{{.Config.Author.Name}} <{{.Config.Author.Email}}>")
+	viper.SetDefault("license", "{{.Config.License}}")
+}`
 
 const serverTemplate = `
 package cmd
 
 import (
-	"{{.Imports.Packages.App}}"
-	"{{.Imports.Packages.HTTP}}"
+	"{{.Imports.App}}"
+	"{{.Imports.HTTP}}"
 
 	"github.com/68696c6c/goat"
 	"github.com/pkg/errors"
@@ -67,24 +66,22 @@ var serverCommand = &cobra.Command{
 
 		http.InitRouter(services)
 	},
-}
+}`
 
-`
-
-func CreateCMD(spec utils.Spec) error {
+func CreateCMD(spec models.Project) error {
 	err := utils.CreateDir(spec.Paths.CMD)
 	if err != nil {
 		return errors.Wrapf(err, "failed to create cmd directory '%s'", spec.Paths.CMD)
 	}
 
 	// Create root command.
-	err = utils.GenerateGoFile(spec.Paths.CMD, "root", rootTemplate, spec)
+	err = utils.GenerateFile(spec.Paths.CMD, "root.go", rootTemplate, spec)
 	if err != nil {
 		return errors.Wrap(err, "failed to create root command")
 	}
 
 	// Create server command.
-	err = utils.GenerateGoFile(spec.Paths.CMD, "server", serverTemplate, spec)
+	err = utils.GenerateFile(spec.Paths.CMD, "server.go", serverTemplate, spec)
 	if err != nil {
 		return errors.Wrap(err, "failed to create server command")
 	}

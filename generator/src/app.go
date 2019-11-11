@@ -3,9 +3,9 @@ package src
 import (
 	"github.com/68696c6c/capricorn/generator/models"
 	"github.com/68696c6c/capricorn/generator/utils"
-	"github.com/sirupsen/logrus"
 
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 )
 
 const containerTemplate = `
