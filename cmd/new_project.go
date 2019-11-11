@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"github.com/68696c6c/capricorn/generator/src"
 	"os"
 
 	"github.com/68696c6c/capricorn/generator/models"
@@ -25,18 +26,15 @@ var newProject = &cobra.Command{
 		spec, err := models.NewProject(specFile)
 		handleError(err)
 
-		// spec, err := utils.NewSpecFromFilePath(specFile)
-		// handleError(err)
-		//
-		// logger.Infof("creating project %s from config %s", spec.ModuleName, specFile)
-		//
-		// // SRC
-		// err = src.CreateProject(spec)
-		// handleError(err)
-		//
-		// err = src.CreateModels(spec, logger)
-		// handleError(err)
-		//
+		logger.Infof("creating project %s from config %s", spec.Config.Module, specFile)
+
+		// SRC
+		err = src.CreateProject(spec)
+		handleError(err)
+
+		err = src.CreateModels(spec, logger)
+		handleError(err)
+
 		// err = src.CreateRepos(&spec, logger)
 		// handleError(err)
 		//
@@ -49,8 +47,8 @@ var newProject = &cobra.Command{
 		// err = src.CreateHTTP(&spec, logger)
 		// handleError(err)
 		//
-		// err = src.FMT(spec.Paths.Root)
-		// handleError(err)
+		err = src.FMT(spec.Paths.Root)
+		handleError(err)
 		//
 		// // OPS
 		// err = ops.CreateDocker(spec, logger)

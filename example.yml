@@ -1,5 +1,5 @@
-name: "Capricorn Test"
-module: "github.com/68696c6c/capricorn-test"
+name: "Capricorn Remodel"
+module: "github.com/68696c6c/capricorn-remodel"
 
 license: "MIT"
 author:

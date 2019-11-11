@@ -28,7 +28,7 @@ type ProjectResource struct {
 
 type Model struct {
 	Resource    ProjectResource `yaml:"resource,omitempty"`
-	Name        Name            `yaml:"name,omitempty"`
+	Name        string          `yaml:"name,omitempty"`
 	Imports     []string        `yaml:"imports,omitempty"`
 	Filename    string          `yaml:"filename,omitempty"`
 	Constructor string          `yaml:"constructor,omitempty"`
@@ -39,7 +39,7 @@ type Model struct {
 }
 
 type Field struct {
-	Name     Name
+	Name     string
 	Type     string
 	Required bool
 	Tag      string
@@ -104,6 +104,7 @@ type Paths struct {
 	OPS    string
 	Docker string
 	App    string
+	CMD    string
 	HTTP   string
 	Repos  string
 	Models string
@@ -167,6 +168,7 @@ const (
 	pathOPS    = "ops"
 	pathDocker = "docker"
 	pathApp    = "app"
+	pathCMD    = "cmd"
 	pathHTTP   = "http"
 	pathRepos  = "repos"
 	pathModels = "models"
@@ -230,6 +232,7 @@ func makePaths(rootPath string) Paths {
 		OPS:    utils.JoinPath(rootPath, pathOPS),
 		Docker: utils.JoinPath(rootPath, pathDocker),
 		App:    utils.JoinPath(srcPath, pathApp),
+		CMD:    utils.JoinPath(srcPath, pathCMD),
 		HTTP:   utils.JoinPath(srcPath, pathHTTP),
 		Repos:  utils.JoinPath(srcPath, pathRepos),
 		Models: utils.JoinPath(srcPath, pathModels),
@@ -248,7 +251,7 @@ func makeProjectResource(name string) ProjectResource {
 func makeModel(r ProjectResource, config Resource) Model {
 	result := Model{
 		Resource:    r,
-		Name:        MakeName(r.Single.Exported),
+		Name:        r.Single.Exported,
 		Imports:     []string{},
 		Filename:    r.Single.Kebob + ".go",
 		Constructor: "New" + r.Single.Exported,
@@ -264,33 +267,19 @@ func makeModel(r ProjectResource, config Resource) Model {
 			t := MakeName(r)
 			rName := MakeName(fmt.Sprintf("%s_id", t.Exported))
 			field := Field{
-				Name: rName,
+				Name: rName.Exported,
 				Type: "goat.ID",
 			}
-			var extra string
-			// if r.Required {
-			if true {
-				extra = ` binding:"required"`
-			}
-			field.Tag = fmt.Sprintf(`json:"%s"%s`, rName.Snake, extra)
-			fields = append(fields, field)
-		}
-	}
-
-	if len(config.HasMany) > 0 {
-		for _, r := range config.HasMany {
-			t := MakeName(r)
-			field := Field{
-				Name: MakeName(t.Unexported),
-				Type: fmt.Sprintf("[]*%s", t.Exported),
-			}
+			field.Tag = fmt.Sprintf(`json:"%s"`, rName.Snake)
 			fields = append(fields, field)
 		}
 	}
 
 	for _, f := range config.Fields {
+		t := MakeName(f.Name)
+		rName := MakeName(inflection.Singular(t.Exported))
 		field := Field{
-			Name:     MakeName(f.Name),
+			Name:     rName.Exported,
 			Type:     f.Type,
 			Required: f.Required,
 		}
@@ -300,6 +289,22 @@ func makeModel(r ProjectResource, config Resource) Model {
 		}
 		field.Tag = fmt.Sprintf(`json:"%s"%s`, f.Name, extra)
 		fields = append(fields, field)
+	}
+
+	if len(config.HasMany) > 0 {
+		for _, r := range config.HasMany {
+			t := MakeName(r)
+			single := inflection.Singular(t.Exported)
+			sName := MakeName(single)
+			plural := inflection.Plural(t.Exported)
+			pName := MakeName(plural)
+			field := Field{
+				Name: pName.Exported,
+				Type: fmt.Sprintf("[]*%s", sName.Exported),
+			}
+			field.Tag = fmt.Sprintf(`json:"%s"`, pName.Snake)
+			fields = append(fields, field)
+		}
 	}
 
 	result.Fields = fields

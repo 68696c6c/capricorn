@@ -1,6 +1,6 @@
 
 EXAMPLE_SPEC_PATH ?= example.yml
-EXAMPLE_APP_PATH ?= ~/Code/Go/src/github.com/68696c6c/capricorn-test
+EXAMPLE_APP_PATH ?= ~/Code/Go/src/github.com/68696c6c/capricorn-remodel
 
 .PHONY: image dep cli local-down test migrate
 
@@ -26,4 +26,5 @@ test:
 	go test ./... -cover
 
 new: build
+	rm -rf $(EXAMPLE_APP_PATH)
 	capricorn new $(EXAMPLE_SPEC_PATH)

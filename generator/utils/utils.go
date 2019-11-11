@@ -133,7 +133,7 @@ func separatedToCamel(input string, leadingCap bool) string {
 				if v == '_' || v == '-' {
 					isToUpper = true
 				} else {
-					output += strings.ToLower(string(v))
+					output += string(v)
 				}
 			}
 		}
