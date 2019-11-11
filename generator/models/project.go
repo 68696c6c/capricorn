@@ -80,6 +80,7 @@ type Controller struct {
 	RequestTemplates  []string            `yaml:"-"`
 	Responses         map[string]Response `yaml:"responses,omitempty"`
 	ResponseTemplates []string            `yaml:"-"`
+	RoutesTemplates   []string            `yaml:"-"`
 }
 
 type Request struct {
@@ -405,13 +406,14 @@ func makeMethod(r ProjectResource, repoName Name, name string, parameters, retur
 }
 
 func makeController(r ProjectResource, config Resource, imports Paths) Controller {
-	controllerName := MakeName(r.Plural.Exported)
+	controllerName := MakeName(r.Plural.Unexported)
 	result := Controller{
 		Resource:    r,
 		Name:        controllerName,
 		Imports:     []string{imports.App, imports.Models},
 		Filename:    r.Plural.Kebob + ".go",
 		Constructor: "new" + r.Plural.Exported + "Controller",
+		GroupName:   r.Plural.Unexported,
 	}
 
 	// Build fields.

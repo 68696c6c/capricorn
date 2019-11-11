@@ -211,7 +211,7 @@ const routesTemplate = `
 package http
 
 import (
-	"{{.Imports.Packages.App}}"
+	"{{.Imports.App}}"
 
 	"github.com/68696c6c/goat"
 	"github.com/gin-gonic/gin"
@@ -227,8 +227,14 @@ func InitRouter(services app.ServiceContainer) {
 	api := engine.Group("/api")
 	api.Use()
 	{
-		{{- range $key, $value := .HTTP.RoutesTemplates }}
-		{{ $value }}
+		{{- range $key, $controller := .Controllers }}
+
+			{{$controller.Name.Unexported}}Controller := {{$controller.Constructor}}(services)
+			{{$controller.GroupName}} := api.Group("/{{.GroupName}}")
+			{{- range $rKey, $value := $controller.RoutesTemplates }}
+				{{ $value }}
+			{{- end }}
+
 		{{- end }}
 	}
 
@@ -245,20 +251,19 @@ func Health(c *gin.Context) {
 func Version(c *gin.Context) {
 	// @TODO show version.
 	goat.RespondMessage(c, "something helpful here")
-}
-`
+}`
 
-const routeGroupTemplate = `
-		{{.ControllerName}} := {{.ControllerConstructor}}(services)
-		{{.GroupName}} := api.Group("/{{.GroupName}}")
-		{{.GroupName}}.GET("", {{.ControllerName}}.List)
-		{{.GroupName}}.GET("/:id", {{.ControllerName}}.Get)
-		{{.GroupName}}.POST("", goat.BindMiddleware({{.CreateRequestStructName}}{}), {{.ControllerName}}.Create)
-		{{.GroupName}}.PUT("/:id", goat.BindMiddleware({{.UpdateRequestStructName}}{}), {{.ControllerName}}.Update)
-		{{.GroupName}}.DELETE("/:id", {{.ControllerName}}.Delete)
-`
+const routeCreateTemplate = `{{.GroupName}}.POST("", goat.BindMiddleware(create{{.Resource.Single.Exported}}Request{}), {{.Name.Unexported}}Controller.Create)`
 
-func CreateHTTP(spec models.Project, logger *logrus.Logger) error {
+const routeUpdateTemplate = `{{.GroupName}}.PUT("/:id", goat.BindMiddleware(update{{.Resource.Single.Exported}}Request{}), {{.Name.Unexported}}Controller.Update)`
+
+const routeViewTemplate = `{{.GroupName}}.GET("/:id", {{.Name.Unexported}}Controller.View)`
+
+const routeListTemplate = `{{.GroupName}}.GET("", {{.Name.Unexported}}Controller.List)`
+
+const routeDeleteTemplate = `{{.GroupName}}.DELETE("/:id", {{.Name.Unexported}}Controller.Delete)`
+
+func CreateHTTP(spec *models.Project, logger *logrus.Logger) error {
 	logPrefix := "CreateHTTP | "
 
 	err := utils.CreateDir(spec.Paths.HTTP)
@@ -273,7 +278,7 @@ func CreateHTTP(spec models.Project, logger *logrus.Logger) error {
 	// }
 
 	// Create controllers.
-	for _, c := range spec.Controllers {
+	for i, c := range spec.Controllers {
 		logger.Debug(logPrefix, "controller: ", c.Filename)
 
 		// Create requests.
@@ -321,6 +326,11 @@ func CreateHTTP(spec models.Project, logger *logrus.Logger) error {
 					return errors.Wrap(err, "failed to generate controller handler 'Create'")
 				}
 				c.HandlerTemplates = append(c.HandlerTemplates, ht)
+				rt, err := utils.ParseTemplateToString("route_create", routeCreateTemplate, c)
+				if err != nil {
+					return errors.Wrap(err, "failed to generate controller route 'Create'")
+				}
+				c.RoutesTemplates = append(c.RoutesTemplates, rt)
 
 			case "Update":
 				ht, err := utils.ParseTemplateToString("controller_update", handlerUpdateTemplate, h)
@@ -328,7 +338,11 @@ func CreateHTTP(spec models.Project, logger *logrus.Logger) error {
 					return errors.Wrap(err, "failed to generate controller handler 'Update'")
 				}
 				c.HandlerTemplates = append(c.HandlerTemplates, ht)
-				// c.RequestTemplates = append(c.RequestTemplates, h.Signature)
+				rt, err := utils.ParseTemplateToString("route_update", routeUpdateTemplate, c)
+				if err != nil {
+					return errors.Wrap(err, "failed to generate controller route 'Update'")
+				}
+				c.RoutesTemplates = append(c.RoutesTemplates, rt)
 
 			case "List":
 				ht, err := utils.ParseTemplateToString("controller_list", handlerListTemplate, h)
@@ -336,6 +350,11 @@ func CreateHTTP(spec models.Project, logger *logrus.Logger) error {
 					return errors.Wrap(err, "failed to generate controller handler 'List'")
 				}
 				c.HandlerTemplates = append(c.HandlerTemplates, ht)
+				rt, err := utils.ParseTemplateToString("route_list", routeListTemplate, c)
+				if err != nil {
+					return errors.Wrap(err, "failed to generate controller route 'List'")
+				}
+				c.RoutesTemplates = append(c.RoutesTemplates, rt)
 
 			case "View":
 				ht, err := utils.ParseTemplateToString("controller_view", handlerViewTemplate, h)
@@ -343,6 +362,11 @@ func CreateHTTP(spec models.Project, logger *logrus.Logger) error {
 					return errors.Wrap(err, "failed to generate controller handler 'View'")
 				}
 				c.HandlerTemplates = append(c.HandlerTemplates, ht)
+				rt, err := utils.ParseTemplateToString("route_lview", routeViewTemplate, c)
+				if err != nil {
+					return errors.Wrap(err, "failed to generate controller route 'View'")
+				}
+				c.RoutesTemplates = append(c.RoutesTemplates, rt)
 
 			case "Delete":
 				ht, err := utils.ParseTemplateToString("controller_delete", handlerDeleteTemplate, h)
@@ -350,38 +374,27 @@ func CreateHTTP(spec models.Project, logger *logrus.Logger) error {
 					return errors.Wrap(err, "failed to generate controller handler 'Delete'")
 				}
 				c.HandlerTemplates = append(c.HandlerTemplates, ht)
+				rt, err := utils.ParseTemplateToString("route_delete", routeDeleteTemplate, c)
+				if err != nil {
+					return errors.Wrap(err, "failed to generate controller route 'Delete'")
+				}
+				c.RoutesTemplates = append(c.RoutesTemplates, rt)
 			}
+
+			spec.Controllers[i] = c
 		}
 
-		// group := utils.RouteGroup{
-		// 	ControllerConstructor:   "new" + upperControllerName,
-		// 	ControllerName:          lowerControllerName,
-		// 	GroupName:               resourceLowerPlural,
-		// 	Routes:                  c.Routes,
-		// 	CreateRequestStructName: "create" + resourceUpper + "Request",
-		// 	UpdateRequestStructName: "update" + resourceUpper + "Request",
-		// }
-		// logger.Debug(logPrefix, "route group: ", group)
-		// spec.HTTP.Routes = append(spec.HTTP.Routes, group)
-		//
-		// routeGroup, err := utils.ParseTemplateToString("route_group", routeGroupTemplate, group)
-		// if err != nil {
-		// 	return errors.Wrap(err, "failed to generate route group")
-		// }
-		// logger.Debug(logPrefix, "routeGroup: ", routeGroup)
-		// spec.HTTP.RoutesTemplates = append(spec.HTTP.RoutesTemplates, routeGroup)
-
-		err = utils.GenerateGoFile(spec.Paths.HTTP, c.Filename, controllerTemplate, c)
+		err = utils.GenerateFile(spec.Paths.HTTP, c.Filename, controllerTemplate, c)
 		if err != nil {
 			return errors.Wrap(err, "failed to generate controller")
 		}
 	}
 
 	// Create routes.
-	// err = utils.GenerateGoFile(spec.Paths.HTTP, "routes", routesTemplate, spec)
-	// if err != nil {
-	// 	return errors.Wrap(err, "failed to generate controller")
-	// }
+	err = utils.GenerateFile(spec.Paths.HTTP, "routes.go", routesTemplate, spec)
+	if err != nil {
+		return errors.Wrap(err, "failed to generate controller")
+	}
 
 	return nil
 }
