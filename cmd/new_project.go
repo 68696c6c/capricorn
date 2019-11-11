@@ -44,9 +44,9 @@ var newProject = &cobra.Command{
 		err = src.CreateCMD(spec)
 		handleError(err)
 
-		// err = src.CreateHTTP(&spec, logger)
-		// handleError(err)
-		//
+		err = src.CreateHTTP(spec, logger)
+		handleError(err)
+
 		err = src.FMT(spec.Paths.Root)
 		handleError(err)
 		//

@@ -1,9 +1,11 @@
 package src
 
 import (
+	"fmt"
+
+	"github.com/68696c6c/capricorn/generator/models"
 	"github.com/68696c6c/capricorn/generator/utils"
 
-	"github.com/jinzhu/inflection"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )
@@ -20,30 +22,36 @@ const controllerTemplate = `
 package http
 
 import (
-	"{{.AppImportPath}}"
-	"{{.ModelsImportPath}}"
+	{{- range $key, $value := .Imports }}
+	"{{ $value }}"
+	{{- end }}
 
 	"github.com/68696c6c/goat"
 	"github.com/68696c6c/goat/query"
 	"github.com/gin-gonic/gin"
 )
-
-type {{.StructNameLower}} struct {
+{{ $tick := "` + "`" + `" }}
+type {{.Name.Exported}} struct {
 	app app.ServiceContainer
 }
 
-func new{{.StructNameUpper}}(a app.ServiceContainer) {{.StructNameLower}} {
-	return {{.StructNameLower}}{
+func {{.Constructor}}(a app.ServiceContainer) {{.Name.Exported}} {
+	return {{.Name.Exported}}{
 		app: a,
 	}
 }
 
 {{- range $key, $value := .RequestTemplates }}
-{{ $value }}
+type {{$value}} struct {
+	models.{{.Resource.Single.Exported}}
+}
 {{- end }}
 
 {{- range $key, $value := .ResponseTemplates }}
-{{ $value }}
+type {{$value}} struct {
+	Data             []*models.{{.Resource.Single.Exported}} {{ $tick }}json:"data"{{ $tick }}
+	query.Pagination {{ $tick }}json:"pagination"{{ $tick }}
+}
 {{- end }}
 
 {{- range $key, $value := .HandlerTemplates }}
@@ -52,31 +60,9 @@ func new{{.StructNameUpper}}(a app.ServiceContainer) {{.StructNameLower}} {
 
 `
 
-const createRequestTemplate = `
-type create{{.ResourceNameUpper}}Request struct {
-	models.{{.ResourceNameUpper}}
-}`
-
-const updateRequestTemplate = `
-type update{{.ResourceNameUpper}}Request struct {
-	models.{{.ResourceNameUpper}}
-}`
-
-const resourceResponseTemplate = `
-type {{.ResourceNameLower}}Response struct {
-	models.{{.ResourceNameUpper}}
-}`
-
-const listResponseTemplate = `
-{{ $tick := "` + "`" + `" }}
-type {{.ResourceNameLowerPlural}}Response struct {
-	Data             []*models.{{.ResourceNameUpper}} {{ $tick }}json:"data"{{ $tick }}
-	query.Pagination {{ $tick }}json:"pagination"{{ $tick }}
-}`
-
 const handlerCreateTemplate = `
-func (h {{.StructNameLower}}) Create(c *gin.Context) {
-	req, ok := goat.GetRequest(c).(*create{{.ResourceNameUpper}}Request)
+func (r {{.Receiver}}) {{.Signature}} {
+	req, ok := goat.GetRequest(c).(*create{{.Resource.Single.Exported}}Request)
 	if !ok {
 		h.app.Errors.HandleMessage(c, "failed to get request", goat.RespondBadRequestError)
 		return
@@ -84,18 +70,18 @@ func (h {{.StructNameLower}}) Create(c *gin.Context) {
 
 	// @TODO generate model factories.
 	// @TODO generate model validators.
-	m := req.{{.ResourceNameUpper}}
-	errs := h.app.{{.ResourceNameUpperPlural}}Repo.Save(&m)
+	m := req.{{.Resource.Single.Exported}}
+	errs := h.app.{{.Resource.Plural.Exported}}Repo.Save(&m)
 	if len(errs) > 0 {
-		h.app.Errors.HandleErrorsM(c, errs, "failed to save {{.ResourceNameLower}}", goat.RespondServerError)
+		h.app.Errors.HandleErrorsM(c, errs, "failed to save {{.Resource.Single.Snake}}", goat.RespondServerError)
 		return
 	}
 
-	goat.RespondCreated(c, {{.ResourceNameLower}}Response{m})
+	goat.RespondCreated(c, {{.Resource.Single.Unexported}}Response{m})
 }`
 
 const handlerUpdateTemplate = `
-func (h {{.StructNameLower}}) Update(c *gin.Context) {
+func (r {{.Receiver}}) {{.Signature}} {
 	i := c.Param("id")
 	id, err := goat.ParseID(i)
 	if err != nil {
@@ -103,18 +89,18 @@ func (h {{.StructNameLower}}) Update(c *gin.Context) {
 		return
 	}
 
-	_, errs := h.app.{{.ResourceNameUpperPlural}}Repo.GetByID(id)
+	_, errs := h.app.{{.Resource.Plural.Exported}}Repo.GetByID(id)
 	if len(errs) > 0 {
 		if goat.RecordNotFound(errs) {
-			h.app.Errors.HandleMessage(c, "{{.ResourceNameLower}} does not exist", goat.RespondNotFoundError)
+			h.app.Errors.HandleMessage(c, "{{.Resource.Single.Snake}} does not exist", goat.RespondNotFoundError)
 			return
 		} else {
-			h.app.Errors.HandleErrorsM(c, errs, "failed to get {{.ResourceNameLower}}", goat.RespondServerError)
+			h.app.Errors.HandleErrorsM(c, errs, "failed to get {{.Resource.Single.Snake}}", goat.RespondServerError)
 			return
 		}
 	}
 
-	req, ok := goat.GetRequest(c).(*create{{.ResourceNameUpper}}Request)
+	req, ok := goat.GetRequest(c).(*create{{.Resource.Single.Exported}}Request)
 	if !ok {
 		h.app.Errors.HandleMessage(c, "failed to get request", goat.RespondBadRequestError)
 		return
@@ -122,17 +108,17 @@ func (h {{.StructNameLower}}) Update(c *gin.Context) {
 
 	// @TODO generate model factories.
 	// @TODO generate model validators.
-	errs = h.app.{{.ResourceNameUpperPlural}}Repo.Save(&req.{{.ResourceNameUpper}})
+	errs = h.app.{{.Resource.Plural.Exported}}Repo.Save(&req.{{.Resource.Single.Exported}})
 	if len(errs) > 0 {
-		h.app.Errors.HandleErrorsM(c, errs, "failed to save {{.ResourceNameLower}}", goat.RespondServerError)
+		h.app.Errors.HandleErrorsM(c, errs, "failed to save {{.Resource.Single.Snake}}", goat.RespondServerError)
 		return
 	}
 
-	goat.RespondData(c, {{.ResourceNameLower}}Response{req.{{.ResourceNameUpper}}})
+	goat.RespondCreated(c, {{.Resource.Single.Unexported}}Response{req.{{.Resource.Single.Exported}}})
 }`
 
-const handlerGetTemplate = `
-func (h {{.StructNameLower}}) Get(c *gin.Context) {
+const handlerViewTemplate = `
+func (r {{.Receiver}}) {{.Signature}} {
 	i := c.Param("id")
 	id, err := goat.ParseID(i)
 	if err != nil {
@@ -140,42 +126,42 @@ func (h {{.StructNameLower}}) Get(c *gin.Context) {
 		return
 	}
 
-	m, errs := h.app.{{.ResourceNameUpperPlural}}Repo.GetByID(id)
+	m, errs := h.app.{{.Resource.Plural.Exported}}Repo.GetByID(id)
 	if len(errs) > 0 {
 		if goat.RecordNotFound(errs) {
-			h.app.Errors.HandleMessage(c, "{{.ResourceNameLower}} does not exist", goat.RespondNotFoundError)
+			h.app.Errors.HandleMessage(c, "{{.Resource.Single.Snake}} does not exist", goat.RespondNotFoundError)
 			return
 		} else {
-			h.app.Errors.HandleErrorsM(c, errs, "failed to get {{.ResourceNameLower}}", goat.RespondServerError)
+			h.app.Errors.HandleErrorsM(c, errs, "failed to get {{.Resource.Single.Snake}}", goat.RespondServerError)
 			return
 		}
 	}
 
-	goat.RespondData(c, {{.ResourceNameLower}}Response{*m})
+	goat.RespondData(c, {{.Resource.Single.Unexported}}Response{m})
 }`
 
 const handlerListTemplate = `
-func (h {{.StructNameLower}}) List(c *gin.Context) {
+func (r {{.Receiver}}) {{.Signature}} {
 	q := query.NewQueryBuilder(c)
 
-	result, errs := h.app.{{.ResourceNameUpperPlural}}Repo.List(q)
+	result, errs := h.app.{{.Resource.Plural.Exported}}Repo.List(q)
 	if len(errs) > 0 {
-		h.app.Errors.HandleErrorsM(c, errs, "failed to get {{.ResourceNameLowerPlural}}", goat.RespondServerError)
+		h.app.Errors.HandleErrorsM(c, errs, "failed to get {{.Resource.Single.Snake}}", goat.RespondServerError)
 		return
 	}
 
-	errs = h.app.{{.ResourceNameUpperPlural}}Repo.SetQueryTotal(q)
+	errs = h.app.{{.Resource.Plural.Exported}}Repo.SetQueryTotal(q)
 	if len(errs) > 0 {
-		h.app.Errors.HandleErrorsM(c, errs, "failed to count {{.ResourceNameLowerPlural}}", goat.RespondServerError)
+		h.app.Errors.HandleErrorsM(c, errs, "failed to count {{.Resource.Single.Snake}}", goat.RespondServerError)
 		return
 	}
 
-	goat.RespondData(c, {{.ResourceNameLowerPlural}}Response{result, q.Pagination})
+	goat.RespondData(c, {{.Resource.Plural.Unexported}}Response{result, q.Pagination})
 }
 `
 
 const handlerDeleteTemplate = `
-func (h {{.StructNameLower}}) Delete(c *gin.Context) {
+func (r {{.Receiver}}) {{.Signature}} {
 	i := c.Param("id")
 	id, err := goat.ParseID(i)
 	if err != nil {
@@ -183,26 +169,26 @@ func (h {{.StructNameLower}}) Delete(c *gin.Context) {
 		return
 	}
 
-	m, errs := h.app.{{.ResourceNameUpperPlural}}Repo.GetByID(id)
+	m, errs := h.app.{{.Resource.Plural.Exported}}Repo.GetByID(id)
 	if len(errs) > 0 {
 		if goat.RecordNotFound(errs) {
-			h.app.Errors.HandleMessage(c, "{{.ResourceNameLower}} does not exist", goat.RespondNotFoundError)
+			h.app.Errors.HandleMessage(c, "{{.Resource.Single.Snake}} does not exist", goat.RespondNotFoundError)
 			return
 		} else {
-			h.app.Errors.HandleErrorsM(c, errs, "failed to get {{.ResourceNameLower}}", goat.RespondServerError)
+			h.app.Errors.HandleErrorsM(c, errs, "failed to get {{.Resource.Single.Snake}}", goat.RespondServerError)
 			return
 		}
 	}
 
 	// @TODO generate model factories.
 	// @TODO generate model validators.
-	errs = h.app.{{.ResourceNameUpperPlural}}Repo.Delete(m)
+	errs = h.app.{{.Resource.Plural.Exported}}Repo.Delete(m)
 	if len(errs) > 0 {
-		h.app.Errors.HandleErrorsM(c, errs, "failed to delete {{.ResourceNameLower}}", goat.RespondServerError)
+		h.app.Errors.HandleErrorsM(c, errs, "failed to delete {{.Resource.Single.Snake}}", goat.RespondServerError)
 		return
 	}
 
-	goat.RespondData(c, {{.ResourceNameLower}}Response{*m})
+	goat.RespondData(c, {{.Resource.Single.Unexported}}Response{*m})
 }`
 
 const routesTemplate = `
@@ -256,7 +242,7 @@ const routeGroupTemplate = `
 		{{.GroupName}}.DELETE("/:id", {{.ControllerName}}.Delete)
 `
 
-func CreateHTTP(spec *utils.Spec, logger *logrus.Logger) error {
+func CreateHTTP(spec models.Project, logger *logrus.Logger) error {
 	logPrefix := "CreateHTTP | "
 
 	err := utils.CreateDir(spec.Paths.HTTP)
@@ -265,165 +251,113 @@ func CreateHTTP(spec *utils.Spec, logger *logrus.Logger) error {
 	}
 
 	// Create middlewares.
-	for _, m := range spec.HTTP.Middlewares {
-		logger.Debug(logPrefix, "middleware: ", m.Name)
-	}
+	// @TODO dewit
+	// for _, m := range spec.HTTP.Middlewares {
+	// 	logger.Debug(logPrefix, "middleware: ", m.Name)
+	// }
 
 	// Create controllers.
-	for _, c := range spec.HTTP.Controllers {
-		logger.Debug(logPrefix, "controller: ", c.Resource)
+	for _, c := range spec.Controllers {
+		logger.Debug(logPrefix, "controller: ", c.Filename)
 
-		c.AppImportPath = spec.Imports.App
-		c.ModelsImportPath = spec.Imports.Models
-
-		single := inflection.Singular(c.Resource)
-		plural := inflection.Plural(c.Resource)
-
-		resourceUpper := utils.SeparatedToExported(single)
-		resourceUpperPlural := utils.SeparatedToExported(plural)
-
-		resourceLower := utils.SeparatedToUnexported(single)
-		resourceLowerPlural := utils.SeparatedToUnexported(plural)
-
-		upperControllerName := resourceUpperPlural + "Controller"
-		lowerControllerName := resourceLowerPlural + "Controller"
-
-		c.FileName = plural
-		c.StructNameUpper = upperControllerName
-		c.StructNameLower = lowerControllerName
-		c.ResourceNameUpper = resourceUpper
-		c.ResourceNameUpperPlural = resourceUpperPlural
-		c.ResourceNameLower = resourceLower
-		c.ResourceNameLowerPlural = resourceLowerPlural
-
-		// Create requests.
-		createRequest, err := utils.ParseTemplateToString("create_request", createRequestTemplate, c)
-		if err != nil {
-			return errors.Wrap(err, "failed to generate controller request 'create'")
-		}
-		c.RequestTemplates = append(c.RequestTemplates, createRequest)
-
-		updateRequest, err := utils.ParseTemplateToString("update_request", updateRequestTemplate, c)
-		if err != nil {
-			return errors.Wrap(err, "failed to generate controller request 'update'")
-		}
-		c.RequestTemplates = append(c.RequestTemplates, updateRequest)
-
-		// Create responses.
-		getResponse, err := utils.ParseTemplateToString("get_response", resourceResponseTemplate, c)
-		if err != nil {
-			return errors.Wrap(err, "failed to generate controller response 'get'")
-		}
-		c.ResponseTemplates = append(c.ResponseTemplates, getResponse)
-
-		listResponse, err := utils.ParseTemplateToString("list_response", listResponseTemplate, c)
-		if err != nil {
-			return errors.Wrap(err, "failed to generate controller response 'list'")
-		}
-		c.ResponseTemplates = append(c.ResponseTemplates, listResponse)
-
-		// If no methods were specified, default to all.
-		if len(c.Handlers) == 0 {
-			c.Handlers = []string{
-				handlerCreate,
-				handlerUpdate,
-				handlerGet,
-				handlerList,
-				handlerDelete,
-			}
-		}
+		// // Create requests.
+		// createRequest, err := utils.ParseTemplateToString("create_request", createRequestTemplate, c)
+		// if err != nil {
+		// 	return errors.Wrap(err, "failed to generate controller request 'create'")
+		// }
+		// c.RequestTemplates = append(c.RequestTemplates, createRequest)
+		//
+		// updateRequest, err := utils.ParseTemplateToString("update_request", updateRequestTemplate, c)
+		// if err != nil {
+		// 	return errors.Wrap(err, "failed to generate controller request 'update'")
+		// }
+		// c.RequestTemplates = append(c.RequestTemplates, updateRequest)
+		//
+		// // Create responses.
+		// getResponse, err := utils.ParseTemplateToString("get_response", resourceResponseTemplate, c)
+		// if err != nil {
+		// 	return errors.Wrap(err, "failed to generate controller response 'get'")
+		// }
+		// c.ResponseTemplates = append(c.ResponseTemplates, getResponse)
+		//
+		// listResponse, err := utils.ParseTemplateToString("list_response", listResponseTemplate, c)
+		// if err != nil {
+		// 	return errors.Wrap(err, "failed to generate controller response 'list'")
+		// }
+		// c.ResponseTemplates = append(c.ResponseTemplates, listResponse)
 
 		// Create handlers.
 		for _, h := range c.Handlers {
-			logger.Debug(logPrefix, "handler: ", h)
+			logger.Infof(logPrefix, fmt.Sprintf("creating controller handler %s", h.Name))
 
-			switch h {
-			case handlerCreate:
-				handler, err := utils.ParseTemplateToString("handler_create", handlerCreateTemplate, c)
+			switch h.Name {
+			case "Create":
+				ht, err := utils.ParseTemplateToString("controller_create", handlerCreateTemplate, h)
 				if err != nil {
-					return errors.Wrap(err, "failed to generate controller handler 'create'")
+					return errors.Wrap(err, "failed to generate controller handler 'Create'")
 				}
-				c.HandlerTemplates = append(c.HandlerTemplates, handler)
-				c.Routes = append(c.Routes, utils.Route{
-					Method: "POST",
-					URI:    "",
-				})
+				c.HandlerTemplates = append(c.HandlerTemplates, ht)
 
-			case handlerUpdate:
-				handler, err := utils.ParseTemplateToString("handler_update", handlerUpdateTemplate, c)
+			case "Update":
+				ht, err := utils.ParseTemplateToString("controller_update", handlerUpdateTemplate, h)
 				if err != nil {
-					return errors.Wrap(err, "failed to generate controller handler 'update'")
+					return errors.Wrap(err, "failed to generate controller handler 'Update'")
 				}
-				c.HandlerTemplates = append(c.HandlerTemplates, handler)
-				c.Routes = append(c.Routes, utils.Route{
-					Method: "PUT",
-					URI:    "/:id",
-				})
+				c.HandlerTemplates = append(c.HandlerTemplates, ht)
+				// c.RequestTemplates = append(c.RequestTemplates, h.Signature)
 
-			case handlerGet:
-				handler, err := utils.ParseTemplateToString("handler_get", handlerGetTemplate, c)
+			case "List":
+				ht, err := utils.ParseTemplateToString("controller_list", handlerListTemplate, h)
 				if err != nil {
-					return errors.Wrap(err, "failed to generate controller handler 'get'")
+					return errors.Wrap(err, "failed to generate controller handler 'List'")
 				}
-				c.HandlerTemplates = append(c.HandlerTemplates, handler)
-				c.Routes = append(c.Routes, utils.Route{
-					Method: "GET",
-					URI:    "/:id",
-				})
+				c.HandlerTemplates = append(c.HandlerTemplates, ht)
 
-			case handlerList:
-				handler, err := utils.ParseTemplateToString("handler_list", handlerListTemplate, c)
+			case "View":
+				ht, err := utils.ParseTemplateToString("controller_view", handlerViewTemplate, h)
 				if err != nil {
-					return errors.Wrap(err, "failed to generate controller handler 'list'")
+					return errors.Wrap(err, "failed to generate controller handler 'View'")
 				}
-				c.HandlerTemplates = append(c.HandlerTemplates, handler)
-				c.Routes = append(c.Routes, utils.Route{
-					Method: "GET",
-					URI:    "",
-				})
+				c.HandlerTemplates = append(c.HandlerTemplates, ht)
 
-			case handlerDelete:
-				handler, err := utils.ParseTemplateToString("handler_delete", handlerDeleteTemplate, c)
+			case "Delete":
+				ht, err := utils.ParseTemplateToString("controller_delete", handlerDeleteTemplate, h)
 				if err != nil {
-					return errors.Wrap(err, "failed to generate controller handler 'delete'")
+					return errors.Wrap(err, "failed to generate controller handler 'Delete'")
 				}
-				c.HandlerTemplates = append(c.HandlerTemplates, handler)
-				c.Routes = append(c.Routes, utils.Route{
-					Method: "DELETE",
-					URI:    "/:id",
-				})
+				c.HandlerTemplates = append(c.HandlerTemplates, ht)
 			}
 		}
 
-		group := utils.RouteGroup{
-			ControllerConstructor:   "new" + upperControllerName,
-			ControllerName:          lowerControllerName,
-			GroupName:               resourceLowerPlural,
-			Routes:                  c.Routes,
-			CreateRequestStructName: "create" + resourceUpper + "Request",
-			UpdateRequestStructName: "update" + resourceUpper + "Request",
-		}
-		logger.Debug(logPrefix, "route group: ", group)
-		spec.HTTP.Routes = append(spec.HTTP.Routes, group)
+		// group := utils.RouteGroup{
+		// 	ControllerConstructor:   "new" + upperControllerName,
+		// 	ControllerName:          lowerControllerName,
+		// 	GroupName:               resourceLowerPlural,
+		// 	Routes:                  c.Routes,
+		// 	CreateRequestStructName: "create" + resourceUpper + "Request",
+		// 	UpdateRequestStructName: "update" + resourceUpper + "Request",
+		// }
+		// logger.Debug(logPrefix, "route group: ", group)
+		// spec.HTTP.Routes = append(spec.HTTP.Routes, group)
+		//
+		// routeGroup, err := utils.ParseTemplateToString("route_group", routeGroupTemplate, group)
+		// if err != nil {
+		// 	return errors.Wrap(err, "failed to generate route group")
+		// }
+		// logger.Debug(logPrefix, "routeGroup: ", routeGroup)
+		// spec.HTTP.RoutesTemplates = append(spec.HTTP.RoutesTemplates, routeGroup)
 
-		routeGroup, err := utils.ParseTemplateToString("route_group", routeGroupTemplate, group)
-		if err != nil {
-			return errors.Wrap(err, "failed to generate route group")
-		}
-		logger.Debug(logPrefix, "routeGroup: ", routeGroup)
-		spec.HTTP.RoutesTemplates = append(spec.HTTP.RoutesTemplates, routeGroup)
-
-		err = utils.GenerateGoFile(spec.Paths.HTTP, c.FileName, controllerTemplate, *c)
+		err = utils.GenerateGoFile(spec.Paths.HTTP, c.Filename, controllerTemplate, c)
 		if err != nil {
 			return errors.Wrap(err, "failed to generate controller")
 		}
 	}
 
 	// Create routes.
-	err = utils.GenerateGoFile(spec.Paths.HTTP, "routes", routesTemplate, spec)
-	if err != nil {
-		return errors.Wrap(err, "failed to generate controller")
-	}
+	// err = utils.GenerateGoFile(spec.Paths.HTTP, "routes", routesTemplate, spec)
+	// if err != nil {
+	// 	return errors.Wrap(err, "failed to generate controller")
+	// }
 
 	return nil
 }
