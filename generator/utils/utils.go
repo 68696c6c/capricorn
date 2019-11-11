@@ -65,32 +65,22 @@ func CopyFileContents(src, dst string) (err error) {
 	return
 }
 
+func AppendFileText(fileName, text string) error {
+	f, err := os.OpenFile(fileName, os.O_APPEND|os.O_WRONLY, 0600)
+	if err != nil {
+		return errors.Wrap(err, "failed to open file for appending")
+	}
+	defer f.Close()
+	if _, err = f.WriteString(text); err != nil {
+		return errors.Wrap(err, "failed to write to file")
+	}
+	return nil
+}
+
 func GenerateFile(basePath, fileName, fileTemplate string, data interface{}) error {
 	t := template.Must(template.New(fileName).Parse(fileTemplate))
 
 	filePath := fmt.Sprintf("%s/%s", basePath, fileName)
-	f, err := os.Create(filePath)
-	if err != nil {
-		return errors.Wrapf(err, "failed create file '%s'", filePath)
-	}
-
-	err = t.Execute(f, data)
-	if err != nil {
-		return errors.Wrapf(err, "failed write file '%s'", filePath)
-	}
-
-	err = f.Close()
-	if err != nil {
-		return errors.Wrapf(err, "failed to close file '%s'", filePath)
-	}
-
-	return nil
-}
-
-func GenerateGoFile(basePath, fileName, fileTemplate string, data interface{}) error {
-	t := template.Must(template.New(fileName).Parse(fileTemplate))
-
-	filePath := fmt.Sprintf("%s/%s.go", basePath, fileName)
 	f, err := os.Create(filePath)
 	if err != nil {
 		return errors.Wrapf(err, "failed create file '%s'", filePath)

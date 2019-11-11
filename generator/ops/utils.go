@@ -4,6 +4,8 @@ import (
 	"os"
 	"os/exec"
 
+	"github.com/68696c6c/capricorn/generator/utils"
+
 	"github.com/pkg/errors"
 )
 
@@ -33,6 +35,13 @@ func InitModule(path string) error {
 	err = cmd.Run()
 	if err != nil {
 		return errors.Wrap(err, "failed to init go modules")
+	}
+
+	err = utils.AppendFileText(path+"/go.mod", `
+replace github.com/ugorji/go v1.1.4 => github.com/ugorji/go v0.0.0-20190204201341-e444a5086c43
+`)
+	if err != nil {
+		return errors.Wrap(err, "failed to update go.mod")
 	}
 
 	cmd = exec.Command("make", "deps")
