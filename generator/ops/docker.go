@@ -69,6 +69,7 @@ services:
       VIRTUAL_HOST: capricorn.local
       ENV: local
       HTTP_PORT: 80
+      MIGRATION_PATH: /go/src/capricorn-test/src/database
     networks:
       default:
         aliases:

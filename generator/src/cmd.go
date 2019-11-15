@@ -3,7 +3,6 @@ package src
 import (
 	"github.com/68696c6c/capricorn/generator/models"
 	"github.com/68696c6c/capricorn/generator/utils"
-
 	"github.com/pkg/errors"
 )
 
@@ -68,6 +67,64 @@ var serverCommand = &cobra.Command{
 	},
 }`
 
+const migrateTemplate = `
+package cmd
+
+import (
+	"strings"
+
+	"github.com/68696c6c/goat"
+	"github.com/68696c6c/goose"
+	"github.com/spf13/cobra"
+)
+
+func init() {
+	Root.AddCommand(migrateCommand)
+	dryRun = migrateCommand.Flags().BoolP("dry-run", "d", false, "Only report what would have been done")
+}
+
+var dryRun *bool
+
+var migrateCommand = &cobra.Command{
+	Use:   "migrate [action] [--dry-run]",
+	Short: "Runs the SQL migrations.",
+	Long: "Runs the SQL migrations.  Valid actions are: 'up' (default), 'drop', 'reset', and 'install'.",
+	Run: func(cmd *cobra.Command, args []string) {
+		connection, err := goat.GetMigrationDB()
+		if err != nil {
+			goat.ExitError(err)
+		}
+		schema, err := goat.GetSchema(connection)
+
+		// Inform Goose of the current environment.
+		// @TODO yuck.
+		if err := goat.ErrorIfProd(); err != nil {
+			goose.SetEnvProduction(true)
+		} else {
+			goose.SetEnvProduction(false)
+		}
+
+		// Only allow "up" and "install" operations in production.
+		allowed := []string{goose.MigrateOperationInstall, goose.MigrateOperationUp}
+		goose.SetProductionOperations(allowed)
+
+		// Perform the migration operation.
+		migrated, dropped, err := goose.HandleMigrate(schema, args, dryRun)
+
+		dmsg := strings.Join(dropped, "\n")
+		println("dropped tables: \n" + dmsg)
+
+		mmsg := strings.Join(migrated, "\n")
+		println("migrated tables: \n" + mmsg)
+
+		if err != nil {
+			goat.ExitError(err)
+		} else {
+			goat.ExitSuccess()
+		}
+	},
+}`
+
 func CreateCMD(spec models.Project) error {
 	err := utils.CreateDir(spec.Paths.CMD)
 	if err != nil {
@@ -87,6 +144,10 @@ func CreateCMD(spec models.Project) error {
 	}
 
 	// @TODO Create migrate command.
+	err = utils.GenerateFile(spec.Paths.CMD, "migrate.go", migrateTemplate, spec)
+	if err != nil {
+		return errors.Wrap(err, "failed to create migrate command")
+	}
 
 	// @TODO Create make:migration command.
 
