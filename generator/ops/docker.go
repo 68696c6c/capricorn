@@ -19,15 +19,13 @@ ENV GOPROXY=https://proxy.golang.org,direct
 # unfortunate, but needed if it falls back to direct, can't exclude a particular package
 ENV GOSUMDB=off
 
-RUN apk add --no-cache git gcc python bash openssh mysql-client
+RUN apk add --no-cache git gcc bash openssh mysql-client
 
-RUN mkdir -p /go/src/bitbucket.org/clearlink/loom-build
-WORKDIR /go/src/bitbucket.org/clearlink/loom-build
+RUN mkdir -p /app
+WORKDIR /app
 
 RUN wget https://github.com/go-swagger/go-swagger/releases/download/v0.19.0/swagger_linux_amd64 -O /usr/local/bin/swagger
 RUN chmod +x /usr/local/bin/swagger
-
-RUN git config --global url."git@bitbucket.org:".insteadOf https://bitbucket.org/
 
 
 ################################################################################
@@ -58,9 +56,9 @@ services:
       - db
     volumes:
       - pkg:/go/pkg
-      - ./:/go/src/capricorn-test
+      - ./:/app
       - $HOME/.ssh:/root/.ssh:ro
-    working_dir: /go/src/capricorn-test
+    working_dir: /app
     ports:
       - "80"
     env_file:
@@ -70,7 +68,7 @@ services:
       VIRTUAL_HOST: capricorn.local
       ENV: local
       HTTP_PORT: 80
-      MIGRATION_PATH: /go/src/capricorn-test/src/database
+      MIGRATION_PATH: /app/src/capricorn-example/src/database
     networks:
       default:
         aliases:
@@ -80,7 +78,7 @@ services:
     image: mysql:5.7
     environment:
       MYSQL_ROOT_PASSWORD: secret
-      MYSQL_DATABASE: build
+      MYSQL_DATABASE: example
     ports:
       - "${HOST_DB_PORT:-3310}:3306"
     volumes:
@@ -92,7 +90,7 @@ DB_HOST=db
 DB_PORT=3306
 DB_USERNAME=root
 DB_PASSWORD=secret
-DB_DATABASE=build
+DB_DATABASE=example
 DB_DEBUG=1
 `
 

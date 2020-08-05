@@ -27,6 +27,7 @@ type ProjectResource struct {
 }
 
 type Model struct {
+	Package     string
 	Resource    ProjectResource `yaml:"resource,omitempty"`
 	Name        string          `yaml:"name,omitempty"`
 	Imports     []string        `yaml:"imports,omitempty"`
@@ -46,12 +47,14 @@ type Field struct {
 }
 
 type Repo struct {
-	Resource    ProjectResource `yaml:"resource,omitempty"`
-	Name        Name            `yaml:"name,omitempty"`
-	Imports     []string        `yaml:"imports,omitempty"`
-	Filename    string          `yaml:"filename,omitempty"`
-	Constructor string          `yaml:"constructor,omitempty"`
-	Interface   string          `yaml:"interface,omitempty"`
+	Package       string
+	Resource      ProjectResource `yaml:"resource,omitempty"`
+	Name          Name            `yaml:"name,omitempty"`
+	Imports       []string        `yaml:"imports,omitempty"`
+	Filename      string          `yaml:"filename,omitempty"`
+	Constructor   string          `yaml:"constructor,omitempty"`
+	Interface     string          `yaml:"interface,omitempty"`
+	InterfaceName string
 
 	Methods            []Method `yaml:"methods,omitempty"`
 	MethodTemplates    []string `yaml:"-"`
@@ -67,11 +70,13 @@ type Method struct {
 }
 
 type Controller struct {
+	Package     string
 	Resource    ProjectResource `yaml:"resource,omitempty"`
 	Name        Name            `yaml:"name,omitempty"`
 	Imports     []string        `yaml:"imports,omitempty"`
 	Filename    string          `yaml:"filename,omitempty"`
 	Constructor string          `yaml:"constructor,omitempty"`
+	RepoName    string
 
 	GroupName         string              `yaml:"group_name,omitempty"`
 	Handlers          []Handler           `yaml:"handlers,omitempty"`
@@ -126,6 +131,7 @@ type Paths struct {
 	CMD      string
 	Database string
 	HTTP     string
+	Domains  string
 	Repos    string
 	Models   string
 }
@@ -140,6 +146,7 @@ type Project struct {
 
 	Paths   Paths
 	Imports Paths
+	Domains []Domain
 
 	Container   Container    `yaml:"container,omitempty"`
 	Controllers []Controller `yaml:"controllers,omitempty"`
@@ -161,6 +168,14 @@ type Config struct {
 	License   string
 	Author    Author
 	Resources []Resource
+}
+
+type Domain struct {
+	Import     string
+	Name       string
+	Model      Model
+	Repo       Repo
+	Controller Controller
 }
 
 type Resource struct {
@@ -191,6 +206,7 @@ const (
 	pathCMD      = "cmd"
 	pathDatabase = "database"
 	pathHTTP     = "http"
+	pathDomains  = "resources"
 	pathRepos    = "repos"
 	pathModels   = "models"
 )
@@ -243,14 +259,23 @@ func NewProject(filePath string) (Project, error) {
 			}
 		}
 
-		model := makeModel(resource, r)
+		domain := Domain{
+			Import: fmt.Sprintf("%s/%s", spec.Imports.Domains, resource.Plural.Snake),
+			Name:   resource.Plural.Snake,
+		}
+
+		model := makeModel(resource, r, domain.Name, spec.Imports.Domains)
+		domain.Model = model
 		spec.Models = append(spec.Models, model)
 
-		repo := makeRepo(resource, r, spec.Imports)
+		repo := makeRepo(resource, r, domain.Name)
+		domain.Repo = repo
 		spec.Repos = append(spec.Repos, repo)
 
-		controller := makeController(resource, r, spec.Imports)
-		spec.Controllers = append(spec.Controllers, controller)
+		controller := makeController(resource, r, domain.Name, repo)
+		domain.Controller = controller
+
+		spec.Domains = append(spec.Domains, domain)
 	}
 
 	return spec, nil
@@ -267,6 +292,7 @@ func makePaths(rootPath string) Paths {
 		CMD:      utils.JoinPath(srcPath, pathCMD),
 		Database: utils.JoinPath(srcPath, pathDatabase),
 		HTTP:     utils.JoinPath(srcPath, pathHTTP),
+		Domains:  utils.JoinPath(srcPath, pathDomains),
 		Repos:    utils.JoinPath(srcPath, pathRepos),
 		Models:   utils.JoinPath(srcPath, pathModels),
 	}
@@ -281,13 +307,14 @@ func makeProjectResource(name string) ProjectResource {
 	}
 }
 
-func makeModel(r ProjectResource, config Resource) Model {
+func makeModel(r ProjectResource, config Resource, packageName, domainsImportBase string) Model {
 	result := Model{
 		Resource:    r,
 		Name:        r.Single.Exported,
+		Package:     packageName,
 		Imports:     []string{},
-		Filename:    r.Single.Kebob + ".go",
-		Constructor: "New" + r.Single.Exported,
+		Filename:    "model.go",
+		Constructor: "New",
 		HasMany:     config.HasMany,
 		BelongsTo:   config.BelongsTo,
 	}
@@ -329,14 +356,16 @@ func makeModel(r ProjectResource, config Resource) Model {
 			t := MakeName(r)
 			single := inflection.Singular(t.Exported)
 			sName := MakeName(single)
-			plural := inflection.Plural(t.Exported)
+			plural := inflection.Plural(t.Unexported)
 			pName := MakeName(plural)
 			field := Field{
 				Name: pName.Exported,
-				Type: fmt.Sprintf("[]*%s", sName.Exported),
+				Type: fmt.Sprintf("[]*%s.%s", pName.Unexported, sName.Exported),
 			}
 			field.Tag = fmt.Sprintf(`json:"%s"`, pName.Snake)
 			fields = append(fields, field)
+
+			result.Imports = append(result.Imports, fmt.Sprintf("%s/%s", domainsImportBase, pName.Unexported))
 		}
 	}
 
@@ -344,15 +373,17 @@ func makeModel(r ProjectResource, config Resource) Model {
 	return result
 }
 
-func makeRepo(r ProjectResource, config Resource, imports Paths) Repo {
-	repoName := MakeName(r.Plural.Exported + "_repo_GORM")
+func makeRepo(r ProjectResource, config Resource, packageName string) Repo {
+	repoName := MakeName("repo_GORM")
 	result := Repo{
-		Resource:    r,
-		Name:        repoName,
-		Imports:     []string{imports.Models},
-		Filename:    r.Plural.Kebob + "_repo.go",
-		Constructor: "New" + r.Plural.Exported + "Repo",
-		Interface:   r.Plural.Exported + "Repo",
+		Resource:      r,
+		Name:          repoName,
+		Package:       packageName,
+		Imports:       []string{},
+		Filename:      "repo.go",
+		Constructor:   "NewRepo",
+		Interface:     r.Plural.Exported + "Repo",
+		InterfaceName: "Repo",
 	}
 
 	// Build fields.
@@ -368,23 +399,23 @@ func makeRepo(r ProjectResource, config Resource, imports Paths) Repo {
 			if saveDone {
 				break
 			}
-			arg := fmt.Sprintf("m *models.%s", r.Single.Exported)
+			arg := fmt.Sprintf("m *%s", r.Single.Exported)
 			save := makeMethod(r, repoName, "Save", []string{arg}, []string{"errs []error"})
 			methods = append(methods, save)
 			saveDone = true
 			break
 		case "delete":
-			arg := fmt.Sprintf("m *models.%s", r.Single.Exported)
+			arg := fmt.Sprintf("m *%s", r.Single.Exported)
 			del := makeMethod(r, repoName, "Delete", []string{arg}, []string{"[]error"})
 			methods = append(methods, del)
 			break
 		case "view":
-			result := fmt.Sprintf("models.%s", r.Single.Exported)
+			result := fmt.Sprintf("%s", r.Single.Exported)
 			get := makeMethod(r, repoName, "GetByID", []string{"id goat.ID"}, []string{result, "[]error"})
 			methods = append(methods, get)
 			break
 		case "list":
-			result := fmt.Sprintf("m []*models.%s", r.Single.Exported)
+			result := fmt.Sprintf("m []*%s", r.Single.Exported)
 			list := makeMethod(r, repoName, "List", []string{"q *query.Query"}, []string{result, "errs []error"})
 			methods = append(methods, list)
 
@@ -409,15 +440,17 @@ func makeMethod(r ProjectResource, repoName Name, name string, parameters, retur
 	}
 }
 
-func makeController(r ProjectResource, config Resource, imports Paths) Controller {
+func makeController(r ProjectResource, config Resource, packageName string, repo Repo) Controller {
 	controllerName := MakeName(r.Plural.Unexported)
 	result := Controller{
 		Resource:    r,
 		Name:        controllerName,
-		Imports:     []string{imports.App, imports.Models},
-		Filename:    r.Plural.Kebob + ".go",
-		Constructor: "new" + r.Plural.Exported + "Controller",
-		GroupName:   r.Plural.Unexported,
+		Package:     packageName,
+		Imports:     []string{},
+		Filename:    "controller.go",
+		Constructor: "NewController",
+		GroupName:   r.Plural.Unexported + "Routes",
+		RepoName:    repo.Interface,
 	}
 
 	// Build fields.
@@ -432,7 +465,7 @@ func makeController(r ProjectResource, config Resource, imports Paths) Controlle
 			create := makeHandler(r, controllerName, "POST", "", "Create")
 			handlers = append(handlers, create)
 			requests["create"] = Request{
-				Name:  "create" + r.Single.Exported + "Request",
+				Name:  "CreateRequest",
 				Model: r.Single.Exported,
 			}
 			break
@@ -440,7 +473,7 @@ func makeController(r ProjectResource, config Resource, imports Paths) Controlle
 			update := makeHandler(r, controllerName, "PUT", "/:id", "Update")
 			handlers = append(handlers, update)
 			requests["update"] = Request{
-				Name:  "update" + r.Single.Exported + "Request",
+				Name:  "UpdateRequest",
 				Model: r.Single.Exported,
 			}
 			break
@@ -452,7 +485,7 @@ func makeController(r ProjectResource, config Resource, imports Paths) Controlle
 			view := makeHandler(r, controllerName, "GET", "/:id", "View")
 			handlers = append(handlers, view)
 			responses["view"] = Response{
-				Name:  r.Single.Unexported + "Response",
+				Name:  "ResourceResponse",
 				Model: r.Single.Exported,
 			}
 			break
@@ -460,7 +493,7 @@ func makeController(r ProjectResource, config Resource, imports Paths) Controlle
 			list := makeHandler(r, controllerName, "GET", "", "List")
 			handlers = append(handlers, list)
 			responses["list"] = Response{
-				Name:  r.Plural.Unexported + "Response",
+				Name:  "ListResponse",
 				Model: r.Single.Exported,
 			}
 			break

@@ -49,7 +49,7 @@ replace github.com/ugorji/go v1.1.4 => github.com/ugorji/go v0.0.0-2019020420134
 	cmd.Stderr = os.Stderr
 	err = cmd.Run()
 	if err != nil {
-		return errors.Wrap(err, "failed to install dependancies")
+		return errors.Wrap(err, "failed to install dependencies")
 	}
 
 	return nil

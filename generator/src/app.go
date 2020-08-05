@@ -12,7 +12,9 @@ const containerTemplate = `
 package app
 
 import (
-	"{{.Imports.Repos}}"
+	{{- range $key, $value := .Domains }}
+	"{{ $value.Import }}"
+	{{- end }}
 
 	"github.com/68696c6c/goat"
 	"github.com/jinzhu/gorm"
@@ -27,7 +29,7 @@ type ServiceContainer struct {
 	Errors goat.ErrorHandler
 
 {{- range $key, $value := .Repos }}
-{{ $value.Interface }} repos.{{ $value.Interface }}
+{{ $value.Interface }} {{ $value.Package }}.{{ $value.InterfaceName }}
 {{- end }}
 }
 
@@ -50,7 +52,7 @@ func GetApp(db *gorm.DB, logger *logrus.Logger) (ServiceContainer, error) {
 		Logger: logger,
 		Errors: goat.NewErrorHandler(logger),
 {{- range $key, $value := .Repos }}
-{{ $value.Interface }}: repos.{{ $value.Constructor }}(db),
+{{ $value.Interface }}: {{ $value.Package }}.{{ $value.Constructor }}(db),
 {{- end }}
 	}
 

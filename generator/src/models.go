@@ -11,9 +11,15 @@ import (
 )
 
 const modelTemplate = `
-package models
+package {{ .Package }}
 
-import "github.com/68696c6c/goat"
+import (
+	{{- range $key, $value := .Imports }}
+	"{{ $value }}"
+	{{- end }}
+
+	"github.com/68696c6c/goat"
+)
 
 {{ $tick := "` + "`" + `" }}
 type {{ .Name }} struct {

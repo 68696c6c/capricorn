@@ -33,11 +33,15 @@ var newProject = &cobra.Command{
 		err = src.CreateProject(spec)
 		handleError(err)
 
-		err = src.CreateModels(spec, logger)
+		// Domains
+		err = src.CreateDomains(&spec, logger)
 		handleError(err)
 
-		err = src.CreateRepos(spec, logger)
-		handleError(err)
+		// err = src.CreateModels(spec, logger)
+		// handleError(err)
+		//
+		// err = src.CreateRepos(spec, logger)
+		// handleError(err)
 
 		err = src.CreateApp(spec, logger)
 		handleError(err)
@@ -45,7 +49,7 @@ var newProject = &cobra.Command{
 		err = src.CreateCMD(spec)
 		handleError(err)
 
-		err = src.CreateHTTP(&spec, logger)
+		err = src.CreateHTTP(spec, logger)
 		handleError(err)
 
 		err = src.FMT(spec.Paths.Root)

@@ -11,7 +11,7 @@ import (
 )
 
 const repoTemplate = `
-package repos
+package {{ .Package }}
 
 import (
 	{{- range $key, $value := .Imports }}
@@ -23,18 +23,18 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
-type {{.Interface}} interface {
+type {{ .InterfaceName }} interface {
 	{{- range $key, $value := .InterfaceTemplates }}
 	{{ $value }}
 	{{- end }}
 }
 
-type {{.Name.Exported}} struct {
+type {{ .Name.Exported }} struct {
 	db *gorm.DB
 }
 
-func {{.Constructor}}(d *gorm.DB) {{.Name.Exported}} {
-	return {{.Name.Exported}}{
+func {{ .Constructor }}(d *gorm.DB) {{ .InterfaceName }} {
+	return {{ .Name.Exported }}{
 		db: d,
 	}
 }
@@ -58,14 +58,14 @@ func (r {{.Receiver}}) {{.Signature}} {
 
 const repoGetByIDTemplate = `
 func (r {{.Receiver}}) {{.Signature}} {
-	m := models.{{.Resource.Single.Exported}}{}
+	m := {{.Resource.Single.Exported}}{}
 	errs := r.db.First(&m, "id = ?", id).GetErrors()
 	return m, errs
 }`
 
 const repoListTemplate = `
 func (r {{.Receiver}}) {{.Signature}} {
-	base := r.db.Model(&models.{{.Resource.Single.Exported}}{})
+	base := r.db.Model(&{{.Resource.Single.Exported}}{})
 
 	qr, err := q.ApplyToGorm(base)
 	if err != nil {
@@ -78,7 +78,7 @@ func (r {{.Receiver}}) {{.Signature}} {
 
 const repoSetQueryTotalTemplate = `
 func (r {{.Receiver}}) {{.Signature}} {
-	base := r.db.Model(&models.{{.Resource.Single.Exported}}{})
+	base := r.db.Model(&{{.Resource.Single.Exported}}{})
 
 	qr, err := q.ApplyToGormCount(base)
 	if err != nil {
