@@ -8,6 +8,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+// @TODO just use a hosted image
 const dockerfileTemplate = `
 FROM golang:1.13-alpine as env
 
