@@ -163,6 +163,7 @@ type Project struct {
 
 	Paths             Paths
 	Imports           Paths
+	Commands          []Command
 	Domains           []Domain
 	ReposWithServices []Repo `yaml:"repos_with_services,omitempty"` // domains that have a service which need repo injection
 	DomainRepos       []Repo `yaml:"domain_repos,omitempty"`        // repos that do not need to be injected into a service
@@ -188,6 +189,23 @@ type Config struct {
 	License   string
 	Author    Author
 	Resources []Resource
+	Commands  []ConfigCommand
+}
+
+type ConfigCommand struct {
+	Name    string   `yaml:"name"`
+	Args    []string `yaml:"args"`
+	Use     string
+	VarName string
+}
+
+type Command struct {
+	AppImport string
+	Name      Name
+	Args      []string
+	Use       string
+	FileName  string
+	VarName   string
 }
 
 type Domain struct {
@@ -267,6 +285,11 @@ func NewProject(filePath string) (Project, error) {
 	spec.Paths = makePaths(rootPath)
 	spec.Imports = makePaths(config.Module)
 
+	for _, c := range spec.Config.Commands {
+		command := makeCommand(c, spec.Imports.App)
+		spec.Commands = append(spec.Commands, command)
+	}
+
 	for _, r := range spec.Config.Resources {
 		resource := makeProjectResource(r.Name)
 
@@ -334,6 +357,19 @@ func makeProjectResource(name string) ProjectResource {
 	return ProjectResource{
 		Single: MakeName(single),
 		Plural: MakeName(plural),
+	}
+}
+
+func makeCommand(c ConfigCommand, appImport string) Command {
+	cName := strings.Replace(c.Name, ":", "_", -1)
+	commandName := MakeName(cName)
+	return Command{
+		AppImport: appImport,
+		Name:      commandName,
+		Use:       c.Name,
+		Args:      c.Args,
+		VarName:   commandName.Unexported,
+		FileName:  commandName.Snake + ".go",
 	}
 }
 

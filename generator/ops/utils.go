@@ -9,6 +9,12 @@ import (
 	"github.com/pkg/errors"
 )
 
+const gitIgnoreTemplate = `
+.idea
+vendor
+.app.env
+}`
+
 func InitModule(path string) error {
 	err := os.Chdir(path)
 	if err != nil {
@@ -50,6 +56,11 @@ replace github.com/ugorji/go v1.1.4 => github.com/ugorji/go v0.0.0-2019020420134
 	err = cmd.Run()
 	if err != nil {
 		return errors.Wrap(err, "failed to install dependencies")
+	}
+
+	err = utils.GenerateFile(path, ".gitignore", gitIgnoreTemplate, nil)
+	if err != nil {
+		return errors.Wrap(err, "failed to create .gitignore")
 	}
 
 	return nil

@@ -56,7 +56,7 @@ deps:
 setup-network:
 	docker network create docker-dev
 
-setup: image deps build
+setup: image deps build setup-network
 	docker-compose run --rm $(DB_NAME) mysql -u root -psecret -h $(DB_NAME) -e "CREATE DATABASE IF NOT EXISTS test_repos"
 	docker-compose run --rm $(APP_NAME) bash -c "./$(APP_NAME) migrate install && ./$(APP_NAME) seed"
 

@@ -125,6 +125,44 @@ var migrateCommand = &cobra.Command{
 	},
 }`
 
+const genericTemplate = `
+package cmd
+
+import (
+	"{{ .AppImport }}"
+
+	"github.com/68696c6c/goat"
+	"github.com/pkg/errors"
+	"github.com/spf13/cobra"
+)
+
+func init() {
+	Root.AddCommand({{ .VarName }})
+}
+
+var {{ .VarName }} = &cobra.Command{
+	Use:   "{{ .Use }}",
+	Short: "todo",
+	Long:  "todo",
+	Run: func(cmd *cobra.Command, args []string) {
+		goat.Init()
+
+		logger := goat.GetLogger()
+
+		db, err := goat.GetMainDB()
+		if err != nil {
+			goat.ExitError(errors.Wrap(err, "failed to initialize database connection"))
+		}
+
+		_, err = app.GetApp(db, logger)
+		if err != nil {
+			goat.ExitError(errors.Wrap(err, "failed to initialize service container"))
+		}
+
+		goat.ExitError(errors.New("todo"))
+	},
+}`
+
 func CreateCMD(spec models.Project) error {
 	err := utils.CreateDir(spec.Paths.CMD)
 	if err != nil {
@@ -150,6 +188,13 @@ func CreateCMD(spec models.Project) error {
 	}
 
 	// @TODO Create make:migration command.
+
+	for _, c := range spec.Commands {
+		err = utils.GenerateFile(spec.Paths.CMD, c.FileName, genericTemplate, c)
+		if err != nil {
+			return errors.Wrapf(err, "failed to create command '%s'", c.Name)
+		}
+	}
 
 	return nil
 }

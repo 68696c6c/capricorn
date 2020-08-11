@@ -118,5 +118,10 @@ func CreateDocker(spec models.Project, logger *logrus.Logger) error {
 		return errors.Wrap(err, "failed to create .app.env")
 	}
 
+	err = utils.GenerateFile(spec.Paths.Root, ".app.example.env", appEnvTemplate, spec)
+	if err != nil {
+		return errors.Wrap(err, "failed to create .app.env")
+	}
+
 	return nil
 }
