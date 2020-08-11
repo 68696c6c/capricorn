@@ -549,6 +549,11 @@ func makeController(r ProjectResource, config Resource, packageName string, repo
 	requests := map[string]Request{}
 	responses := map[string]Response{}
 
+	responses["resource"] = Response{
+		Name:  "ResourceResponse",
+		Model: r.Single.Exported,
+	}
+
 	for _, a := range config.Actions {
 
 		switch a {
@@ -575,10 +580,6 @@ func makeController(r ProjectResource, config Resource, packageName string, repo
 		case "view":
 			view := makeHandler(r, controllerName, "GET", "/:id", "View")
 			handlers = append(handlers, view)
-			responses["view"] = Response{
-				Name:  "ResourceResponse",
-				Model: r.Single.Exported,
-			}
 			break
 		case "list":
 			list := makeHandler(r, controllerName, "GET", "", "List")

@@ -64,7 +64,7 @@ type {{ .Name }} struct {
 	{{ .Model }}
 }`
 
-const viewResponseTemplate = `
+const resourceResponseTemplate = `
 type {{ .Name }} struct {
 	{{ .Model }}
 }`

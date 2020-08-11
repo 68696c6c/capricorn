@@ -168,10 +168,10 @@ func createDomainController(basePath string, c *models.Controller, logger *logru
 	}
 
 	// Create responses.
-	if viewResponse, ok := c.Responses["view"]; ok {
-		rt, err := utils.ParseTemplateToString("view_response", viewResponseTemplate, viewResponse)
+	if viewResponse, ok := c.Responses["resource"]; ok {
+		rt, err := utils.ParseTemplateToString("resource_response", resourceResponseTemplate, viewResponse)
 		if err != nil {
-			return errors.Wrap(err, "failed to generate controller response 'view'")
+			return errors.Wrap(err, "failed to generate controller response 'resource'")
 		}
 		c.ResponseTemplates = append(c.ResponseTemplates, rt)
 	}
