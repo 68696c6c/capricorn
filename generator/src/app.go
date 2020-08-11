@@ -31,6 +31,11 @@ type ServiceContainer struct {
 {{- range $key, $value := .Repos }}
 {{ $value.Interface }} {{ $value.Package }}.{{ $value.InterfaceName }}
 {{- end }}
+
+{{- range $key, $value := .Services }}
+{{ $value.Name.Exported }} {{ $value.Package }}.{{ $value.Name.Exported }}
+{{- end }}
+
 }
 
 func (a ServiceContainer) GetDB() *gorm.DB {
@@ -47,12 +52,21 @@ func GetApp(db *gorm.DB, logger *logrus.Logger) (ServiceContainer, error) {
 		return container, nil
 	}
 
+{{- range $key, $value := .ReposWithServices }}
+{{ $value.VarName }} := {{ $value.Package }}.{{ $value.Constructor }}(db)
+{{- end }}
+
 	container = ServiceContainer{
 		DB:     db,
 		Logger: logger,
 		Errors: goat.NewErrorHandler(logger),
-{{- range $key, $value := .Repos }}
+{{- range $key, $value := .DomainRepos }}
 {{ $value.Interface }}: {{ $value.Package }}.{{ $value.Constructor }}(db),
+{{- end }}
+{{- range $key, $value := .Services }}
+{{ $value.Name.Exported }}: {{ $value.Package }}.{{ $value.Constructor }}({{ $value.Package }}.Options{
+	Repo: {{ $value.RepoArg }},
+}),
 {{- end }}
 	}
 

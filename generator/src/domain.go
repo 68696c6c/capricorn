@@ -36,6 +36,11 @@ func CreateDomains(spec *models.Project, logger *logrus.Logger) error {
 			return errors.Wrap(err, "failed to generate domain")
 		}
 
+		err = createDomainService(domainPath, d.Service, logger)
+		if err != nil {
+			return errors.Wrap(err, "failed to generate domain")
+		}
+
 		err = createDomainController(domainPath, &d.Controller, logger)
 		if err != nil {
 			return errors.Wrap(err, "failed to generate domain")
@@ -111,6 +116,32 @@ func createDomainRepo(basePath string, r models.Repo, logger *logrus.Logger) err
 	err := utils.GenerateFile(basePath, r.Filename, repoTemplate, r)
 	if err != nil {
 		return errors.Wrap(err, "failed to generate repo")
+	}
+
+	return nil
+}
+
+func createDomainService(basePath string, s models.Service, logger *logrus.Logger) error {
+	if len(s.Methods) == 0 {
+		logger.Infof("%s | no service to generate", logPrefix, s.Filename)
+		return nil
+	}
+	logger.Infof("%s | creating service %s", logPrefix, s.Filename)
+
+	for _, m := range s.Methods {
+		logger.Infof("%s | creating service method %s", logPrefix, m.Name)
+
+		mt, err := utils.ParseTemplateToString("service_method", serviceMethodTemplate, m)
+		if err != nil {
+			return errors.Wrapf(err, "failed to generate service method '%s'", m.Name)
+		}
+		s.MethodTemplates = append(s.MethodTemplates, mt)
+		s.InterfaceTemplates = append(s.InterfaceTemplates, m.Signature)
+	}
+
+	err := utils.GenerateFile(basePath, s.Filename, serviceTemplate, s)
+	if err != nil {
+		return errors.Wrap(err, "failed to generate service")
 	}
 
 	return nil

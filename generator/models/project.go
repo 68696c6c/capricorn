@@ -27,7 +27,7 @@ type ProjectResource struct {
 }
 
 type Model struct {
-	Package     string
+	Package     string          `yaml:"package,omitempty"`
 	Resource    ProjectResource `yaml:"resource,omitempty"`
 	Name        string          `yaml:"name,omitempty"`
 	Imports     []string        `yaml:"imports,omitempty"`
@@ -47,7 +47,7 @@ type Field struct {
 }
 
 type Repo struct {
-	Package       string
+	Package       string          `yaml:"package,omitempty"`
 	Resource      ProjectResource `yaml:"resource,omitempty"`
 	Name          Name            `yaml:"name,omitempty"`
 	Imports       []string        `yaml:"imports,omitempty"`
@@ -59,6 +59,8 @@ type Repo struct {
 	Methods            []Method `yaml:"methods,omitempty"`
 	MethodTemplates    []string `yaml:"-"`
 	InterfaceTemplates []string `yaml:"-"`
+
+	VarName string
 }
 
 type Method struct {
@@ -70,7 +72,7 @@ type Method struct {
 }
 
 type Controller struct {
-	Package     string
+	Package     string          `yaml:"package,omitempty"`
 	Resource    ProjectResource `yaml:"resource,omitempty"`
 	Name        Name            `yaml:"name,omitempty"`
 	Imports     []string        `yaml:"imports,omitempty"`
@@ -136,6 +138,21 @@ type Paths struct {
 	Models   string
 }
 
+type Service struct {
+	Package     string          `yaml:"package,omitempty"`
+	Resource    ProjectResource `yaml:"resource,omitempty"`
+	Name        Name            `yaml:"name,omitempty"`
+	Imports     []string        `yaml:"imports,omitempty"`
+	Filename    string          `yaml:"filename,omitempty"`
+	Constructor string          `yaml:"constructor,omitempty"`
+	RepoName    string          `yaml:"repo_name,omitempty"`
+	RepoArg     string          `yaml:"repo_arg,omitempty"`
+
+	Methods            []Method `yaml:"methods,omitempty"`
+	MethodTemplates    []string `yaml:"-"`
+	InterfaceTemplates []string `yaml:"-"`
+}
+
 type Container struct {
 	Repos []Repo `yaml:"repos,omitempty"`
 }
@@ -144,12 +161,15 @@ type Project struct {
 	Config Config
 	Module Name
 
-	Paths   Paths
-	Imports Paths
-	Domains []Domain
+	Paths             Paths
+	Imports           Paths
+	Domains           []Domain
+	ReposWithServices []Repo `yaml:"repos_with_services,omitempty"` // domains that have a service which need repo injection
+	DomainRepos       []Repo `yaml:"domain_repos,omitempty"`        // repos that do not need to be injected into a service
 
 	Container   Container    `yaml:"container,omitempty"`
 	Controllers []Controller `yaml:"controllers,omitempty"`
+	Services    []Service    `yaml:"services,omitempty"`
 	Repos       []Repo       `yaml:"repos,omitempty"`
 	Models      []Model      `yaml:"models,omitempty"`
 }
@@ -176,6 +196,7 @@ type Domain struct {
 	Model      Model
 	Repo       Repo
 	Controller Controller
+	Service    Service
 }
 
 type Resource struct {
@@ -184,6 +205,7 @@ type Resource struct {
 	HasMany   []string `yaml:"has_many"`
 	Fields    []ResourceField
 	Actions   []string
+	Custom    []string
 }
 
 type ResourceField struct {
@@ -271,6 +293,14 @@ func NewProject(filePath string) (Project, error) {
 		repo := makeRepo(resource, r, domain.Name)
 		domain.Repo = repo
 		spec.Repos = append(spec.Repos, repo)
+
+		if serv := makeService(resource, r, domain.Name, repo); serv != nil {
+			domain.Service = *serv
+			spec.Services = append(spec.Services, *serv)
+			spec.ReposWithServices = append(spec.ReposWithServices, repo)
+		} else {
+			spec.DomainRepos = append(spec.DomainRepos, repo)
+		}
 
 		controller := makeController(resource, r, domain.Name, repo)
 		domain.Controller = controller
@@ -384,6 +414,7 @@ func makeRepo(r ProjectResource, config Resource, packageName string) Repo {
 		Constructor:   "NewRepo",
 		Interface:     r.Plural.Exported + "Repo",
 		InterfaceName: "Repo",
+		VarName:       r.Plural.Unexported + "Repo",
 	}
 
 	// Build fields.
@@ -438,6 +469,30 @@ func makeMethod(r ProjectResource, repoName Name, name string, parameters, retur
 		Signature: sig,
 		Receiver:  repoName.Exported,
 	}
+}
+
+func makeService(r ProjectResource, config Resource, packageName string, repo Repo) *Service {
+	if len(config.Custom) == 0 {
+		return nil
+	}
+	serviceName := MakeName(fmt.Sprintf("%sService", r.Single.Exported))
+	service := Service{
+		Resource:    r,
+		Name:        serviceName,
+		Package:     packageName,
+		Imports:     []string{},
+		Filename:    "service.go",
+		Constructor: "NewService",
+		RepoArg:     r.Plural.Unexported + "Repo",
+		RepoName:    repo.InterfaceName,
+	}
+	for _, action := range config.Custom {
+		methodName := MakeName(action)
+		arg := fmt.Sprintf("m *%s", r.Single.Exported)
+		save := makeMethod(r, serviceName, methodName.Exported, []string{arg}, []string{"err error"})
+		service.Methods = append(service.Methods, save)
+	}
+	return &service
 }
 
 func makeController(r ProjectResource, config Resource, packageName string, repo Repo) Controller {
