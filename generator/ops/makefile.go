@@ -9,10 +9,12 @@ import (
 )
 
 const makefileTemplate = `
+DCR = docker-compose run --rm
+
 NETWORK_NAME ?= docker-dev
 APP_NAME = app
 DB_NAME = db
-MODULE = {{.Config.Module}}
+MODULE = {{ .Config.Module }}
 
 DOC_PATH_BASE = docs/swagger.json
 DOC_PATH_FINAL = docs/api-spec.json
@@ -22,43 +24,49 @@ DOC_PATH_FINAL = docs/api-spec.json
 .DEFAULT:
 	@echo 'App targets:'
 	@echo
-	@echo '    image              build the Docker image for local development'
-	@echo '    build              build api image and compile the app'
-	@echo '    deps               install dependancies'
-	@echo '    setup-network      create local docker network'
+	@echo '    image-local        build the $(APP_NAME):dev Docker image for local development'
+	@echo '    image-built        build the $(APP_NAME):built Docker image for task running'
+	@echo '    build              compile the app for use in Docker'
+	@echo '    init               initialize the Go module'
+	@echo '    deps               install dependencies'
+	@echo '    setup-network      create local Docker network'
 	@echo '    setup              set up local databases'
-	@echo '    local              spin up local environment'
-	@echo '    local-down         tear down local environment'
-	@echo '    test               run unit tests'
+	@echo '    local              spin up local dev environment'
+	@echo '    local-down         tear down local dev environment'
 	@echo '    migrate            migrate the local database'
 	@echo '    migration          create a new migration'
 	@echo '    docs               build the Swagger docs'
 	@echo '    docs-server        build and serve the Swagger docs'
+	@echo '    test               run unit tests'
 	@echo '    lint               run the linter'
+	@echo '    lint-fix           run the linter and fix any problems'
 	@echo
 
 
 default: .DEFAULT
 
-image:
+image-local:
 	docker build . -f docker/Dockerfile --target dev -t $(APP_NAME):dev
 
+image-built:
+	docker build . -f docker/Dockerfile --target dev -t $(APP_NAME):built
+
 build:
-	docker-compose run --rm $(APP_NAME) go build -i -o $(APP_NAME)
+	$(DCR) $(APP_NAME) go build -i -o $(APP_NAME)
 
 init:
-	docker-compose run --rm $(APP_NAME) go mod init $(MODULE)
+	$(DCR) $(APP_NAME) go mod init $(MODULE)
 
 deps:
-	docker-compose run --rm $(APP_NAME) go mod tidy
-	docker-compose run --rm $(APP_NAME) go mod vendor
+	$(DCR) $(APP_NAME) go mod tidy
+	$(DCR) $(APP_NAME) go mod vendor
 
 setup-network:
 	docker network create docker-dev
 
-setup: image deps build setup-network
-	docker-compose run --rm $(DB_NAME) mysql -u root -psecret -h $(DB_NAME) -e "CREATE DATABASE IF NOT EXISTS test_repos"
-	docker-compose run --rm $(APP_NAME) bash -c "./$(APP_NAME) migrate install && ./$(APP_NAME) seed"
+setup: image-local deps build setup-network
+	$(DCR) $(DB_NAME) mysql -u root -psecret -h $(DB_NAME) -e "CREATE DATABASE IF NOT EXISTS test_repos"
+	$(DCR) $(APP_NAME) bash -c "./$(APP_NAME) migrate install && ./$(APP_NAME) seed"
 
 local: local-down build
 	NETWORK_NAME="$(NETWORK_NAME)" docker-compose up
@@ -67,23 +75,26 @@ local-down:
 	NETWORK_NAME="$(NETWORK_NAME)" docker-compose down
 
 test:
-	docker-compose run --rm $(APP_NAME) go test ./... -cover
+	$(DCR) $(APP_NAME) go test ./... -cover
 
 migrate:
-	docker-compose run --rm $(APP_NAME) ./$(APP_NAME) migrate
+	$(DCR) $(APP_NAME) ./$(APP_NAME) migrate
 
 migration:
-	docker-compose run --rm $(APP_NAME) ./$(APP_NAME) make:migration $(name)
+	$(DCR) $(APP_NAME) ./$(APP_NAME) make:migration $(name)
 
 docs: build
-	docker-compose run --rm $(APP_NAME) bash -c "GO111MODULE=off swagger generate spec -mo '$(DOC_PATH_BASE)'"
-	docker-compose run --rm $(APP_NAME) ./$(APP_NAME) gen:docs
+	$(DCR) $(APP_NAME) bash -c "GO111MODULE=off swagger generate spec -mo '$(DOC_PATH_BASE)'"
+	$(DCR) $(APP_NAME) ./$(APP_NAME) gen:docs
 
 docs-server: docs
 	swagger serve "$(DOC_PATH_FINAL)"
 
 lint:
-	docker-compose run --rm $(APP_NAME) ./ops/scripts/lint.sh
+	$(DCR) $(APP_NAME) golangci-lint run
+
+lint-fix:
+	$(DCR) $(APP_NAME) golangci-lint run --fix
 
 `
 

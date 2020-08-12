@@ -17,23 +17,23 @@ import (
 )
 
 var Root = &cobra.Command{
-	Use:   "{{.Module.Kebob}}",
-	Short: "Root command for {{.Config.Name}}",
+	Use:   "{{ .Module.Kebob }}",
+	Short: "Root command for {{ .Config.Name }}",
 }
 
 func init() {
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	viper.AutomaticEnv()
-	viper.SetDefault("author", "{{.Config.Author.Name}} <{{.Config.Author.Email}}>")
-	viper.SetDefault("license", "{{.Config.License}}")
+	viper.SetDefault("author", "{{ .Config.Author.Name }} <{{ .Config.Author.Email }}>")
+	viper.SetDefault("license", "{{ .Config.License }}")
 }`
 
 const serverTemplate = `
 package cmd
 
 import (
-	"{{.Imports.App}}"
-	"{{.Imports.HTTP}}"
+	"{{ .Imports.App }}"
+	"{{ .Imports.HTTP }}"
 
 	"github.com/68696c6c/goat"
 	"github.com/pkg/errors"
@@ -94,10 +94,13 @@ var migrateCommand = &cobra.Command{
 		if err != nil {
 			goat.ExitError(err)
 		}
+
 		schema, err := goat.GetSchema(connection)
+		if err != nil {
+			goat.ExitError(err)
+		}
 
 		// Inform Goose of the current environment.
-		// @TODO yuck.
 		if err := goat.ErrorIfProd(); err != nil {
 			goose.SetEnvProduction(true)
 		} else {

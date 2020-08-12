@@ -51,6 +51,7 @@ type Repo struct {
 	Resource      ProjectResource `yaml:"resource,omitempty"`
 	Name          Name            `yaml:"name,omitempty"`
 	Imports       []string        `yaml:"imports,omitempty"`
+	VendorImports []string        `yaml:"vendor_imports,omitempty"`
 	Filename      string          `yaml:"filename,omitempty"`
 	Constructor   string          `yaml:"constructor,omitempty"`
 	Interface     string          `yaml:"interface,omitempty"`
@@ -72,13 +73,14 @@ type Method struct {
 }
 
 type Controller struct {
-	Package     string          `yaml:"package,omitempty"`
-	Resource    ProjectResource `yaml:"resource,omitempty"`
-	Name        Name            `yaml:"name,omitempty"`
-	Imports     []string        `yaml:"imports,omitempty"`
-	Filename    string          `yaml:"filename,omitempty"`
-	Constructor string          `yaml:"constructor,omitempty"`
-	RepoName    string
+	Package       string          `yaml:"package,omitempty"`
+	Resource      ProjectResource `yaml:"resource,omitempty"`
+	Name          Name            `yaml:"name,omitempty"`
+	Imports       []string        `yaml:"imports,omitempty"`
+	VendorImports []string        `yaml:"vendor_imports,omitempty"`
+	Filename      string          `yaml:"filename,omitempty"`
+	Constructor   string          `yaml:"constructor,omitempty"`
+	RepoName      string
 
 	GroupName         string              `yaml:"group_name,omitempty"`
 	Handlers          []Handler           `yaml:"handlers,omitempty"`
@@ -446,6 +448,7 @@ func makeRepo(r ProjectResource, config Resource, packageName string) Repo {
 		Name:          repoName,
 		Package:       packageName,
 		Imports:       []string{},
+		VendorImports: []string{"github.com/jinzhu/gorm"},
 		Filename:      "repo.go",
 		Constructor:   "NewRepo",
 		Interface:     r.Plural.Exported + "Repo",
@@ -456,6 +459,16 @@ func makeRepo(r ProjectResource, config Resource, packageName string) Repo {
 	// Build fields.
 	var methods []Method
 	saveDone := false
+	viewDone := false
+
+	makeView := func() {
+		returnName := fmt.Sprintf("%s", r.Single.Exported)
+		get := makeMethod(r, repoName, "GetByID", []string{"id goat.ID"}, []string{returnName, "[]error"})
+		methods = append(methods, get)
+
+		result.VendorImports = append(result.VendorImports, "github.com/68696c6c/goat")
+		viewDone = true
+	}
 
 	for _, a := range config.Actions {
 
@@ -470,6 +483,12 @@ func makeRepo(r ProjectResource, config Resource, packageName string) Repo {
 			save := makeMethod(r, repoName, "Save", []string{arg}, []string{"errs []error"})
 			methods = append(methods, save)
 			saveDone = true
+
+			// Update takes a model as an argument, which implies the need to retrieve a model.
+			if !viewDone {
+				makeView()
+			}
+
 			break
 		case "delete":
 			arg := fmt.Sprintf("m *%s", r.Single.Exported)
@@ -477,17 +496,20 @@ func makeRepo(r ProjectResource, config Resource, packageName string) Repo {
 			methods = append(methods, del)
 			break
 		case "view":
-			result := fmt.Sprintf("%s", r.Single.Exported)
-			get := makeMethod(r, repoName, "GetByID", []string{"id goat.ID"}, []string{result, "[]error"})
-			methods = append(methods, get)
+			if !viewDone {
+				makeView()
+			}
 			break
 		case "list":
-			result := fmt.Sprintf("m []*%s", r.Single.Exported)
-			list := makeMethod(r, repoName, "List", []string{"q *query.Query"}, []string{result, "errs []error"})
+			returnName := fmt.Sprintf("m []*%s", r.Single.Exported)
+			list := makeMethod(r, repoName, "List", []string{"q *query.Query"}, []string{returnName, "errs []error"})
 			methods = append(methods, list)
 
 			setTotal := makeMethod(r, repoName, "SetQueryTotal", []string{"q *query.Query"}, []string{"[]error"})
 			methods = append(methods, setTotal)
+
+			result.VendorImports = append(result.VendorImports, "github.com/68696c6c/goat")
+			result.VendorImports = append(result.VendorImports, "github.com/68696c6c/goat/query")
 			break
 		}
 	}
@@ -534,17 +556,18 @@ func makeService(r ProjectResource, config Resource, packageName string, repo Re
 func makeController(r ProjectResource, config Resource, packageName string, repo Repo) Controller {
 	controllerName := MakeName(r.Plural.Unexported)
 	result := Controller{
-		Resource:    r,
-		Name:        controllerName,
-		Package:     packageName,
-		Imports:     []string{},
-		Filename:    "controller.go",
-		Constructor: "NewController",
-		GroupName:   r.Plural.Unexported + "Routes",
-		RepoName:    repo.Interface,
+		Resource:      r,
+		Name:          controllerName,
+		Package:       packageName,
+		Imports:       []string{},
+		VendorImports: []string{"github.com/68696c6c/goat", "github.com/gin-gonic/gin"},
+		Filename:      "controller.go",
+		Constructor:   "NewController",
+		GroupName:     r.Plural.Unexported + "Routes",
+		RepoName:      repo.Interface,
 	}
 
-	// Build fields.
+	// Build handlers.
 	var handlers []Handler
 	requests := map[string]Request{}
 	responses := map[string]Response{}
@@ -588,6 +611,7 @@ func makeController(r ProjectResource, config Resource, packageName string, repo
 				Name:  "ListResponse",
 				Model: r.Single.Exported,
 			}
+			result.VendorImports = append(result.VendorImports, "github.com/68696c6c/goat/query")
 			break
 		}
 	}

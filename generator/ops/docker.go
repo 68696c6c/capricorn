@@ -9,34 +9,43 @@ import (
 )
 
 // @TODO just use a hosted image
-const dockerfileTemplate = `
-FROM golang:1.13-alpine as env
+const dockerfileTemplate = `FROM golang:1.14-alpine as env
 
-ENV GO111MODULE=on
-ENV GOFLAGS=-mod=vendor
 ENV CGO_ENABLED=0
 ENV GOPROXY=https://proxy.golang.org,direct
-# unfortunate, but needed if it falls back to direct, can't exclude a particular package
-ENV GOSUMDB=off
 
-RUN apk add --no-cache git gcc bash openssh mysql-client
+RUN apk add --no-cache git gcc openssh mysql-client
+
+RUN go get golang.org/x/tools/cmd/goimports
+RUN go get -v github.com/go-swagger/go-swagger/cmd/swagger
+
+# Install golangci-lint for linting.
+RUN wget https://github.com/golangci/golangci-lint/releases/download/v1.24.0/golangci-lint-1.24.0-linux-amd64.tar.gz \
+    && tar xzf golangci-lint-1.24.0-linux-amd64.tar.gz \
+    && mv golangci-lint-1.24.0-linux-amd64/golangci-lint /usr/local/bin/golangci-lint
 
 RUN mkdir -p /app
 WORKDIR /app
 
-RUN wget https://github.com/go-swagger/go-swagger/releases/download/v0.19.0/swagger_linux_amd64 -O /usr/local/bin/swagger
-RUN chmod +x /usr/local/bin/swagger
 
-
-################################################################################
 # Local development stage.
 FROM env as dev
-RUN GOFLAGS="" go get -u github.com/go-delve/delve/cmd/dlv
+
+RUN go get -v github.com/go-delve/delve/cmd/dlv
+
+RUN apk add --no-cache bash
 RUN echo 'alias ll="ls -lah"' >> ~/.bashrc
+
+
+# Pipeline stage for running unit tests, linters, etc.
+FROM env as built
+
+COPY ./src /app
+RUN go build -i -o app
 `
 
 const dockerComposeTemplate = `
-version: "3.5"
+version: "3.6"
 
 networks:
   default:
@@ -63,16 +72,15 @@ services:
       - "80"
     env_file:
       - .app.env
-    #  - .secret.env
     environment:
-      VIRTUAL_HOST: capricorn.local
+      VIRTUAL_HOST: {{ .AppName }}.local
       ENV: local
       HTTP_PORT: 80
-      MIGRATION_PATH: /app/src/capricorn-example/src/database
+      MIGRATION_PATH: /app/src/database
     networks:
       default:
         aliases:
-          - capricorn.local
+          - {{ .AppName }}.local
 
   db:
     image: mysql:5.7
@@ -108,7 +116,12 @@ func CreateDocker(spec models.Project, logger *logrus.Logger) error {
 		return errors.Wrap(err, "failed to create Dockerfile")
 	}
 
-	err = utils.GenerateFile(spec.Paths.Root, "docker-compose.yml", dockerComposeTemplate, spec)
+	type dockerCompose struct {
+		AppName string
+	}
+	err = utils.GenerateFile(spec.Paths.Root, "docker-compose.yml", dockerComposeTemplate, dockerCompose{
+		AppName: spec.Module.Kebob,
+	})
 	if err != nil {
 		return errors.Wrap(err, "failed to create docker-compose.yml")
 	}

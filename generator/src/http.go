@@ -24,18 +24,19 @@ import (
 	"{{ $value }}"
 	{{- end }}
 
-	"github.com/68696c6c/goat"
-	"github.com/68696c6c/goat/query"
-	"github.com/gin-gonic/gin"
+
+	{{- range $key, $value := .VendorImports }}
+	"{{ $value }}"
+	{{- end }}
 )
 {{ $tick := "` + "`" + `" }}
-type {{.Name.Exported}} struct {
+type {{ .Name.Exported }} struct {
 	repo   Repo
 	errors goat.ErrorHandler
 }
 
-func {{ .Constructor }}(repo Repo, errors goat.ErrorHandler) {{.Name.Exported}} {
-	return {{.Name.Exported}}{
+func {{ .Constructor }}(repo Repo, errors goat.ErrorHandler) {{ .Name.Exported }} {
+	return {{ .Name.Exported }}{
 		repo:   repo,
 		errors: errors,
 	}

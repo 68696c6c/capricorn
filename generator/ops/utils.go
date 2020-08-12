@@ -27,7 +27,7 @@ func InitModule(path string) error {
 	}
 	defer os.Unsetenv("GO111MODULE")
 
-	cmd := exec.Command("make", "image")
+	cmd := exec.Command("make", "image-local")
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	err = cmd.Run()
