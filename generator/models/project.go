@@ -347,7 +347,7 @@ func makePaths(rootPath string) Paths {
 		CMD:      utils.JoinPath(srcPath, pathCMD),
 		Database: utils.JoinPath(srcPath, pathDatabase),
 		HTTP:     utils.JoinPath(srcPath, pathHTTP),
-		Domains:  utils.JoinPath(srcPath, pathDomains),
+		Domains:  utils.JoinPath(srcPath, pathApp),
 		Repos:    utils.JoinPath(srcPath, pathRepos),
 		Models:   utils.JoinPath(srcPath, pathModels),
 	}
