@@ -60,6 +60,9 @@ func GetApp(db *gorm.DB, logger *logrus.Logger) (ServiceContainer, error) {
 		DB:     db,
 		Logger: logger,
 		Errors: goat.NewErrorHandler(logger),
+{{- range $key, $value := .ReposWithServices }}
+{{ $value.Interface }}: {{ $value.VarName }},
+{{- end }}
 {{- range $key, $value := .DomainRepos }}
 {{ $value.Interface }}: {{ $value.Package }}.{{ $value.Constructor }}(db),
 {{- end }}

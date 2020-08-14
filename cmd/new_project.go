@@ -37,6 +37,9 @@ var newProject = &cobra.Command{
 		err = src.CreateDomains(&spec, logger)
 		handleError(err)
 
+		err = src.CreateDatabase(&spec, logger)
+		handleError(err)
+
 		// err = src.CreateModels(spec, logger)
 		// handleError(err)
 		//
@@ -62,7 +65,7 @@ var newProject = &cobra.Command{
 		err = ops.CreateMakefile(spec, logger)
 		handleError(err)
 
-		err = ops.InitModule(spec.Paths.Root)
+		err = ops.InitModule(spec)
 		handleError(err)
 
 		logger.Infof("project spec: %s", spec.String())

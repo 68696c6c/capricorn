@@ -67,66 +67,79 @@ var serverCommand = &cobra.Command{
 	},
 }`
 
-const migrateTemplate = `
-package cmd
+const migrateTemplate = `package cmd
 
 import (
-	"strings"
+	_ "{{ .Imports.Migrations }}"
 
 	"github.com/68696c6c/goat"
-	"github.com/68696c6c/goose"
+	_ "github.com/go-sql-driver/mysql"
+	"github.com/pkg/errors"
+	"github.com/pressly/goose"
 	"github.com/spf13/cobra"
 )
 
 func init() {
+	migrateCommand.SetUsageFunc(func(c *cobra.Command) error {
+		{{ $tick := "` + "`" + `" }}
+		c.Println({{ $tick }}
+Usage: app migrate [OPTIONS] COMMAND
+
+Drivers:
+postgres
+mysql
+sqlite3
+redshift
+
+Commands:
+up                   Migrate the DB to the most recent version available
+up-to VERSION        Migrate the DB to a specific VERSION
+down                 Roll back the version by 1
+down-to VERSION      Roll back to a specific VERSION
+redo                 Re-run the latest migration
+status               Dump the migration status for the current DB
+version              Print the current version of the database
+create NAME [sql|go] Creates new migration file with the current timestamp
+
+Examples:
+app migrate status
+app migrate create init sql
+app migrate create add_some_column sql
+app migrate create fetch_user_data go
+app migrate up
+
+app migrate status{{ $tick }})
+		return nil
+	})
+
 	Root.AddCommand(migrateCommand)
-	dryRun = migrateCommand.Flags().BoolP("dry-run", "d", false, "Only report what would have been done")
 }
 
-var dryRun *bool
-
 var migrateCommand = &cobra.Command{
-	Use:   "migrate [action] [--dry-run]",
-	Short: "Runs the SQL migrations.",
-	Long: "Runs the SQL migrations.  Valid actions are: 'up' (default), 'drop', 'reset', and 'install'.",
-	Run: func(cmd *cobra.Command, args []string) {
-		connection, err := goat.GetMigrationDB()
+	Use:   "migrate",
+	Short: "goose migrations (go run main.go migrate up)",
+	Args:  cobra.MinimumNArgs(1),
+	RunE: func(_ *cobra.Command, args []string) error {
+		goat.Init()
+
+		db, err := goat.GetMigrationDB()
 		if err != nil {
-			goat.ExitError(err)
+			goat.ExitError(errors.Wrap(err, "error initializing migration connection"))
 		}
 
-		schema, err := goat.GetSchema(connection)
-		if err != nil {
-			goat.ExitError(err)
+		if err := goose.SetDialect("mysql"); err != nil {
+			goat.ExitError(errors.Wrap(err, "error initializing goose"))
 		}
 
-		// Inform Goose of the current environment.
-		if err := goat.ErrorIfProd(); err != nil {
-			goose.SetEnvProduction(true)
-		} else {
-			goose.SetEnvProduction(false)
+		var arguments []string
+		if len(args) > 1 {
+			arguments = args[1:]
 		}
 
-		// Only allow "up" and "install" operations in production.
-		allowed := []string{goose.MigrateOperationInstall, goose.MigrateOperationUp}
-		goose.SetProductionOperations(allowed)
-
-		// Perform the migration operation.
-		migrated, dropped, err := goose.HandleMigrate(schema, args, dryRun)
-
-		dmsg := strings.Join(dropped, "\n")
-		println("dropped tables: \n" + dmsg)
-
-		mmsg := strings.Join(migrated, "\n")
-		println("migrated tables: \n" + mmsg)
-
-		if err != nil {
-			goat.ExitError(err)
-		} else {
-			goat.ExitSuccess()
-		}
+		return goose.Run(args[0], db.DB(), ".", arguments...)
 	},
-}`
+}
+`
 
 const genericTemplate = `
 package cmd

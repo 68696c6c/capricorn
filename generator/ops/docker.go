@@ -17,12 +17,17 @@ ENV GOPROXY=https://proxy.golang.org,direct
 RUN apk add --no-cache git gcc openssh mysql-client
 
 RUN go get golang.org/x/tools/cmd/goimports
+
+# Install swagger for generating API docs.
 RUN go get -v github.com/go-swagger/go-swagger/cmd/swagger
 
 # Install golangci-lint for linting.
 RUN wget https://github.com/golangci/golangci-lint/releases/download/v1.24.0/golangci-lint-1.24.0-linux-amd64.tar.gz \
     && tar xzf golangci-lint-1.24.0-linux-amd64.tar.gz \
     && mv golangci-lint-1.24.0-linux-amd64/golangci-lint /usr/local/bin/golangci-lint
+
+# Install goose for running migrations.
+RUN go get -u github.com/pressly/goose/cmd/goose
 
 RUN mkdir -p /app
 WORKDIR /app

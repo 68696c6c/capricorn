@@ -127,17 +127,18 @@ type Middleware struct {
 }
 
 type Paths struct {
-	Root     string
-	SRC      string
-	OPS      string
-	Docker   string
-	App      string
-	CMD      string
-	Database string
-	HTTP     string
-	Domains  string
-	Repos    string
-	Models   string
+	Root       string
+	SRC        string
+	OPS        string
+	Docker     string
+	App        string
+	CMD        string
+	Database   string
+	HTTP       string
+	Domains    string
+	Repos      string
+	Models     string
+	Migrations string
 }
 
 type Service struct {
@@ -241,16 +242,17 @@ type Author struct {
 }
 
 const (
-	pathSRC      = "src"
-	pathOPS      = "ops"
-	pathDocker   = "docker"
-	pathApp      = "app"
-	pathCMD      = "cmd"
-	pathDatabase = "database"
-	pathHTTP     = "http"
-	pathDomains  = "resources"
-	pathRepos    = "repos"
-	pathModels   = "models"
+	pathSRC        = "src"
+	pathOPS        = "ops"
+	pathDocker     = "docker"
+	pathApp        = "app"
+	pathCMD        = "cmd"
+	pathDatabase   = "db"
+	pathHTTP       = "http"
+	pathDomains    = "resources"
+	pathRepos      = "repos"
+	pathModels     = "models"
+	pathMigrations = "migrations"
 )
 
 func NewProject(filePath string) (Project, error) {
@@ -338,18 +340,20 @@ func NewProject(filePath string) (Project, error) {
 
 func makePaths(rootPath string) Paths {
 	srcPath := utils.JoinPath(rootPath, pathSRC)
+	dbPath := utils.JoinPath(srcPath, pathDatabase)
 	return Paths{
-		Root:     rootPath,
-		SRC:      srcPath,
-		OPS:      utils.JoinPath(rootPath, pathOPS),
-		Docker:   utils.JoinPath(rootPath, pathDocker),
-		App:      utils.JoinPath(srcPath, pathApp),
-		CMD:      utils.JoinPath(srcPath, pathCMD),
-		Database: utils.JoinPath(srcPath, pathDatabase),
-		HTTP:     utils.JoinPath(srcPath, pathHTTP),
-		Domains:  utils.JoinPath(srcPath, pathApp),
-		Repos:    utils.JoinPath(srcPath, pathRepos),
-		Models:   utils.JoinPath(srcPath, pathModels),
+		Root:       rootPath,
+		SRC:        srcPath,
+		OPS:        utils.JoinPath(rootPath, pathOPS),
+		Docker:     utils.JoinPath(rootPath, pathDocker),
+		App:        utils.JoinPath(srcPath, pathApp),
+		CMD:        utils.JoinPath(srcPath, pathCMD),
+		Database:   dbPath,
+		HTTP:       utils.JoinPath(srcPath, pathHTTP),
+		Domains:    utils.JoinPath(srcPath, pathApp),
+		Repos:      utils.JoinPath(srcPath, pathRepos),
+		Models:     utils.JoinPath(srcPath, pathModels),
+		Migrations: utils.JoinPath(dbPath, pathMigrations),
 	}
 }
 

@@ -4,6 +4,7 @@ import (
 	"os"
 	"os/exec"
 
+	"github.com/68696c6c/capricorn/generator/models"
 	"github.com/68696c6c/capricorn/generator/utils"
 
 	"github.com/pkg/errors"
@@ -15,7 +16,8 @@ vendor
 .app.env
 }`
 
-func InitModule(path string) error {
+func InitModule(spec models.Project) error {
+	path := spec.Paths.Root
 	err := os.Chdir(path)
 	if err != nil {
 		return errors.Wrap(err, "failed to navigate to dir to initialize module")
@@ -35,7 +37,7 @@ func InitModule(path string) error {
 		return errors.Wrap(err, "failed to make image")
 	}
 
-	cmd = exec.Command("make", "init")
+	cmd = exec.Command("go", "mod", "init", spec.Config.Module)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	err = cmd.Run()
@@ -56,6 +58,14 @@ replace github.com/ugorji/go v1.1.4 => github.com/ugorji/go v0.0.0-2019020420134
 	err = cmd.Run()
 	if err != nil {
 		return errors.Wrap(err, "failed to install dependencies")
+	}
+
+	cmd = exec.Command("make", "migrate")
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	err = cmd.Run()
+	if err != nil {
+		return errors.Wrap(err, "failed to migrate")
 	}
 
 	err = utils.GenerateFile(path, ".gitignore", gitIgnoreTemplate, nil)

@@ -62,11 +62,11 @@ deps:
 	$(DCR) $(APP_NAME) go mod vendor
 
 setup-network:
-	docker network create docker-dev
+	docker network create docker-dev || exit 0
 
-setup: image-local deps build setup-network
+setup: setup-network image-local deps build
 	$(DCR) $(DB_NAME) mysql -u root -psecret -h $(DB_NAME) -e "CREATE DATABASE IF NOT EXISTS test_repos"
-	$(DCR) $(APP_NAME) bash -c "./$(APP_NAME) migrate install && ./$(APP_NAME) seed"
+	$(DCR) $(APP_NAME) bash -c "./$(APP_NAME) migrate up"
 
 local: local-down build
 	NETWORK_NAME="$(NETWORK_NAME)" docker-compose up
@@ -77,11 +77,11 @@ local-down:
 test:
 	$(DCR) $(APP_NAME) go test ./... -cover
 
-migrate:
-	$(DCR) $(APP_NAME) ./$(APP_NAME) migrate
+migrate: build
+	$(DCR) $(APP_NAME) ./app migrate up
 
-migration:
-	$(DCR) $(APP_NAME) ./$(APP_NAME) make:migration $(name)
+migration: build
+	$(DCR) $(APP_NAME) goose -dir src/db/migrations create $(name)
 
 docs: build
 	$(DCR) $(APP_NAME) bash -c "GO111MODULE=off swagger generate spec -mo '$(DOC_PATH_BASE)'"
