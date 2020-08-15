@@ -164,6 +164,11 @@ type Project struct {
 	Config Config
 	Module Name
 
+	Workdir      string
+	ProjectPath  string
+	AppHTTPAlias string
+	AppDBName    string
+
 	Paths             Paths
 	Imports           Paths
 	Commands          []Command
@@ -255,7 +260,7 @@ const (
 	pathMigrations = "migrations"
 )
 
-func NewProject(filePath string) (Project, error) {
+func NewProject(filePath, projectPath string) (Project, error) {
 	file, err := ioutil.ReadFile(filePath)
 	if err != nil {
 		return Project{}, errors.Wrap(err, "failed to read yaml spec file")
@@ -280,11 +285,18 @@ func NewProject(filePath string) (Project, error) {
 		Package:    config.Module,
 	}
 
-	projectPath, err := utils.GetProjectPath()
-	if err != nil {
-		return Project{}, errors.Wrap(err, "failed to determine project path")
+	spec.AppHTTPAlias = spec.Module.Kebob
+	spec.AppDBName = spec.Module.Snake
+	spec.Workdir = spec.Module.Kebob
+
+	rootPath := projectPath
+	if projectPath == "" {
+		projectPath, err = utils.GetProjectPath()
+		if err != nil {
+			return Project{}, errors.Wrap(err, "failed to determine project path")
+		}
+		rootPath = utils.JoinPath(projectPath, config.Module)
 	}
-	rootPath := utils.JoinPath(projectPath, config.Module)
 
 	spec.Paths = makePaths(rootPath)
 	spec.Imports = makePaths(config.Module)

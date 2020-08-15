@@ -16,7 +16,6 @@ const migrationTemplate = `package migrations
 import (
 	"database/sql"
 
-
 	{{- range $key, $value := .Domains }}
 	"{{ $value.Import }}"
 	{{- end }}
@@ -27,11 +26,12 @@ import (
 )
 
 func init() {
-	goat.Init()
 	goose.AddMigration(upInitialMigration, downInitialMigration)
 }
 
 func upInitialMigration(tx *sql.Tx) error {
+	goat.Init()
+
 	db, err := goat.GetMigrationDB()
 	if err != nil {
 		return errors.Wrap(err, "failed to initialize migration connection")
@@ -45,6 +45,8 @@ func upInitialMigration(tx *sql.Tx) error {
 }
 
 func downInitialMigration(tx *sql.Tx) error {
+	goat.Init()
+
 	db, err := goat.GetMigrationDB()
 	if err != nil {
 		return errors.Wrap(err, "failed to initialize migration connection")
@@ -68,7 +70,6 @@ func CreateDatabase(spec *models.Project, logger *logrus.Logger) error {
 		return errors.Wrapf(err, "failed to create database migrations directory '%s'", spec.Paths.Migrations)
 	}
 
-	// dt := goat.TimeToYMDHISString(time.Now())
 	dt := time.Now().Format("20060102150405")
 	fileName := fmt.Sprintf("%s_initial_migration.go", dt)
 	err = utils.GenerateFile(spec.Paths.Migrations, fileName, migrationTemplate, spec)

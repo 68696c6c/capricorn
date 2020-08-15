@@ -14,7 +14,6 @@ DCR = docker-compose run --rm
 NETWORK_NAME ?= docker-dev
 APP_NAME = app
 DB_NAME = db
-MODULE = {{ .Config.Module }}
 
 DOC_PATH_BASE = docs/swagger.json
 DOC_PATH_FINAL = docs/api-spec.json
@@ -54,9 +53,6 @@ image-built:
 build:
 	$(DCR) $(APP_NAME) go build -i -o $(APP_NAME)
 
-init:
-	$(DCR) $(APP_NAME) go mod init $(MODULE)
-
 deps:
 	$(DCR) $(APP_NAME) go mod tidy
 	$(DCR) $(APP_NAME) go mod vendor
@@ -65,8 +61,8 @@ setup-network:
 	docker network create docker-dev || exit 0
 
 setup: setup-network image-local deps build
-	$(DCR) $(DB_NAME) mysql -u root -psecret -h $(DB_NAME) -e "CREATE DATABASE IF NOT EXISTS test_repos"
-	$(DCR) $(APP_NAME) bash -c "./$(APP_NAME) migrate up"
+	$(DCR) $(DB_NAME) mysql -u root -psecret -h $(DB_NAME) -e "CREATE DATABASE IF NOT EXISTS {{ .AppDBName }}"
+	$(DCR) $(APP_NAME) bash -c "./$(APP_NAME) migrate up && ./$(APP_NAME) seed"
 
 local: local-down build
 	NETWORK_NAME="$(NETWORK_NAME)" docker-compose up

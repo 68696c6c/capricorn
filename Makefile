@@ -1,6 +1,12 @@
 
-EXAMPLE_SPEC_PATH ?= example.yml
-EXAMPLE_APP_PATH ?= github.com/68696c6c/capricorn-example
+#EXAMPLE_SPEC_PATH ?= example.yml
+#EXAMPLE_APP_PATH ?= github.com/68696c6c/capricorn-example
+
+EXAMPLE_SPEC_PATH ?= loom-rnd.yml
+EXAMPLE_APP_PATH ?= ~/Code/loom-rnd
+
+# EXAMPLE_SPEC_PATH ?= loom.yml
+# EXAMPLE_APP_PATH ?= bitbucket.org/clearlinkit/loom-example
 
 .PHONY: image dep cli local-down test migrate
 
@@ -21,7 +27,7 @@ deps:
 	go mod vendor
 
 build:
-	 go build -o /usr/local/bin/capricorn
+	 go build -o capricorn
 
 test:
 	go test ./... -cover
@@ -30,6 +36,6 @@ new: build
 	capricorn new $(SPEC_PATH)
 
 example: build
-	rm -rf $(GOPATH)/src/$(EXAMPLE_APP_PATH)
-	capricorn new $(EXAMPLE_SPEC_PATH)
-	cd $(GOPATH)/src/$(EXAMPLE_APP_PATH) && make local
+	rm -rf $(EXAMPLE_APP_PATH)
+	./capricorn new $(EXAMPLE_SPEC_PATH) $(EXAMPLE_APP_PATH)
+	cd $(EXAMPLE_APP_PATH) && make setup && make local

@@ -122,7 +122,7 @@ var migrateCommand = &cobra.Command{
 	RunE: func(_ *cobra.Command, args []string) error {
 		goat.Init()
 
-		db, err := goat.GetMigrationDB()
+		db, err := goat.GetMainDB()
 		if err != nil {
 			goat.ExitError(errors.Wrap(err, "error initializing migration connection"))
 		}
@@ -137,6 +137,48 @@ var migrateCommand = &cobra.Command{
 		}
 
 		return goose.Run(args[0], db.DB(), ".", arguments...)
+	},
+}
+`
+
+const seedTemplate = `package cmd
+
+import (
+	{{- range $key, $value := .Domains }}
+	"{{ $value.Import }}"
+	{{- end }}
+
+	"github.com/68696c6c/goat"
+	"github.com/pkg/errors"
+	"github.com/spf13/cobra"
+)
+
+func init() {
+	Root.AddCommand(seedCommand)
+}
+
+var seedCommand = &cobra.Command{
+	Use:   "seed",
+	Short: "seed the application database with some dummy data",
+	Run: func(_ *cobra.Command, args []string) {
+		goat.Init()
+
+		logger := goat.GetLogger()
+		logger.Info("seeding to database...")
+
+		db, err := goat.GetMainDB()
+		if err != nil {
+			goat.ExitError(errors.Wrap(err, "error initializing seed connection"))
+		}
+
+		{{- range $key, $value := .Domains }}
+		if errs := db.Save(&{{ $value.Name }}.{{ $value.Model.Name }}{}).GetErrors(); len(errs) > 0 {
+			goat.ExitErrors(errs)
+		}
+
+		{{- end }}
+
+		goat.ExitSuccess()
 	},
 }
 `
@@ -197,10 +239,16 @@ func CreateCMD(spec models.Project) error {
 		return errors.Wrap(err, "failed to create server command")
 	}
 
-	// @TODO Create migrate command.
+	// Create migrate command.
 	err = utils.GenerateFile(spec.Paths.CMD, "migrate.go", migrateTemplate, spec)
 	if err != nil {
 		return errors.Wrap(err, "failed to create migrate command")
+	}
+
+	// Create seed command.
+	err = utils.GenerateFile(spec.Paths.CMD, "seed.go", seedTemplate, spec)
+	if err != nil {
+		return errors.Wrap(err, "failed to create seed command")
 	}
 
 	// @TODO Create make:migration command.

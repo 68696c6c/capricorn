@@ -60,14 +60,6 @@ replace github.com/ugorji/go v1.1.4 => github.com/ugorji/go v0.0.0-2019020420134
 		return errors.Wrap(err, "failed to install dependencies")
 	}
 
-	cmd = exec.Command("make", "migrate")
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	err = cmd.Run()
-	if err != nil {
-		return errors.Wrap(err, "failed to migrate")
-	}
-
 	err = utils.GenerateFile(path, ".gitignore", gitIgnoreTemplate, nil)
 	if err != nil {
 		return errors.Wrap(err, "failed to create .gitignore")

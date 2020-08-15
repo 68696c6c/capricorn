@@ -29,8 +29,8 @@ RUN wget https://github.com/golangci/golangci-lint/releases/download/v1.24.0/gol
 # Install goose for running migrations.
 RUN go get -u github.com/pressly/goose/cmd/goose
 
-RUN mkdir -p /app
-WORKDIR /app
+RUN mkdir -p /{{ .Workdir }}
+WORKDIR /{{ .Workdir }}
 
 
 # Local development stage.
@@ -45,7 +45,7 @@ RUN echo 'alias ll="ls -lah"' >> ~/.bashrc
 # Pipeline stage for running unit tests, linters, etc.
 FROM env as built
 
-COPY ./src /app
+COPY ./src /{{ .Workdir }}
 RUN go build -i -o app
 `
 
@@ -70,28 +70,27 @@ services:
       - db
     volumes:
       - pkg:/go/pkg
-      - ./:/app
-      - $HOME/.ssh:/root/.ssh:ro
-    working_dir: /app
+      - ./:/{{ .Workdir }}
+    working_dir: /{{ .Workdir }}
     ports:
       - "80"
     env_file:
       - .app.env
     environment:
-      VIRTUAL_HOST: {{ .AppName }}.local
+      VIRTUAL_HOST: {{ .Workdir }}.local
       ENV: local
       HTTP_PORT: 80
-      MIGRATION_PATH: /app/src/database
+      MIGRATION_PATH: /{{ .Workdir }}/src/database
     networks:
       default:
         aliases:
-          - {{ .AppName }}.local
+          - {{ .AppHTTPAlias }}.local
 
   db:
     image: mysql:5.7
     environment:
       MYSQL_ROOT_PASSWORD: secret
-      MYSQL_DATABASE: example
+      MYSQL_DATABASE: {{ .AppDBName }}
     ports:
       - "${HOST_DB_PORT:-3310}:3306"
     volumes:
@@ -103,7 +102,7 @@ DB_HOST=db
 DB_PORT=3306
 DB_USERNAME=root
 DB_PASSWORD=secret
-DB_DATABASE=example
+DB_DATABASE={{ .AppDBName }}
 DB_DEBUG=1
 `
 
@@ -121,12 +120,7 @@ func CreateDocker(spec models.Project, logger *logrus.Logger) error {
 		return errors.Wrap(err, "failed to create Dockerfile")
 	}
 
-	type dockerCompose struct {
-		AppName string
-	}
-	err = utils.GenerateFile(spec.Paths.Root, "docker-compose.yml", dockerComposeTemplate, dockerCompose{
-		AppName: spec.Module.Kebob,
-	})
+	err = utils.GenerateFile(spec.Paths.Root, "docker-compose.yml", dockerComposeTemplate, spec)
 	if err != nil {
 		return errors.Wrap(err, "failed to create docker-compose.yml")
 	}

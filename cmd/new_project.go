@@ -16,15 +16,16 @@ func init() {
 }
 
 var newProject = &cobra.Command{
-	Use:   "new spec",
+	Use:   "new spec [specPath] [projectPath]",
 	Short: "Creates a new Goat project from a YAML spec.",
-	Args:  cobra.ExactArgs(1),
+	Args:  cobra.ExactArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
 		logger := logrus.New()
 		logger.SetLevel(logrus.DebugLevel)
 
 		specFile := args[0]
-		spec, err := models.NewProject(specFile)
+		projectPath := args[1]
+		spec, err := models.NewProject(specFile, projectPath)
 		handleError(err)
 
 		logger.Infof("creating project %s from config %s", spec.Config.Module, specFile)
@@ -68,7 +69,7 @@ var newProject = &cobra.Command{
 		err = ops.InitModule(spec)
 		handleError(err)
 
-		logger.Infof("project spec: %s", spec.String())
+		// logger.Infof("project spec: %s", spec.String())
 		os.Exit(0)
 	},
 }
