@@ -80,9 +80,38 @@ import (
 )
 
 func init() {
-	migrateCommand.SetUsageFunc(func(c *cobra.Command) error {
-		{{ $tick := "` + "`" + `" }}
-		c.Println({{ $tick }}
+	Root.AddCommand(migrateCommand)
+}
+
+var migrateCommand = &cobra.Command{
+	Use:   "migrate",
+	Short: "goose migrations (go run main.go migrate up)",
+	Args:  cobra.MinimumNArgs(1),
+	Run: func(_ *cobra.Command, args []string) {
+		goat.Init()
+
+		db, err := goat.GetMainDB()
+		if err != nil {
+			goat.ExitError(errors.Wrap(err, "error initializing migration connection"))
+		}
+
+		if err := goose.SetDialect("mysql"); err != nil {
+			goat.ExitError(errors.Wrap(err, "error initializing goose"))
+		}
+
+		var arguments []string
+		if len(args) > 1 {
+			arguments = args[1:]
+		}
+
+		if err := goose.Run(args[0], db.DB(), ".", arguments...); err != nil {
+			goat.ExitError(err)
+		}
+		
+		goat.ExitSuccess()
+	},
+{{ $tick := "` + "`" + `" }}
+	Example: {{ $tick }}
 Usage: app migrate [OPTIONS] COMMAND
 
 Drivers:
@@ -108,45 +137,14 @@ app migrate create add_some_column sql
 app migrate create fetch_user_data go
 app migrate up
 
-app migrate status{{ $tick }})
-		return nil
-	})
-
-	Root.AddCommand(migrateCommand)
-}
-
-var migrateCommand = &cobra.Command{
-	Use:   "migrate",
-	Short: "goose migrations (go run main.go migrate up)",
-	Args:  cobra.MinimumNArgs(1),
-	RunE: func(_ *cobra.Command, args []string) error {
-		goat.Init()
-
-		db, err := goat.GetMainDB()
-		if err != nil {
-			goat.ExitError(errors.Wrap(err, "error initializing migration connection"))
-		}
-
-		if err := goose.SetDialect("mysql"); err != nil {
-			goat.ExitError(errors.Wrap(err, "error initializing goose"))
-		}
-
-		var arguments []string
-		if len(args) > 1 {
-			arguments = args[1:]
-		}
-
-		return goose.Run(args[0], db.DB(), ".", arguments...)
-	},
+app migrate status{{ $tick }},
 }
 `
 
 const seedTemplate = `package cmd
 
 import (
-	{{- range $key, $value := .Domains }}
-	"{{ $value.Import }}"
-	{{- end }}
+	"{{ .Imports.Seeders }}"
 
 	"github.com/68696c6c/goat"
 	"github.com/pkg/errors"
@@ -159,7 +157,7 @@ func init() {
 
 var seedCommand = &cobra.Command{
 	Use:   "seed",
-	Short: "seed the application database with some dummy data",
+	Short: "Seed the main database with some starting data.",
 	Run: func(_ *cobra.Command, args []string) {
 		goat.Init()
 
@@ -171,12 +169,9 @@ var seedCommand = &cobra.Command{
 			goat.ExitError(errors.Wrap(err, "error initializing seed connection"))
 		}
 
-		{{- range $key, $value := .Domains }}
-		if errs := db.Save(&{{ $value.Name }}.{{ $value.Model.Name }}{}).GetErrors(); len(errs) > 0 {
-			goat.ExitErrors(errs)
+		if err := seeders.Initial(db); err != nil {
+			goat.ExitError(err)
 		}
-
-		{{- end }}
 
 		goat.ExitSuccess()
 	},

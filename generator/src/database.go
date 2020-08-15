@@ -61,6 +61,28 @@ func downInitialMigration(tx *sql.Tx) error {
 }
 `
 
+const seederTemplate = `package seeders
+
+import (
+	{{- range $key, $value := .Domains }}
+	"{{ $value.Import }}"
+	{{- end }}
+
+	"github.com/68696c6c/goat"
+	"github.com/jinzhu/gorm"
+)
+
+func Initial(db *gorm.DB) error {
+	{{- range $key, $value := .Domains }}
+	if errs := db.Save(&{{ $value.Name }}.{{ $value.Model.Name }}{}).GetErrors(); len(errs) > 0 {
+		return goat.ErrorsToError(errs)
+	}
+	{{- end }}
+
+	return nil
+}
+`
+
 const logPrefixDB = "CreateDatabase"
 
 func CreateDatabase(spec *models.Project, logger *logrus.Logger) error {
@@ -73,6 +95,17 @@ func CreateDatabase(spec *models.Project, logger *logrus.Logger) error {
 	dt := time.Now().Format("20060102150405")
 	fileName := fmt.Sprintf("%s_initial_migration.go", dt)
 	err = utils.GenerateFile(spec.Paths.Migrations, fileName, migrationTemplate, spec)
+	if err != nil {
+		return errors.Wrap(err, "failed to generate initial migration")
+	}
+
+	logger.Infof("%s | creating seeders %s", logPrefixDB, spec.Paths.Seeders)
+	err = utils.CreateDir(spec.Paths.Seeders)
+	if err != nil {
+		return errors.Wrapf(err, "failed to create database seeders directory '%s'", spec.Paths.Seeders)
+	}
+
+	err = utils.GenerateFile(spec.Paths.Seeders, "initial.go", seederTemplate, spec)
 	if err != nil {
 		return errors.Wrap(err, "failed to generate initial migration")
 	}

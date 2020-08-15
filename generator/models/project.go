@@ -139,6 +139,7 @@ type Paths struct {
 	Repos      string
 	Models     string
 	Migrations string
+	Seeders    string
 }
 
 type Service struct {
@@ -258,6 +259,7 @@ const (
 	pathRepos      = "repos"
 	pathModels     = "models"
 	pathMigrations = "migrations"
+	pathSeeders    = "seeders"
 )
 
 func NewProject(filePath, projectPath string) (Project, error) {
@@ -366,6 +368,7 @@ func makePaths(rootPath string) Paths {
 		Repos:      utils.JoinPath(srcPath, pathRepos),
 		Models:     utils.JoinPath(srcPath, pathModels),
 		Migrations: utils.JoinPath(dbPath, pathMigrations),
+		Seeders:    utils.JoinPath(dbPath, pathSeeders),
 	}
 }
 
