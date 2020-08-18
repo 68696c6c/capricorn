@@ -123,7 +123,7 @@ func createDomainRepo(basePath string, r models.Repo, logger *logrus.Logger) err
 
 func createDomainService(basePath string, s models.Service, logger *logrus.Logger) error {
 	if len(s.Methods) == 0 {
-		logger.Infof("%s | no service to generate", logPrefix, s.Filename)
+		logger.Infof("%s | no service to generate", logPrefix)
 		return nil
 	}
 	logger.Infof("%s | creating service %s", logPrefix, s.Filename)
