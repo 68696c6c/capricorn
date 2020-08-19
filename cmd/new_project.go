@@ -4,7 +4,6 @@ import (
 	"os"
 
 	"github.com/68696c6c/capricorn/generator/models"
-	"github.com/68696c6c/capricorn/generator/ops"
 	"github.com/68696c6c/capricorn/generator/src"
 
 	"github.com/sirupsen/logrus"
@@ -28,7 +27,7 @@ var newProject = &cobra.Command{
 		spec, err := models.NewProject(specFile, projectPath)
 		handleError(err)
 
-		logger.Infof("creating project %s from config %s", spec.Config.Module, specFile)
+		logger.Infof("creating project %s from config %s", spec.Spec.Module, specFile)
 
 		// SRC
 		err = src.CreateProject(spec)
@@ -60,13 +59,13 @@ var newProject = &cobra.Command{
 		handleError(err)
 
 		// OPS
-		err = ops.CreateDocker(spec, logger)
+		err = src.CreateDocker(spec, logger)
 		handleError(err)
 
-		err = ops.CreateMakefile(spec, logger)
+		err = src.CreateMakefile(spec, logger)
 		handleError(err)
 
-		err = ops.InitModule(spec)
+		err = src.InitModule(spec)
 		handleError(err)
 
 		// logger.Infof("project spec: %s", spec.String())

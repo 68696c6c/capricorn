@@ -1,6 +1,9 @@
 package golang
 
-import "github.com/68696c6c/capricorn/generator/utils"
+import (
+	"github.com/68696c6c/capricorn/generator/models/templates"
+	"github.com/68696c6c/capricorn/generator/utils"
+)
 
 var templateFile = `package {{ .Package.Name }}
 
@@ -31,7 +34,7 @@ import (
 {{- if gt $length 0 }}
 {{- println }}
 {{- range $key, $value := .Consts }}
-const {{ $value.Name }} = {{ $value.Value }}
+{{ $value.MustParse }}
 {{- println }}
 {{- end }}
 {{- end }}
@@ -40,7 +43,7 @@ const {{ $value.Name }} = {{ $value.Value }}
 {{- if gt $length 0 }}
 {{- println }}
 {{- range $key, $value := .Vars }}
-var {{ $value.Name }} = {{ $value.Value }}
+{{ $value.MustParse }}
 {{- println }}
 {{- end }}
 {{- end }}
@@ -73,27 +76,17 @@ var {{ $value.Name }} = {{ $value.Value }}
 {{- end }}`
 
 type File struct {
-	Name    FileData    `yaml:"name"`
-	Path    FileData    `yaml:"path"`
-	Package PackageData `yaml:"package"`
+	Name templates.FileData `yaml:"name"`
+	Path templates.FileData `yaml:"path"`
 
+	Package      PackageData `yaml:"package"`
 	Imports      FileImports `yaml:"imports"`
 	InitFunction Function    `yaml:"init_function"`
-	Consts       []Value     `yaml:"consts"`
-	Vars         []Value     `yaml:"vars"`
+	Consts       []Const     `yaml:"consts"`
+	Vars         []Var       `yaml:"vars"`
 	Interfaces   []Interface `yaml:"interfaces"`
 	Structs      []Struct    `yaml:"structs"`
 	Functions    []Function  `yaml:"functions"`
-}
-
-type FileData struct {
-	// e.g. path: src/app/domain/example.go
-	// e.g. file: example.go
-	Full string `yaml:"full"`
-
-	// e.g. path: src/app/domain/
-	// e.g. file: example
-	Base string `yaml:"base"`
 }
 
 type PackageData struct {
@@ -108,16 +101,19 @@ type FileImports struct {
 	Vendor   []string `yaml:"vendor"`
 }
 
-type Value struct {
-	Name  string `yaml:"name"`
-	Type  string `yaml:"type"`
-	Value string `yml:"value"`
-}
-
+// This is only used for testing.
 func (m File) MustParse() string {
 	result, err := utils.ParseTemplateToString("tmp_template_file", templateFile, m)
 	if err != nil {
 		panic(err)
 	}
 	return result
+}
+
+func (m File) Generate() error {
+	err := utils.GenerateFile(m.Path.Base, m.Name.Full, templateFile, m)
+	if err != nil {
+		return err
+	}
+	return nil
 }

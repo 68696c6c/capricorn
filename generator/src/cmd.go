@@ -17,15 +17,15 @@ import (
 )
 
 var Root = &cobra.Command{
-	Use:   "{{ .Module.Kebob }}",
-	Short: "Root command for {{ .Config.Name }}",
+	Use:   "{{ .Name.Kebob }}",
+	Short: "Root command for {{ .Spec.Name }}",
 }
 
 func init() {
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	viper.AutomaticEnv()
-	viper.SetDefault("author", "{{ .Config.Author.Name }} <{{ .Config.Author.Email }}>")
-	viper.SetDefault("license", "{{ .Config.License }}")
+	viper.SetDefault("author", "{{ .Spec.Author.Name }} <{{ .Spec.Author.Email }}>")
+	viper.SetDefault("license", "{{ .Spec.License }}")
 }`
 
 const serverTemplate = `

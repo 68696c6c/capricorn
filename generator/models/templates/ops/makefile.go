@@ -1,15 +1,11 @@
 package ops
 
 import (
-	"github.com/68696c6c/capricorn/generator/models"
+	"github.com/68696c6c/capricorn/generator/models/templates"
 	"github.com/68696c6c/capricorn/generator/utils"
-
-	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
 )
 
-const makefileTemplate = `
-DCR = docker-compose run --rm
+const MakefileTemplate = `DCR = docker-compose run --rm
 
 NETWORK_NAME ?= docker-dev
 APP_NAME = app
@@ -61,7 +57,7 @@ setup-network:
 	docker network create docker-dev || exit 0
 
 setup: setup-network image-local deps build
-	$(DCR) $(DB_NAME) mysql -u root -psecret -h $(DB_NAME) -e "CREATE DATABASE IF NOT EXISTS {{ .AppDBName }}"
+	$(DCR) $(DB_NAME) mysql -u root -p{{ .MainDatabase.Password }} -h $(DB_NAME) -e "CREATE DATABASE IF NOT EXISTS {{ .MainDatabase.Name }}"
 	$(DCR) $(APP_NAME) bash -c "./$(APP_NAME) migrate up && ./$(APP_NAME) seed"
 
 local: local-down build
@@ -91,17 +87,28 @@ lint:
 
 lint-fix:
 	$(DCR) $(APP_NAME) golangci-lint run --fix
-
 `
 
-func CreateMakefile(spec models.Project, logger *logrus.Logger) error {
-	logPrefix := "CreateMakefile | "
-	logger.Debug(logPrefix, "generating makefile")
+type Makefile struct {
+	Name templates.FileData `yaml:"name"`
+	Path templates.FileData `yaml:"path"`
 
-	err := utils.GenerateFile(spec.Paths.Root, "Makefile", makefileTemplate, spec)
+	Data Ops `yaml:"data"`
+}
+
+// This is only used for testing.
+func (m Makefile) MustParse() string {
+	result, err := utils.ParseTemplateToString("tmp_template_makefile", MakefileTemplate, m.Data)
 	if err != nil {
-		return errors.Wrap(err, "failed to create Makefile")
+		panic(err)
 	}
+	return result
+}
 
+func (m Makefile) Generate() error {
+	err := utils.GenerateFile(m.Path.Base, m.Name.Full, MakefileTemplate, m.Data)
+	if err != nil {
+		return err
+	}
 	return nil
 }

@@ -16,7 +16,7 @@ func makeStructFieldTestTag(name string) (Tag, string) {
 	return tag, expected
 }
 
-func TestStructField_MustParse(t *testing.T) {
+func TestField_MustParse(t *testing.T) {
 	tag1, expectedTag1 := makeStructFieldTestTag("tag1")
 	tag2, expectedTag2 := makeStructFieldTestTag("tag2")
 	input := Field{

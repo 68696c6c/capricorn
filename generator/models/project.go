@@ -2,7 +2,6 @@ package models
 
 import (
 	"fmt"
-	"io/ioutil"
 	"path/filepath"
 	"strings"
 
@@ -13,12 +12,27 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-type Name struct {
-	Snake      string
-	Kebob      string
-	Exported   string
-	Unexported string
-	Package    string
+type Project struct {
+	Spec Spec
+	Name Name
+
+	Workdir      string
+	ProjectPath  string
+	AppHTTPAlias string
+	AppDBName    string
+
+	Paths             Paths
+	Imports           Paths
+	Commands          []Command
+	Domains           []Domain
+	ReposWithServices []Repo `yaml:"repos_with_services,omitempty"` // domains that have a service which need repo injection
+	DomainRepos       []Repo `yaml:"domain_repos,omitempty"`        // repos that do not need to be injected into a service
+
+	Container   Container    `yaml:"container,omitempty"`
+	Controllers []Controller `yaml:"controllers,omitempty"`
+	Services    []Service    `yaml:"services,omitempty"`
+	Repos       []Repo       `yaml:"repos,omitempty"`
+	Models      []Model      `yaml:"models,omitempty"`
 }
 
 type ProjectResource struct {
@@ -161,51 +175,12 @@ type Container struct {
 	Repos []Repo `yaml:"repos,omitempty"`
 }
 
-type Project struct {
-	Config Config
-	Module Name
-
-	Workdir      string
-	ProjectPath  string
-	AppHTTPAlias string
-	AppDBName    string
-
-	Paths             Paths
-	Imports           Paths
-	Commands          []Command
-	Domains           []Domain
-	ReposWithServices []Repo `yaml:"repos_with_services,omitempty"` // domains that have a service which need repo injection
-	DomainRepos       []Repo `yaml:"domain_repos,omitempty"`        // repos that do not need to be injected into a service
-
-	Container   Container    `yaml:"container,omitempty"`
-	Controllers []Controller `yaml:"controllers,omitempty"`
-	Services    []Service    `yaml:"services,omitempty"`
-	Repos       []Repo       `yaml:"repos,omitempty"`
-	Models      []Model      `yaml:"models,omitempty"`
-}
-
 func (s Project) String() string {
 	out, err := yaml.Marshal(&s)
 	if err != nil {
 		return "failed to marshal spec to yaml"
 	}
 	return string(out)
-}
-
-type Config struct {
-	Name      string
-	Module    string
-	License   string
-	Author    Author
-	Resources []Resource
-	Commands  []ConfigCommand
-}
-
-type ConfigCommand struct {
-	Name    string   `yaml:"name"`
-	Args    []string `yaml:"args"`
-	Use     string
-	VarName string
 }
 
 type Command struct {
@@ -226,27 +201,6 @@ type Domain struct {
 	Service    Service
 }
 
-type Resource struct {
-	Name      string
-	BelongsTo []string `yaml:"belongs_to"`
-	HasMany   []string `yaml:"has_many"`
-	Fields    []ResourceField
-	Actions   []string
-	Custom    []string
-}
-
-type ResourceField struct {
-	Name     string
-	Type     string
-	Required bool
-}
-
-type Author struct {
-	Name         string
-	Email        string
-	Organization string
-}
-
 const (
 	pathSRC        = "src"
 	pathOPS        = "ops"
@@ -263,33 +217,27 @@ const (
 )
 
 func NewProject(filePath, projectPath string) (Project, error) {
-	file, err := ioutil.ReadFile(filePath)
+	spec, err := NewSpec(filePath)
 	if err != nil {
-		return Project{}, errors.Wrap(err, "failed to read yaml spec file")
+		return Project{}, errors.Wrap(err, "failed to read project project")
 	}
 
-	config := Config{}
-	err = yaml.Unmarshal(file, &config)
-	if err != nil {
-		return Project{}, errors.Wrap(err, "failed to parse project spec")
+	project := Project{
+		Spec: spec,
 	}
 
-	spec := Project{
-		Config: config,
-	}
-
-	kebob := filepath.Base(config.Module)
-	spec.Module = Name{
+	kebob := filepath.Base(spec.Module)
+	project.Name = Name{
 		Snake:      utils.SeparatedToSnake(kebob),
 		Kebob:      kebob,
 		Exported:   utils.SeparatedToExported(kebob),
 		Unexported: utils.SeparatedToUnexported(kebob),
-		Package:    config.Module,
+		// Package:    spec.Module,
 	}
 
-	spec.AppHTTPAlias = spec.Module.Kebob
-	spec.AppDBName = spec.Module.Snake
-	spec.Workdir = spec.Module.Kebob
+	project.AppHTTPAlias = project.Name.Kebob
+	project.AppDBName = project.Name.Snake
+	project.Workdir = project.Name.Kebob
 
 	rootPath := projectPath
 	if projectPath == "" {
@@ -297,18 +245,18 @@ func NewProject(filePath, projectPath string) (Project, error) {
 		if err != nil {
 			return Project{}, errors.Wrap(err, "failed to determine project path")
 		}
-		rootPath = utils.JoinPath(projectPath, config.Module)
+		rootPath = utils.JoinPath(projectPath, spec.Module)
 	}
 
-	spec.Paths = makePaths(rootPath)
-	spec.Imports = makePaths(config.Module)
+	project.Paths = makePaths(rootPath)
+	project.Imports = makePaths(spec.Module)
 
-	for _, c := range spec.Config.Commands {
-		command := makeCommand(c, spec.Imports.App)
-		spec.Commands = append(spec.Commands, command)
+	for _, c := range project.Spec.Commands {
+		command := makeCommand(c, project.Imports.App)
+		project.Commands = append(project.Commands, command)
 	}
 
-	for _, r := range spec.Config.Resources {
+	for _, r := range project.Spec.Resources {
 		resource := makeProjectResource(r.Name)
 
 		// If no methods were specified, default to all.
@@ -323,33 +271,33 @@ func NewProject(filePath, projectPath string) (Project, error) {
 		}
 
 		domain := Domain{
-			Import: fmt.Sprintf("%s/%s", spec.Imports.Domains, resource.Plural.Snake),
+			Import: fmt.Sprintf("%s/%s", project.Imports.Domains, resource.Plural.Snake),
 			Name:   resource.Plural.Snake,
 		}
 
-		model := makeModel(resource, r, domain.Name, spec.Imports.Domains)
+		model := makeModel(resource, r, domain.Name, project.Imports.Domains)
 		domain.Model = model
-		spec.Models = append(spec.Models, model)
+		project.Models = append(project.Models, model)
 
 		repo := makeRepo(resource, r, domain.Name)
 		domain.Repo = repo
-		spec.Repos = append(spec.Repos, repo)
+		project.Repos = append(project.Repos, repo)
 
 		if serv := makeService(resource, r, domain.Name, repo); serv != nil {
 			domain.Service = *serv
-			spec.Services = append(spec.Services, *serv)
-			spec.ReposWithServices = append(spec.ReposWithServices, repo)
+			project.Services = append(project.Services, *serv)
+			project.ReposWithServices = append(project.ReposWithServices, repo)
 		} else {
-			spec.DomainRepos = append(spec.DomainRepos, repo)
+			project.DomainRepos = append(project.DomainRepos, repo)
 		}
 
 		controller := makeController(resource, r, domain.Name, repo)
 		domain.Controller = controller
 
-		spec.Domains = append(spec.Domains, domain)
+		project.Domains = append(project.Domains, domain)
 	}
 
-	return spec, nil
+	return project, nil
 }
 
 func makePaths(rootPath string) Paths {
@@ -652,15 +600,5 @@ func makeHandler(r ProjectResource, controllerName Name, action, uri, name strin
 		Signature:   sig,
 		Receiver:    controllerName.Exported,
 		Middlewares: []Middleware{},
-	}
-}
-
-func MakeName(base string) Name {
-	return Name{
-		Snake:      utils.SeparatedToSnake(base),
-		Kebob:      utils.SeparatedToKebob(base),
-		Exported:   utils.SeparatedToExported(base),
-		Unexported: utils.SeparatedToUnexported(base),
-		Package:    "",
 	}
 }

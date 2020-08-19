@@ -53,7 +53,7 @@ func TestFile_MustParse(t *testing.T) {
 			Name: "init",
 			Body: "return",
 		},
-		Consts: []Value{
+		Consts: []Const{
 			{
 				Name:  "const1",
 				Value: `"const 1 value"`,
@@ -63,7 +63,7 @@ func TestFile_MustParse(t *testing.T) {
 				Value: "1",
 			},
 		},
-		Vars: []Value{
+		Vars: []Var{
 			{
 				Name:  "var1",
 				Value: `"var 1 value"`,
@@ -142,7 +142,7 @@ func TestFile_MustParse_NoInit(t *testing.T) {
 			App:      []string{"app"},
 			Vendor:   []string{"vendor"},
 		},
-		Consts: []Value{
+		Consts: []Const{
 			{
 				Name:  "const1",
 				Value: `"const 1 value"`,
@@ -152,7 +152,7 @@ func TestFile_MustParse_NoInit(t *testing.T) {
 				Value: "1",
 			},
 		},
-		Vars: []Value{
+		Vars: []Var{
 			{
 				Name:  "var1",
 				Value: `"var 1 value"`,
@@ -230,7 +230,7 @@ func TestFile_MustParse_NoConsts(t *testing.T) {
 			Name: "init",
 			Body: "return",
 		},
-		Vars: []Value{
+		Vars: []Var{
 			{
 				Name:  "var1",
 				Value: `"var 1 value"`,
