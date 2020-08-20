@@ -1,6 +1,6 @@
 
-#EXAMPLE_SPEC_PATH ?= example.yml
-#EXAMPLE_APP_PATH ?= github.com/68696c6c/capricorn-example
+# EXAMPLE_SPEC_PATH ?= example.yml
+# EXAMPLE_APP_PATH ?= ~/Code/capricorn-example
 
 EXAMPLE_SPEC_PATH ?= loom-rnd.yml
 EXAMPLE_APP_PATH ?= ~/Code/loom-rnd

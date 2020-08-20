@@ -37,10 +37,9 @@ type ResourceField struct {
 }
 
 type ConfigCommand struct {
-	Name    string   `yaml:"name"`
-	Args    []string `yaml:"args"`
-	Use     string
-	VarName string
+	Name string   `yaml:"name"`
+	Args []string `yaml:"args"`
+	Use  string   `yaml:"use"`
 }
 
 func NewSpec(filePath string) (Spec, error) {

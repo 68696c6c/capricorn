@@ -2,7 +2,10 @@ package src
 
 import (
 	"fmt"
+	"github.com/68696c6c/capricorn/generator/models/templates"
+
 	"github.com/68696c6c/capricorn/generator/models"
+	"github.com/68696c6c/capricorn/generator/models/templates/golang"
 	"github.com/68696c6c/capricorn/generator/utils"
 
 	"github.com/pkg/errors"
@@ -56,10 +59,65 @@ func CreateDomains(spec *models.Project, logger *logrus.Logger) error {
 func createDomainModel(basePath string, m models.Model, logger *logrus.Logger) error {
 	logger.Infof("%s | creating model %s", logPrefix, m.Filename)
 
-	err := utils.GenerateFile(basePath, m.Filename, modelTemplate, m)
+	fields := []golang.Field{
+		{
+			Type: "goat.Model",
+		},
+	}
+
+	for _, f := range m.Fields {
+		tags := []golang.Tag{
+			{
+				Key:    "json",
+				Values: []string{f.Tag},
+			},
+		}
+
+		if f.Required {
+			tags = append(tags, golang.Tag{
+				Key:    "binding",
+				Values: []string{"required"},
+			})
+		}
+
+		fields = append(fields, golang.Field{
+			Name: f.Name,
+			Type: f.Type,
+			Tags: tags,
+		})
+	}
+
+	file := golang.File{
+		Name: templates.FileData{
+			Full: m.Filename,
+			Base: m.Filename, // @TODO remove file extension from this value
+		},
+		Path: templates.FileData{
+			Full: basePath + m.Filename,
+			Base: basePath,
+		},
+		Package: golang.PackageData{
+			Name: m.Package,
+		},
+		Imports: golang.FileImports{
+			App:    m.Imports,
+			Vendor: []string{"github.com/68696c6c/goat"},
+		},
+		Structs: []golang.Struct{
+			{
+				Name:   m.Name,
+				Fields: fields,
+			},
+		},
+	}
+
+	// err := utils.GenerateFile(file.Path.Base, file.Name.Full, modelTemplate, m)
+	err := file.Generate()
 	if err != nil {
 		return errors.Wrap(err, "failed to generate model")
 	}
+
+	// @TODO generate migration file
 
 	return nil
 }
