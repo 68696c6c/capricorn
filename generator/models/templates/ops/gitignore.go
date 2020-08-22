@@ -15,7 +15,7 @@ vendor
 
 type Gitignore struct {
 	Name templates.FileData `yaml:"name"`
-	Path templates.FileData `yaml:"path"`
+	Path templates.PathData `yaml:"path"`
 
 	Data Ops `yaml:"data"`
 }

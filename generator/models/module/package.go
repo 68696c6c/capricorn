@@ -7,76 +7,80 @@ import (
 )
 
 const (
-	dirSRC        = "src"
-	dirOPS        = "ops"
-	dirDocker     = "docker"
-	dirApp        = "app"
-	dirCMD        = "cmd"
-	dirDB         = "db"
-	dirHTTP       = "http"
-	dirRepos      = "repos"
-	dirModels     = "models"
-	dirMigrations = "migrations"
-	dirSeeders    = "seeders"
+	pkgSRC        = "src"
+	pkgOPS        = "ops"
+	pkgDocker     = "docker"
+	pkgApp        = "app"
+	pkgCMD        = "cmd"
+	pkgDB         = "db"
+	pkgHTTP       = "http"
+	pkgRepos      = "repos"
+	pkgModels     = "models"
+	pkgMigrations = "migrations"
+	pkgSeeders    = "seeders"
 )
 
 type Package struct {
 	Name models.Name        `yaml:"name"`
-	Path templates.FileData `yaml:"path"` // e.g. full: module/path/src/app/domain, base: domain
+	Path templates.PathData `yaml:"path"` // e.g. full: module/path/src/app/domain, base: domain
 }
 
 type Packages struct {
-	SRC        Package   `yaml:"src"`
-	OPS        Package   `yaml:"ops"`
-	Docker     Package   `yaml:"docker"`
-	App        Package   `yaml:"app"`
-	CMD        Package   `yaml:"cmd"`
-	DB         Package   `yaml:"database"`
-	HTTP       Package   `yaml:"http"`
-	Repos      Package   `yaml:"repos"`
-	Models     Package   `yaml:"models"`
-	Migrations Package   `yaml:"migrations"`
-	Seeders    Package   `yaml:"seeders"`
-	Domains    []Package `yaml:"domains"`
+	SRC        Package `yaml:"src"`
+	OPS        Package `yaml:"ops"`
+	Docker     Package `yaml:"docker"`
+	App        Package `yaml:"app"`
+	CMD        Package `yaml:"cmd"`
+	DB         Package `yaml:"database"`
+	HTTP       Package `yaml:"http"`
+	Repos      Package `yaml:"repos"`
+	Models     Package `yaml:"models"`
+	Migrations Package `yaml:"migrations"`
+	Seeders    Package `yaml:"seeders"`
+	Domains    Package `yaml:"domains"`
 }
 
 func makePackages(root string, resources []Resource) Packages {
-	pkgSRC := makePackage(root, dirSRC)
-	srcPath := pkgSRC.Path.Full
+	pSRC := MakePackage(root, pkgSRC)
+	srcPath := pSRC.Path.Full
 
-	pkgApp := makePackage(srcPath, dirApp)
-	appPath := pkgApp.Path.Full
+	pApp := MakePackage(srcPath, pkgApp)
 
-	pkgDB := makePackage(srcPath, dirDB)
-	dbPath := pkgDB.Path.Full
+	pDB := MakePackage(srcPath, pkgDB)
+	dbPath := pDB.Path.Full
 
 	result := Packages{
-		Docker:     makePackage(root, dirDocker),
-		OPS:        makePackage(root, dirOPS),
-		SRC:        pkgSRC,
-		App:        pkgApp,
-		CMD:        makePackage(srcPath, dirCMD),
-		HTTP:       makePackage(srcPath, dirHTTP),
-		Repos:      makePackage(srcPath, dirRepos),
-		Models:     makePackage(srcPath, dirModels),
-		DB:         pkgDB,
-		Migrations: makePackage(dbPath, dirMigrations),
-		Seeders:    makePackage(dbPath, dirSeeders),
-	}
-
-	for _, r := range resources {
-		result.Domains = append(result.Domains, makePackage(appPath, r.Name.Kebob))
+		Docker:     MakePackage(root, pkgDocker),
+		OPS:        MakePackage(root, pkgOPS),
+		SRC:        pSRC,
+		App:        pApp,
+		CMD:        MakePackage(srcPath, pkgCMD),
+		HTTP:       MakePackage(srcPath, pkgHTTP),
+		Repos:      MakePackage(srcPath, pkgRepos),
+		Models:     MakePackage(srcPath, pkgModels),
+		DB:         pDB,
+		Migrations: MakePackage(dbPath, pkgMigrations),
+		Seeders:    MakePackage(dbPath, pkgSeeders),
+		Domains:    pApp,
 	}
 
 	return result
 }
 
-func makePackage(pkgBase, pkgName string) Package {
+func MakePackage(pkgBase, pkgName string) Package {
 	return Package{
-		Name: makeName(pkgName),
-		Path: templates.FileData{
+		Name: models.MakeName(pkgName),
+		Path: templates.PathData{
 			Base: pkgName,
 			Full: utils.JoinPath(pkgBase, pkgName),
 		},
 	}
+}
+
+func (m Package) GetImport() string {
+	return m.Path.Full
+}
+
+func (m Package) GetReference() string {
+	return m.Path.Base
 }

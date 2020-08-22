@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/68696c6c/capricorn/generator/models/spec"
 	"github.com/68696c6c/capricorn/generator/utils"
 
 	"github.com/jinzhu/inflection"
@@ -13,7 +14,7 @@ import (
 )
 
 type Project struct {
-	Spec Spec
+	Spec spec.Spec
 	Name Name
 
 	Workdir      string
@@ -217,16 +218,16 @@ const (
 )
 
 func NewProject(filePath, projectPath string) (Project, error) {
-	spec, err := NewSpec(filePath)
+	projectSpec, err := spec.NewSpec(filePath)
 	if err != nil {
 		return Project{}, errors.Wrap(err, "failed to read project project")
 	}
 
 	project := Project{
-		Spec: spec,
+		Spec: projectSpec,
 	}
 
-	kebob := filepath.Base(spec.Module)
+	kebob := filepath.Base(projectSpec.Module)
 	project.Name = Name{
 		Snake:      utils.SeparatedToSnake(kebob),
 		Kebob:      kebob,
@@ -245,11 +246,11 @@ func NewProject(filePath, projectPath string) (Project, error) {
 		if err != nil {
 			return Project{}, errors.Wrap(err, "failed to determine project path")
 		}
-		rootPath = utils.JoinPath(projectPath, spec.Module)
+		rootPath = utils.JoinPath(projectPath, projectSpec.Module)
 	}
 
 	project.Paths = makePaths(rootPath)
-	project.Imports = makePaths(spec.Module)
+	project.Imports = makePaths(projectSpec.Module)
 
 	for _, c := range project.Spec.Commands {
 		command := makeCommand(c, project.Imports.App)
@@ -329,7 +330,7 @@ func makeProjectResource(name string) ProjectResource {
 	}
 }
 
-func makeCommand(c ConfigCommand, appImport string) Command {
+func makeCommand(c spec.Command, appImport string) Command {
 	cName := strings.Replace(c.Name, ":", "_", -1)
 	commandName := MakeName(cName)
 	return Command{
@@ -342,7 +343,7 @@ func makeCommand(c ConfigCommand, appImport string) Command {
 	}
 }
 
-func makeModel(r ProjectResource, config Resource, packageName, domainsImportBase string) Model {
+func makeModel(r ProjectResource, config spec.Resource, packageName, domainsImportBase string) Model {
 	result := Model{
 		Resource:    r,
 		Name:        r.Single.Exported,
@@ -408,7 +409,7 @@ func makeModel(r ProjectResource, config Resource, packageName, domainsImportBas
 	return result
 }
 
-func makeRepo(r ProjectResource, config Resource, packageName string) Repo {
+func makeRepo(r ProjectResource, config spec.Resource, packageName string) Repo {
 	repoName := MakeName("repo_GORM")
 	result := Repo{
 		Resource:      r,
@@ -496,7 +497,7 @@ func makeMethod(r ProjectResource, repoName Name, name string, parameters, retur
 	}
 }
 
-func makeService(r ProjectResource, config Resource, packageName string, repo Repo) *Service {
+func makeService(r ProjectResource, config spec.Resource, packageName string, repo Repo) *Service {
 	if len(config.Custom) == 0 {
 		return nil
 	}
@@ -520,7 +521,7 @@ func makeService(r ProjectResource, config Resource, packageName string, repo Re
 	return &service
 }
 
-func makeController(r ProjectResource, config Resource, packageName string, repo Repo) Controller {
+func makeController(r ProjectResource, config spec.Resource, packageName string, repo Repo) Controller {
 	controllerName := MakeName(r.Plural.Unexported)
 	result := Controller{
 		Resource:      r,

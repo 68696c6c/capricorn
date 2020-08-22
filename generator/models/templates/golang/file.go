@@ -1,86 +1,19 @@
 package golang
 
 import (
+	"fmt"
+	"strings"
+
 	"github.com/68696c6c/capricorn/generator/models/templates"
 	"github.com/68696c6c/capricorn/generator/utils"
 )
 
-var templateFile = `package {{ .Package.Name }}
-
-import (
-	{{- range $key, $value := .Imports.Standard }}
-	"{{ $value }}"
-	{{- end }}{{ println }}
-
-	{{- range $key, $value := .Imports.App }}
-	"{{ $value }}"
-	{{- end }}{{ println }}
-
-	{{- range $key, $value := .Imports.Vendor }}
-	"{{ $value }}"
-	{{- end }}
-)
-
-{{- if .InitFunction.Body }}
-{{- println }}
-{{- println }}
-{{ .InitFunction.MustParse }}
-{{- println }}
-{{- else }}
-{{- println }}
-{{- end }}
-
-{{- $length := len .Consts }}
-{{- if gt $length 0 }}
-{{- println }}
-{{- range $key, $value := .Consts }}
-{{ $value.MustParse }}
-{{- println }}
-{{- end }}
-{{- end }}
-
-{{- $length := len .Vars }}
-{{- if gt $length 0 }}
-{{- println }}
-{{- range $key, $value := .Vars }}
-{{ $value.MustParse }}
-{{- println }}
-{{- end }}
-{{- end }}
-
-{{- $length := len .Interfaces }}
-{{- if gt $length 0 }}
-{{- println }}
-{{- range $key, $value := .Interfaces }}
-{{ $value.MustParse }}
-{{- println }}
-{{- end }}
-{{- end }}
-
-{{- $length := len .Interfaces }}
-{{- if gt $length 0 }}
-{{- println }}
-{{- range $key, $value := .Structs }}
-{{ $value.MustParse }}
-{{- println }}
-{{- end }}
-{{- end }}
-
-{{- $length := len .Interfaces }}
-{{- if gt $length 0 }}
-{{- println }}
-{{- range $key, $value := .Functions }}
-{{ $value.MustParse }}
-{{- println }}
-{{- end }}
-{{- end }}`
-
 type File struct {
 	Name templates.FileData `yaml:"name"`
-	Path templates.FileData `yaml:"path"`
+	Path templates.PathData `yaml:"path"`
 
 	Package      PackageData `yaml:"package"`
-	Imports      FileImports `yaml:"imports"`
+	Imports      Imports     `yaml:"imports"`
 	InitFunction Function    `yaml:"init_function"`
 	Consts       []Const     `yaml:"consts"`
 	Vars         []Var       `yaml:"vars"`
@@ -92,28 +25,87 @@ type File struct {
 type PackageData struct {
 	Name   string `yaml:"name"`   // e.g. domain
 	Module string `yaml:"module"` // e.g. github.com/example/src/app/domain
-	Local  string `yaml:"local"`  // e.g. src/app/domain
 }
 
-type FileImports struct {
-	Standard []string `yaml:"standard"`
-	App      []string `yaml:"app"`
-	Vendor   []string `yaml:"vendor"`
+func (m File) MustParseConsts() string {
+	var result []string
+	for _, v := range m.Consts {
+		result = append(result, v.MustParse())
+	}
+	return strings.Join(result, "\n\n")
+}
+
+func (m File) MustParseVars() string {
+	var result []string
+	for _, v := range m.Vars {
+		result = append(result, v.MustParse())
+	}
+	return strings.Join(result, "\n\n")
+}
+
+func (m File) MustParseInterfaces() string {
+	var result []string
+	for _, v := range m.Interfaces {
+		result = append(result, v.MustParse())
+	}
+	return strings.Join(result, "\n\n")
+}
+
+func (m File) MustParseStructs() string {
+	var result []string
+	for _, v := range m.Structs {
+		result = append(result, v.MustParse())
+	}
+	return strings.Join(result, "\n\n")
+}
+
+func (m File) MustParseFunctions() string {
+	var result []string
+	for _, v := range m.Functions {
+		result = append(result, v.MustParse())
+	}
+	return strings.Join(result, "\n\n")
 }
 
 // This is only used for testing.
 func (m File) MustParse() string {
-	result, err := utils.ParseTemplateToString("tmp_template_file", templateFile, m)
-	if err != nil {
-		panic(err)
+	var sections []string
+
+	if m.Imports.HasImports() {
+		sections = append(sections, m.Imports.MustParse())
 	}
-	return result
+	if m.InitFunction.Body != "" {
+		sections = append(sections, m.InitFunction.MustParse())
+	}
+	if len(m.Consts) > 0 {
+		sections = append(sections, m.MustParseConsts())
+	}
+	if len(m.Vars) > 0 {
+		sections = append(sections, m.MustParseVars())
+	}
+	if len(m.Interfaces) > 0 {
+		sections = append(sections, m.MustParseInterfaces())
+	}
+	if len(m.Structs) > 0 {
+		sections = append(sections, m.MustParseStructs())
+	}
+	if len(m.Functions) > 0 {
+		sections = append(sections, m.MustParseFunctions())
+	}
+
+	result := []string{fmt.Sprintf("package %s\n", m.Package.Name)}
+
+	// Separate each section with an additional line break.
+	result = append(result, strings.Join(sections, "\n\n\n"))
+
+	return strings.Join(result, "\n") + "\n"
 }
 
-func (m File) Generate() error {
-	err := utils.GenerateFile(m.Path.Base, m.Name.Full, templateFile, m)
-	if err != nil {
-		return err
+func MakePackageData(rootPath, rootPackage, pkgName string) PackageData {
+	local := utils.JoinPath(rootPackage, pkgName)
+	module := utils.JoinPath(rootPath, local)
+	return PackageData{
+		Name:   pkgName,
+		Module: module,
 	}
-	return nil
 }

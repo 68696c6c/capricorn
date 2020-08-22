@@ -16,7 +16,7 @@ DB_DEBUG={{ .MainDatabase.Debug }}
 
 type AppEnv struct {
 	Name templates.FileData `yaml:"name"`
-	Path templates.FileData `yaml:"path"`
+	Path templates.PathData `yaml:"path"`
 
 	Data Ops `yaml:"data"`
 }

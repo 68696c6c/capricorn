@@ -1,5 +1,11 @@
 package templates
 
+import (
+	"fmt"
+
+	"github.com/68696c6c/capricorn/generator/utils"
+)
+
 type Template interface {
 	Generate() error
 }
@@ -10,12 +16,25 @@ type SubTemplate interface {
 	MustParse() string
 }
 
+// e.g. base: example
+// e.g. full: example.go
 type FileData struct {
-	// e.g. path: src/app/domain/example.go
-	// e.g. file: example.go
 	Full string `yaml:"full"`
-
-	// e.g. path: src/app/domain/
-	// e.g. file: example
 	Base string `yaml:"base"`
+}
+
+// e.g. base: src/app/domain/
+// e.g. full: src/app/domain/example.go
+type PathData FileData
+
+func MakeGoFileData(basePath, fileBaseName string) (FileData, PathData) {
+	f := FileData{
+		Full: fmt.Sprintf("%s.go", fileBaseName),
+		Base: fileBaseName,
+	}
+	p := PathData{
+		Full: utils.JoinPath(basePath, f.Full),
+		Base: f.Full,
+	}
+	return f, p
 }

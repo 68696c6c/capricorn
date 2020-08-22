@@ -32,6 +32,9 @@ build:
 test:
 	go test ./... -cover
 
+test-file:
+	go test ./generator/models/templates/golang -run TestFile_MustParse
+
 new: build
 	capricorn new $(SPEC_PATH)
 
