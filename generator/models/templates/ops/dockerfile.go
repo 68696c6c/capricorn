@@ -1,7 +1,7 @@
 package ops
 
 import (
-	"github.com/68696c6c/capricorn/generator/models/templates"
+	utils2 "github.com/68696c6c/capricorn/generator/models/utils"
 	"github.com/68696c6c/capricorn/generator/utils"
 )
 
@@ -47,8 +47,8 @@ RUN go build -i -o app
 `
 
 type Dockerfile struct {
-	Name templates.FileData `yaml:"name"`
-	Path templates.PathData `yaml:"path"`
+	Name utils2.FileData `yaml:"name"`
+	Path utils2.PathData `yaml:"path"`
 
 	Data Ops `yaml:"data"`
 }

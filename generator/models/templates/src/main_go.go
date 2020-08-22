@@ -2,8 +2,8 @@ package src
 
 import (
 	"github.com/68696c6c/capricorn/generator/models/module"
-	"github.com/68696c6c/capricorn/generator/models/templates"
 	"github.com/68696c6c/capricorn/generator/models/templates/golang"
+	"github.com/68696c6c/capricorn/generator/models/utils"
 )
 
 const templateMainFunc = `
@@ -13,11 +13,11 @@ const templateMainFunc = `
 	}`
 
 func NewMainGo(modulePackages module.Packages, rootPath, rootPackage string) golang.File {
-	fileData, pathData := templates.MakeGoFileData(rootPath, "main")
+	fileData, pathData := utils.MakeGoFileData(rootPath, "main")
 	return golang.File{
 		Name:    fileData,
 		Path:    pathData,
-		Package: golang.MakePackageData(rootPath, rootPackage, "main"),
+		Package: utils.MakePackageData(rootPackage, "main"),
 		Imports: golang.Imports{
 			Standard: []string{"os"},
 			App:      []string{modulePackages.CMD.GetImport()},

@@ -2,16 +2,16 @@ package src
 
 import (
 	"github.com/68696c6c/capricorn/generator/models/module"
-	"github.com/68696c6c/capricorn/generator/models/templates"
 	"github.com/68696c6c/capricorn/generator/models/templates/golang"
+	utils2 "github.com/68696c6c/capricorn/generator/models/utils"
 	"github.com/68696c6c/capricorn/generator/utils"
 )
 
 type SRC struct {
 	_module  module.Module
 	basePath string
-	path     templates.PathData
-	pkgData  golang.PackageData
+	path     utils2.PathData
+	pkgData  utils2.PackageData
 	Main     golang.File `yaml:"main"`
 	App      App         `yaml:"app"`
 	CMD      CMD         `yaml:"cmd"`
@@ -57,14 +57,11 @@ func NewSRCDDD(m module.Module, rootPath string) SRC {
 	result := SRC{
 		_module:  m,
 		basePath: rootPath,
-		path: templates.PathData{
+		path: utils2.PathData{
 			Full: utils.JoinPath(rootPath, srcPath.Base),
 			Base: rootPath,
 		},
-		pkgData: golang.PackageData{
-			Name:   srcPath.Base,
-			Module: utils.JoinPath(rootPath, srcPath.Base),
-		},
+		pkgData: utils2.MakePackageData(rootPath, srcPath.Base),
 	}
 	result.makeDomains()
 	// return SRC{
@@ -97,8 +94,8 @@ func (m SRC) makeDomains() []Domain {
 	return result
 }
 
-func makeController(baseFileName string, pkgData golang.PackageData, resource module.Resource) golang.File {
-	fileData, pathData := templates.MakeGoFileData(pkgData.Module, baseFileName)
+func makeController(baseFileName string, pkgData utils2.PackageData, resource module.Resource) golang.File {
+	fileData, pathData := utils2.MakeGoFileData(pkgData.GetImport(), baseFileName)
 	return golang.File{
 		Name:    fileData,
 		Path:    pathData,

@@ -4,8 +4,14 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/68696c6c/capricorn/generator/models/utils"
+
 	"github.com/stretchr/testify/assert"
 )
+
+func makeFileTestPackageData() utils.PackageData {
+	return utils.MakePackageData("github.com/user", "example_package")
+}
 
 func makeFileTestInitFunc() Function {
 	return Function{
@@ -55,9 +61,7 @@ func TestFile_MustParse_Complete(t *testing.T) {
 	expectedImports := imps.MustParse()
 
 	input := File{
-		Package: PackageData{
-			Name: "package-name",
-		},
+		Package:      makeFileTestPackageData(),
 		Imports:      imps,
 		InitFunction: makeFileTestInitFunc(),
 		Consts: []Const{
@@ -84,7 +88,7 @@ func TestFile_MustParse_Complete(t *testing.T) {
 		Structs:    []Struct{struct1, struct2},
 		Functions:  []Function{func1, func2},
 	}
-	expected := fmt.Sprintf(`package package-name
+	expected := fmt.Sprintf(`package example_package
 
 %s
 
@@ -135,9 +139,7 @@ func TestFile_MustParse_NoImports(t *testing.T) {
 	expectedFunc2 := func2.MustParse()
 
 	input := File{
-		Package: PackageData{
-			Name: "package-name",
-		},
+		Package: makeFileTestPackageData(),
 		// Imports: Imports{
 		// 	Standard: []string{"standard"},
 		// 	App:      []string{"app"},
@@ -168,7 +170,7 @@ func TestFile_MustParse_NoImports(t *testing.T) {
 		Structs:    []Struct{struct1, struct2},
 		Functions:  []Function{func1, func2},
 	}
-	expected := fmt.Sprintf(`package package-name
+	expected := fmt.Sprintf(`package example_package
 
 func init() {
 	return
@@ -223,9 +225,7 @@ func TestFile_MustParse_NoInit(t *testing.T) {
 	expectedImports := imps.MustParse()
 
 	input := File{
-		Package: PackageData{
-			Name: "package-name",
-		},
+		Package: makeFileTestPackageData(),
 		Imports: imps,
 		Consts: []Const{
 			{
@@ -251,7 +251,7 @@ func TestFile_MustParse_NoInit(t *testing.T) {
 		Structs:    []Struct{struct1, struct2},
 		Functions:  []Function{func1, func2},
 	}
-	expected := fmt.Sprintf(`package package-name
+	expected := fmt.Sprintf(`package example_package
 
 %s
 
@@ -304,9 +304,7 @@ func TestFile_MustParse_NoConsts(t *testing.T) {
 	expectedImports := imps.MustParse()
 
 	input := File{
-		Package: PackageData{
-			Name: "package-name",
-		},
+		Package:      makeFileTestPackageData(),
 		Imports:      imps,
 		InitFunction: makeFileTestInitFunc(),
 		Vars: []Var{
@@ -323,7 +321,7 @@ func TestFile_MustParse_NoConsts(t *testing.T) {
 		Structs:    []Struct{struct1, struct2},
 		Functions:  []Function{func1, func2},
 	}
-	expected := fmt.Sprintf(`package package-name
+	expected := fmt.Sprintf(`package example_package
 
 %s
 
@@ -376,16 +374,14 @@ func TestFile_MustParse_NoConsts_NoVars(t *testing.T) {
 	expectedImports := imps.MustParse()
 
 	input := File{
-		Package: PackageData{
-			Name: "package-name",
-		},
+		Package:      makeFileTestPackageData(),
 		Imports:      imps,
 		InitFunction: makeFileTestInitFunc(),
 		Interfaces:   []Interface{interface1, interface2},
 		Structs:      []Struct{struct1, struct2},
 		Functions:    []Function{func1, func2},
 	}
-	expected := fmt.Sprintf(`package package-name
+	expected := fmt.Sprintf(`package example_package
 
 %s
 
@@ -433,15 +429,13 @@ func TestFile_MustParse_NoInit_NoConsts_NoVars(t *testing.T) {
 	expectedImports := imps.MustParse()
 
 	input := File{
-		Package: PackageData{
-			Name: "package-name",
-		},
+		Package:    makeFileTestPackageData(),
 		Imports:    imps,
 		Interfaces: []Interface{interface1, interface2},
 		Structs:    []Struct{struct1, struct2},
 		Functions:  []Function{func1, func2},
 	}
-	expected := fmt.Sprintf(`package package-name
+	expected := fmt.Sprintf(`package example_package
 
 %s
 

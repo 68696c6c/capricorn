@@ -2,17 +2,17 @@ package golang
 
 import (
 	"fmt"
-	"strings"
 
-	"github.com/68696c6c/capricorn/generator/models/templates"
-	"github.com/68696c6c/capricorn/generator/utils"
+	"github.com/68696c6c/capricorn/generator/models/utils"
+
+	"strings"
 )
 
 type File struct {
-	Name templates.FileData `yaml:"name"`
-	Path templates.PathData `yaml:"path"`
+	Name    utils.FileData    `yaml:"name"`
+	Path    utils.PathData    `yaml:"path"`
+	Package utils.PackageData `yaml:"package"`
 
-	Package      PackageData `yaml:"package"`
 	Imports      Imports     `yaml:"imports"`
 	InitFunction Function    `yaml:"init_function"`
 	Consts       []Const     `yaml:"consts"`
@@ -20,11 +20,6 @@ type File struct {
 	Interfaces   []Interface `yaml:"interfaces"`
 	Structs      []Struct    `yaml:"structs"`
 	Functions    []Function  `yaml:"functions"`
-}
-
-type PackageData struct {
-	Name   string `yaml:"name"`   // e.g. domain
-	Module string `yaml:"module"` // e.g. github.com/example/src/app/domain
 }
 
 func (m File) MustParseConsts() string {
@@ -93,19 +88,10 @@ func (m File) MustParse() string {
 		sections = append(sections, m.MustParseFunctions())
 	}
 
-	result := []string{fmt.Sprintf("package %s\n", m.Package.Name)}
+	result := []string{fmt.Sprintf("package %s\n", m.Package.GetReference())}
 
 	// Separate each section with an additional line break.
 	result = append(result, strings.Join(sections, "\n\n\n"))
 
 	return strings.Join(result, "\n") + "\n"
-}
-
-func MakePackageData(rootPath, rootPackage, pkgName string) PackageData {
-	local := utils.JoinPath(rootPackage, pkgName)
-	module := utils.JoinPath(rootPath, local)
-	return PackageData{
-		Name:   pkgName,
-		Module: module,
-	}
 }

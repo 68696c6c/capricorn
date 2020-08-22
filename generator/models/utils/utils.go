@@ -1,8 +1,9 @@
-package templates
+package utils
 
 import (
 	"fmt"
 
+	"github.com/68696c6c/capricorn/generator/models"
 	"github.com/68696c6c/capricorn/generator/utils"
 )
 
@@ -27,6 +28,19 @@ type FileData struct {
 // e.g. full: src/app/domain/example.go
 type PathData FileData
 
+type PackageData struct {
+	Name models.Name `yaml:"name"`
+	Path PathData    `yaml:"path"` // e.g. full: module/path/src/app/domain, base: domain
+}
+
+func (m PackageData) GetImport() string {
+	return m.Path.Full
+}
+
+func (m PackageData) GetReference() string {
+	return m.Path.Base
+}
+
 func MakeGoFileData(basePath, fileBaseName string) (FileData, PathData) {
 	f := FileData{
 		Full: fmt.Sprintf("%s.go", fileBaseName),
@@ -37,4 +51,14 @@ func MakeGoFileData(basePath, fileBaseName string) (FileData, PathData) {
 		Base: f.Full,
 	}
 	return f, p
+}
+
+func MakePackageData(pkgBase, pkgName string) PackageData {
+	return PackageData{
+		Name: models.MakeName(pkgName),
+		Path: PathData{
+			Base: pkgName,
+			Full: utils.JoinPath(pkgBase, pkgName),
+		},
+	}
 }
