@@ -1,7 +1,7 @@
 package ops
 
 import (
-	utils2 "github.com/68696c6c/capricorn/generator/models/utils"
+	"github.com/68696c6c/capricorn/generator/models/data"
 	"github.com/68696c6c/capricorn/generator/utils"
 )
 
@@ -90,8 +90,8 @@ lint-fix:
 `
 
 type Makefile struct {
-	Name utils2.FileData `yaml:"name"`
-	Path utils2.PathData `yaml:"path"`
+	Name data.FileData `yaml:"name"`
+	Path data.PathData `yaml:"path"`
 
 	Data Ops `yaml:"data"`
 }

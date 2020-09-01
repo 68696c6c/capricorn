@@ -3,15 +3,15 @@ package golang
 import (
 	"fmt"
 
-	"github.com/68696c6c/capricorn/generator/models/utils"
+	"github.com/68696c6c/capricorn/generator/models/data"
 
 	"strings"
 )
 
 type File struct {
-	Name    utils.FileData    `yaml:"name"`
-	Path    utils.PathData    `yaml:"path"`
-	Package utils.PackageData `yaml:"package"`
+	Name    data.FileData    `yaml:"name"`
+	Path    data.PathData    `yaml:"path"`
+	Package data.PackageData `yaml:"package"`
 
 	Imports      Imports     `yaml:"imports"`
 	InitFunction Function    `yaml:"init_function"`

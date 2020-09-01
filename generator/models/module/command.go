@@ -1,13 +1,13 @@
 package module
 
 import (
-	"github.com/68696c6c/capricorn/generator/models"
+	"github.com/68696c6c/capricorn/generator/models/data"
 	"github.com/68696c6c/capricorn/generator/models/spec"
 )
 
 type Command struct {
 	_spec spec.Command
-	Name  models.Name
+	Name  data.Name
 }
 
 func makeCommands(specCommands []spec.Command) []Command {
@@ -15,7 +15,7 @@ func makeCommands(specCommands []spec.Command) []Command {
 	for _, c := range specCommands {
 		cmd := Command{
 			_spec: c,
-			Name:  models.MakeName(c.Name),
+			Name:  data.MakeName(c.Name),
 		}
 		result = append(result, cmd)
 	}

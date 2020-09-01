@@ -4,13 +4,13 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/68696c6c/capricorn/generator/models/utils"
+	"github.com/68696c6c/capricorn/generator/models/data"
 
 	"github.com/stretchr/testify/assert"
 )
 
-func makeFileTestPackageData() utils.PackageData {
-	return utils.MakePackageData("github.com/user", "example_package")
+func makeFileTestPackageData() data.PackageData {
+	return data.MakePackageData("github.com/user", "example_package")
 }
 
 func makeFileTestInitFunc() Function {

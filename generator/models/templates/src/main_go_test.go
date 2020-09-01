@@ -13,7 +13,6 @@ func TestMainGo(t *testing.T) {
 	input := NewMainGo(f.Packages, "/root/path", "base/module")
 
 	result := input.MustParse()
-	println(result)
 
 	expected := `package main
 

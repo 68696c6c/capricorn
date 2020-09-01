@@ -21,7 +21,7 @@ type Project struct {
 
 func NewProjectFromModule(m module.Module, projectPath string, ddd bool) (Project, error) {
 	// @TODO @CHECKPOINT working on generating project from a module.
-	// rootPackage := m.Path.Full
+	// rootPackage := m.Package.Reference
 	// rootPath, err := getProjectRootPath(projectPath, rootPackage)
 	// if err != nil {
 	// 	return Project{}, err

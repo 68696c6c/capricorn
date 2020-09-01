@@ -1,11 +1,14 @@
-package utils
+package data
 
 import (
 	"fmt"
 
-	"github.com/68696c6c/capricorn/generator/models"
 	"github.com/68696c6c/capricorn/generator/utils"
 )
+
+const ImportGoat = "github.com/68696c6c/goat"
+const ImportQuery = "github.com/68696c6c/goat/query"
+const ImportGin = "github.com/gin-gonic/gin"
 
 type Template interface {
 	Generate() error
@@ -20,17 +23,21 @@ type SubTemplate interface {
 // e.g. base: example
 // e.g. full: example.go
 type FileData struct {
-	Full string `yaml:"full"`
 	Base string `yaml:"base"`
+	Full string `yaml:"full"`
 }
 
 // e.g. base: src/app/domain/
 // e.g. full: src/app/domain/example.go
 type PathData FileData
 
+// e.g. reference: pkgname
+// e.g. base: github.com/user/example/src
+// e.g. full: github.com/user/example/src/pkgname
 type PackageData struct {
-	Name models.Name `yaml:"name"`
-	Path PathData    `yaml:"path"` // e.g. full: module/path/src/app/domain, base: domain
+	Reference string   `yaml:"reference"`
+	Name      Name     `yaml:"name"`
+	Path      PathData `yaml:"path"`
 }
 
 func (m PackageData) GetImport() string {
@@ -38,27 +45,30 @@ func (m PackageData) GetImport() string {
 }
 
 func (m PackageData) GetReference() string {
-	return m.Path.Base
+	return m.Reference
+}
+
+func MakePathData(basePath, name string) PathData {
+	return PathData{
+		Base: basePath,
+		Full: utils.JoinPath(basePath, name),
+	}
 }
 
 func MakeGoFileData(basePath, fileBaseName string) (FileData, PathData) {
 	f := FileData{
-		Full: fmt.Sprintf("%s.go", fileBaseName),
 		Base: fileBaseName,
+		Full: fmt.Sprintf("%s.go", fileBaseName),
 	}
-	p := PathData{
-		Full: utils.JoinPath(basePath, f.Full),
-		Base: f.Full,
-	}
+	p := MakePathData(basePath, f.Full)
 	return f, p
 }
 
 func MakePackageData(pkgBase, pkgName string) PackageData {
+	name := MakeName(pkgName)
 	return PackageData{
-		Name: models.MakeName(pkgName),
-		Path: PathData{
-			Base: pkgName,
-			Full: utils.JoinPath(pkgBase, pkgName),
-		},
+		Name:      name,
+		Reference: name.Snake,
+		Path:      MakePathData(pkgBase, pkgName),
 	}
 }

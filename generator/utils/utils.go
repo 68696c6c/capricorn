@@ -151,6 +151,10 @@ func separatedToSeparated(input string, separator rune) string {
 	return output
 }
 
+func SeparatedToSpace(input string) string {
+	return separatedToSeparated(input, ' ')
+}
+
 func SeparatedToSnake(input string) string {
 	return separatedToSeparated(input, '_')
 }

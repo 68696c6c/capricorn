@@ -1,35 +1,47 @@
 package module
 
 import (
-	"github.com/68696c6c/capricorn/generator/models"
+	"github.com/68696c6c/capricorn/generator/models/data"
 	"github.com/68696c6c/capricorn/generator/models/spec"
-
-	"github.com/jinzhu/inflection"
 )
 
+const ResourceActionList = "list"
+const ResourceActionView = "view"
+const ResourceActionCreate = "create"
+const ResourceActionUpdate = "update"
+const ResourceActionDelete = "delete"
+
 type ResourceService struct {
-	Name    models.Name   `yaml:"name"`
-	Actions []models.Name `yaml:"actions"`
+	Name    data.Name `yaml:"name"`
+	Actions []string  `yaml:"actions"`
 }
 
-func makeResourceCrudService(specResource spec.Resource) ResourceService {
-	recNamePlural := models.MakeName(inflection.Plural(specResource.Name))
+func makeResourceCrudService(specResource spec.Resource, recName data.Inflection) ResourceService {
 	result := ResourceService{
-		Name: recNamePlural,
+		Name: recName.Plural,
 	}
-	for _, a := range specResource.Actions {
-		actionName := models.MakeName(actionNameFromString(a))
-		result.Actions = append(result.Actions, actionName)
+	actions := specResource.Actions
+	if len(actions) == 0 {
+		actions = []string{
+			ResourceActionList,
+			ResourceActionView,
+			ResourceActionCreate,
+			ResourceActionUpdate,
+			ResourceActionDelete,
+		}
+	}
+	for _, a := range actions {
+		result.Actions = append(result.Actions, actionNameFromString(a))
 	}
 	return result
 }
 
-func makeResourceCustomService(specResource spec.Resource, recName models.Name) ResourceService {
+func makeResourceCustomService(specResource spec.Resource, recName data.Inflection) ResourceService {
 	result := ResourceService{
-		Name: models.MakeName(recName.Snake + "_service"),
+		Name: data.MakeName(recName.Plural.Snake + "_service"),
 	}
 	for _, a := range specResource.Custom {
-		result.Actions = append(result.Actions, models.MakeName(a))
+		result.Actions = append(result.Actions, a)
 	}
 	return result
 }
@@ -38,16 +50,16 @@ func actionNameFromString(input string) string {
 	switch input {
 	case "index":
 	case "list":
-		return "list"
+		return ResourceActionList
 	case "read":
 	case "view":
-		return "view"
+		return ResourceActionView
 	case "create":
-		return "create"
+		return ResourceActionCreate
 	case "update":
-		return "update"
+		return ResourceActionUpdate
 	case "delete":
-		return "delete"
+		return ResourceActionDelete
 	}
 	return ""
 }

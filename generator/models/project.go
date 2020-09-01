@@ -2,6 +2,7 @@ package models
 
 import (
 	"fmt"
+	"github.com/68696c6c/capricorn/generator/models/data"
 	"path/filepath"
 	"strings"
 
@@ -15,7 +16,7 @@ import (
 
 type Project struct {
 	Spec spec.Spec
-	Name Name
+	Name data.Name
 
 	Workdir      string
 	ProjectPath  string
@@ -37,8 +38,8 @@ type Project struct {
 }
 
 type ProjectResource struct {
-	Single Name
-	Plural Name
+	Single data.Name
+	Plural data.Name
 }
 
 type Model struct {
@@ -64,7 +65,7 @@ type Field struct {
 type Repo struct {
 	Package       string          `yaml:"package,omitempty"`
 	Resource      ProjectResource `yaml:"resource,omitempty"`
-	Name          Name            `yaml:"name,omitempty"`
+	Name          data.Name       `yaml:"name,omitempty"`
 	Imports       []string        `yaml:"imports,omitempty"`
 	VendorImports []string        `yaml:"vendor_imports,omitempty"`
 	Filename      string          `yaml:"filename,omitempty"`
@@ -90,7 +91,7 @@ type Method struct {
 type Controller struct {
 	Package       string          `yaml:"package,omitempty"`
 	Resource      ProjectResource `yaml:"resource,omitempty"`
-	Name          Name            `yaml:"name,omitempty"`
+	Name          data.Name       `yaml:"name,omitempty"`
 	Imports       []string        `yaml:"imports,omitempty"`
 	VendorImports []string        `yaml:"vendor_imports,omitempty"`
 	Filename      string          `yaml:"filename,omitempty"`
@@ -133,7 +134,7 @@ type Handler struct {
 
 type Middleware struct {
 	Resource    ProjectResource
-	Name        Name
+	Name        data.Name
 	Imports     []string
 	Filename    string
 	Constructor string
@@ -160,7 +161,7 @@ type Paths struct {
 type Service struct {
 	Package     string          `yaml:"package,omitempty"`
 	Resource    ProjectResource `yaml:"resource,omitempty"`
-	Name        Name            `yaml:"name,omitempty"`
+	Name        data.Name       `yaml:"name,omitempty"`
 	Imports     []string        `yaml:"imports,omitempty"`
 	Filename    string          `yaml:"filename,omitempty"`
 	Constructor string          `yaml:"constructor,omitempty"`
@@ -186,7 +187,7 @@ func (s Project) String() string {
 
 type Command struct {
 	AppImport string
-	Name      Name
+	Name      data.Name
 	Args      []string
 	Use       string
 	FileName  string
@@ -228,7 +229,7 @@ func NewProject(filePath, projectPath string) (Project, error) {
 	}
 
 	kebob := filepath.Base(projectSpec.Module)
-	project.Name = Name{
+	project.Name = data.Name{
 		Snake:      utils.SeparatedToSnake(kebob),
 		Kebob:      kebob,
 		Exported:   utils.SeparatedToExported(kebob),
@@ -325,14 +326,14 @@ func makeProjectResource(name string) ProjectResource {
 	single := inflection.Singular(name)
 	plural := inflection.Plural(name)
 	return ProjectResource{
-		Single: MakeName(single),
-		Plural: MakeName(plural),
+		Single: data.MakeName(single),
+		Plural: data.MakeName(plural),
 	}
 }
 
 func makeCommand(c spec.Command, appImport string) Command {
 	cName := strings.Replace(c.Name, ":", "_", -1)
-	commandName := MakeName(cName)
+	commandName := data.MakeName(cName)
 	return Command{
 		AppImport: appImport,
 		Name:      commandName,
@@ -360,8 +361,8 @@ func makeModel(r ProjectResource, config spec.Resource, packageName, domainsImpo
 
 	if len(config.BelongsTo) > 0 {
 		for _, r := range config.BelongsTo {
-			t := MakeName(r)
-			rName := MakeName(fmt.Sprintf("%s_id", t.Exported))
+			t := data.MakeName(r)
+			rName := data.MakeName(fmt.Sprintf("%s_id", t.Exported))
 			field := Field{
 				Name: rName.Exported,
 				Type: "goat.ID",
@@ -372,8 +373,8 @@ func makeModel(r ProjectResource, config spec.Resource, packageName, domainsImpo
 	}
 
 	for _, f := range config.Fields {
-		t := MakeName(f.Name)
-		rName := MakeName(inflection.Singular(t.Exported))
+		t := data.MakeName(f.Name)
+		rName := data.MakeName(inflection.Singular(t.Exported))
 		field := Field{
 			Name:     rName.Exported,
 			Type:     f.Type,
@@ -389,11 +390,11 @@ func makeModel(r ProjectResource, config spec.Resource, packageName, domainsImpo
 
 	if len(config.HasMany) > 0 {
 		for _, r := range config.HasMany {
-			t := MakeName(r)
+			t := data.MakeName(r)
 			single := inflection.Singular(t.Exported)
-			sName := MakeName(single)
+			sName := data.MakeName(single)
 			plural := inflection.Plural(t.Unexported)
-			pName := MakeName(plural)
+			pName := data.MakeName(plural)
 			field := Field{
 				Name: pName.Exported,
 				Type: fmt.Sprintf("[]*%s.%s", pName.Unexported, sName.Exported),
@@ -410,7 +411,7 @@ func makeModel(r ProjectResource, config spec.Resource, packageName, domainsImpo
 }
 
 func makeRepo(r ProjectResource, config spec.Resource, packageName string) Repo {
-	repoName := MakeName("repo_GORM")
+	repoName := data.MakeName("repo_GORM")
 	result := Repo{
 		Resource:      r,
 		Name:          repoName,
@@ -486,7 +487,7 @@ func makeRepo(r ProjectResource, config spec.Resource, packageName string) Repo 
 	return result
 }
 
-func makeMethod(r ProjectResource, repoName Name, name string, parameters, returns []string) Method {
+func makeMethod(r ProjectResource, repoName data.Name, name string, parameters, returns []string) Method {
 	sig := fmt.Sprintf("%s(%s) (%s)", name, strings.Join(parameters, ", "), strings.Join(returns, ", "))
 	return Method{
 		Resource:  r,
@@ -501,7 +502,7 @@ func makeService(r ProjectResource, config spec.Resource, packageName string, re
 	if len(config.Custom) == 0 {
 		return nil
 	}
-	serviceName := MakeName(fmt.Sprintf("%sService", r.Single.Exported))
+	serviceName := data.MakeName(fmt.Sprintf("%sService", r.Single.Exported))
 	service := Service{
 		Resource:    r,
 		Name:        serviceName,
@@ -513,7 +514,7 @@ func makeService(r ProjectResource, config spec.Resource, packageName string, re
 		RepoName:    repo.InterfaceName,
 	}
 	for _, action := range config.Custom {
-		methodName := MakeName(action)
+		methodName := data.MakeName(action)
 		arg := fmt.Sprintf("m *%s", r.Single.Exported)
 		save := makeMethod(r, serviceName, methodName.Exported, []string{arg}, []string{"err error"})
 		service.Methods = append(service.Methods, save)
@@ -522,7 +523,7 @@ func makeService(r ProjectResource, config spec.Resource, packageName string, re
 }
 
 func makeController(r ProjectResource, config spec.Resource, packageName string, repo Repo) Controller {
-	controllerName := MakeName(r.Plural.Unexported)
+	controllerName := data.MakeName(r.Plural.Unexported)
 	result := Controller{
 		Resource:      r,
 		Name:          controllerName,
@@ -590,7 +591,7 @@ func makeController(r ProjectResource, config spec.Resource, packageName string,
 	return result
 }
 
-func makeHandler(r ProjectResource, controllerName Name, action, uri, name string) Handler {
+func makeHandler(r ProjectResource, controllerName data.Name, action, uri, name string) Handler {
 	sig := fmt.Sprintf("%s(c *gin.Context)", name)
 	return Handler{
 		Resource:    r,

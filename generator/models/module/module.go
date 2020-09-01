@@ -3,10 +3,9 @@ package module
 import (
 	"path/filepath"
 
-	"github.com/68696c6c/capricorn/generator/models"
+	"github.com/68696c6c/capricorn/generator/models/data"
 	"github.com/68696c6c/capricorn/generator/models/spec"
 	"github.com/68696c6c/capricorn/generator/models/templates/ops"
-	"github.com/68696c6c/capricorn/generator/models/utils"
 
 	"gopkg.in/yaml.v2"
 )
@@ -14,9 +13,9 @@ import (
 type Module struct {
 	_spec spec.Spec
 
-	Name models.Name    `yaml:"name"`
-	Path utils.PathData `yaml:"path"`
-	Ops  ops.Ops        `yaml:"ops"`
+	Name    data.Name        `yaml:"name"`
+	Package data.PackageData `yaml:"package"`
+	Ops     ops.Ops          `yaml:"ops"`
 
 	Packages Packages `yaml:"packages"`
 
@@ -34,12 +33,12 @@ func (m Module) String() string {
 
 func NewModuleFromSpec(s spec.Spec) Module {
 
-	appName := makeModuleName(s.Module)
+	pkgData := makeModulePackage(s.Module)
 	result := Module{
 		_spec:     s,
-		Name:      appName,
-		Path:      makePath(s.Module),
-		Ops:       makeOps(appName),
+		Name:      pkgData.Name,
+		Package:   pkgData,
+		Ops:       makeOps(pkgData.Name),
 		Packages:  makePackages(s.Module),
 		Commands:  makeCommands(s.Commands),
 		Resources: makeResources(s.Resources),
@@ -48,20 +47,18 @@ func NewModuleFromSpec(s spec.Spec) Module {
 	return result
 }
 
-func makeModuleName(specModule string) models.Name {
+func makeModulePackage(specModule string) data.PackageData {
+	moduleBase := filepath.Dir(specModule)
 	moduleName := filepath.Base(specModule)
-	return models.MakeName(moduleName)
+	pkgData := data.MakePackageData(moduleBase, moduleName)
+
+	// Packages are usually referenced by their snake name, but for the top-level module we want to use the exact name the user provided.
+	pkgData.Reference = moduleName
+
+	return pkgData
 }
 
-func makePath(specModule string) utils.PathData {
-	moduleName := filepath.Base(specModule)
-	return utils.PathData{
-		Base: moduleName,
-		Full: specModule,
-	}
-}
-
-func makeOps(appName models.Name) ops.Ops {
+func makeOps(appName data.Name) ops.Ops {
 	return ops.Ops{
 		Workdir:      appName.Kebob,
 		AppHTTPAlias: appName.Kebob,
@@ -69,7 +66,7 @@ func makeOps(appName models.Name) ops.Ops {
 	}
 }
 
-func makeDatabase(appName models.Name) ops.Database {
+func makeDatabase(appName data.Name) ops.Database {
 	return ops.Database{
 		Host:     "db",
 		Port:     "3306",

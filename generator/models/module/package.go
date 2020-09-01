@@ -1,6 +1,6 @@
 package module
 
-import "github.com/68696c6c/capricorn/generator/models/utils"
+import "github.com/68696c6c/capricorn/generator/models/data"
 
 const (
 	pkgSRC        = "src"
@@ -17,41 +17,41 @@ const (
 )
 
 type Packages struct {
-	SRC        utils.PackageData `yaml:"src"`
-	OPS        utils.PackageData `yaml:"ops"`
-	Docker     utils.PackageData `yaml:"docker"`
-	App        utils.PackageData `yaml:"app"`
-	CMD        utils.PackageData `yaml:"cmd"`
-	DB         utils.PackageData `yaml:"database"`
-	HTTP       utils.PackageData `yaml:"http"`
-	Repos      utils.PackageData `yaml:"repos"`
-	Models     utils.PackageData `yaml:"models"`
-	Migrations utils.PackageData `yaml:"migrations"`
-	Seeders    utils.PackageData `yaml:"seeders"`
-	Domains    utils.PackageData `yaml:"domains"`
+	SRC        data.PackageData `yaml:"src"`
+	OPS        data.PackageData `yaml:"ops"`
+	Docker     data.PackageData `yaml:"docker"`
+	App        data.PackageData `yaml:"app"`
+	CMD        data.PackageData `yaml:"cmd"`
+	DB         data.PackageData `yaml:"database"`
+	HTTP       data.PackageData `yaml:"http"`
+	Repos      data.PackageData `yaml:"repos"`
+	Models     data.PackageData `yaml:"models"`
+	Migrations data.PackageData `yaml:"migrations"`
+	Seeders    data.PackageData `yaml:"seeders"`
+	Domains    data.PackageData `yaml:"domains"`
 }
 
 func makePackages(root string) Packages {
-	pSRC := utils.MakePackageData(root, pkgSRC)
+	pSRC := data.MakePackageData(root, pkgSRC)
 	srcPath := pSRC.Path.Full
 
-	pApp := utils.MakePackageData(srcPath, pkgApp)
+	pApp := data.MakePackageData(srcPath, pkgApp)
 
-	pDB := utils.MakePackageData(srcPath, pkgDB)
+	pDB := data.MakePackageData(srcPath, pkgDB)
 	dbPath := pDB.Path.Full
 
 	result := Packages{
-		Docker:     utils.MakePackageData(root, pkgDocker),
-		OPS:        utils.MakePackageData(root, pkgOPS),
+		Docker:     data.MakePackageData(root, pkgDocker),
+		OPS:        data.MakePackageData(root, pkgOPS),
 		SRC:        pSRC,
 		App:        pApp,
-		CMD:        utils.MakePackageData(srcPath, pkgCMD),
-		HTTP:       utils.MakePackageData(srcPath, pkgHTTP),
-		Repos:      utils.MakePackageData(srcPath, pkgRepos),
-		Models:     utils.MakePackageData(srcPath, pkgModels),
+		CMD:        data.MakePackageData(srcPath, pkgCMD),
+		HTTP:       data.MakePackageData(srcPath, pkgHTTP),
+		Repos:      data.MakePackageData(srcPath, pkgRepos),
+		Models:     data.MakePackageData(srcPath, pkgModels),
 		DB:         pDB,
-		Migrations: utils.MakePackageData(dbPath, pkgMigrations),
-		Seeders:    utils.MakePackageData(dbPath, pkgSeeders),
+		Migrations: data.MakePackageData(dbPath, pkgMigrations),
+		Seeders:    data.MakePackageData(dbPath, pkgSeeders),
 		Domains:    pApp,
 	}
 

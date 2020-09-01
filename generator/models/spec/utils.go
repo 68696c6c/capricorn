@@ -83,13 +83,22 @@ func GetFixtureSpec() Spec {
 }
 
 const FixtureSpecYAML = `name:
+  space: test example
   snake: test_example
   kebob: test-example
   exported: TestExample
   unexported: testExample
-path:
-  full: github.com/68696c6c/test-example
-  base: test-example
+package:
+  reference: test-example
+  name:
+    space: test example
+    snake: test_example
+    kebob: test-example
+    exported: TestExample
+    unexported: testExample
+  path:
+    base: github.com/68696c6c
+    full: github.com/68696c6c/test-example
 ops:
   workdir: test-example
   app_http_alias: test-example
@@ -102,125 +111,152 @@ ops:
     debug: "1"
 packages:
   src:
+    reference: src
     name:
+      space: src
       snake: src
       kebob: src
       exported: Src
       unexported: src
     path:
+      base: github.com/68696c6c/test-example
       full: github.com/68696c6c/test-example/src
-      base: src
   ops:
+    reference: ops
     name:
+      space: ops
       snake: ops
       kebob: ops
       exported: Ops
       unexported: ops
     path:
+      base: github.com/68696c6c/test-example
       full: github.com/68696c6c/test-example/ops
-      base: ops
   docker:
+    reference: docker
     name:
+      space: docker
       snake: docker
       kebob: docker
       exported: Docker
       unexported: docker
     path:
+      base: github.com/68696c6c/test-example
       full: github.com/68696c6c/test-example/docker
-      base: docker
   app:
+    reference: app
     name:
+      space: app
       snake: app
       kebob: app
       exported: App
       unexported: app
     path:
+      base: github.com/68696c6c/test-example/src
       full: github.com/68696c6c/test-example/src/app
-      base: app
   cmd:
+    reference: cmd
     name:
+      space: cmd
       snake: cmd
       kebob: cmd
       exported: Cmd
       unexported: cmd
     path:
+      base: github.com/68696c6c/test-example/src
       full: github.com/68696c6c/test-example/src/cmd
-      base: cmd
   database:
+    reference: db
     name:
+      space: db
       snake: db
       kebob: db
       exported: Db
       unexported: db
     path:
+      base: github.com/68696c6c/test-example/src
       full: github.com/68696c6c/test-example/src/db
-      base: db
   http:
+    reference: http
     name:
+      space: http
       snake: http
       kebob: http
       exported: Http
       unexported: http
     path:
+      base: github.com/68696c6c/test-example/src
       full: github.com/68696c6c/test-example/src/http
-      base: http
   repos:
+    reference: repos
     name:
+      space: repos
       snake: repos
       kebob: repos
       exported: Repos
       unexported: repos
     path:
+      base: github.com/68696c6c/test-example/src
       full: github.com/68696c6c/test-example/src/repos
-      base: repos
   models:
+    reference: models
     name:
+      space: models
       snake: models
       kebob: models
       exported: Models
       unexported: models
     path:
+      base: github.com/68696c6c/test-example/src
       full: github.com/68696c6c/test-example/src/models
-      base: models
   migrations:
+    reference: migrations
     name:
+      space: migrations
       snake: migrations
       kebob: migrations
       exported: Migrations
       unexported: migrations
     path:
+      base: github.com/68696c6c/test-example/src/db
       full: github.com/68696c6c/test-example/src/db/migrations
-      base: migrations
   seeders:
+    reference: seeders
     name:
+      space: seeders
       snake: seeders
       kebob: seeders
       exported: Seeders
       unexported: seeders
     path:
+      base: github.com/68696c6c/test-example/src/db
       full: github.com/68696c6c/test-example/src/db/seeders
-      base: seeders
   domains:
+    reference: app
     name:
+      space: app
       snake: app
       kebob: app
       exported: App
       unexported: app
     path:
+      base: github.com/68696c6c/test-example/src
       full: github.com/68696c6c/test-example/src/app
-      base: app
 commands:
 - name:
+    space: cmd
     snake: cmd
     kebob: cmd
     exported: Cmd
     unexported: cmd
 - name:
+    space: cmd:one arg
     snake: cmd:one_arg
     kebob: cmd:one-arg
     exported: Cmd:oneArg
     unexported: cmd:oneArg
 - name:
+    space: cmd:two args
     snake: cmd:two_args
     kebob: cmd:two-args
     exported: Cmd:twoArgs
@@ -230,15 +266,24 @@ resources:
     resource: organization
     field: ""
   name:
-    snake: organization
-    kebob: organization
-    exported: Organization
-    unexported: organization
+    single:
+      space: organization
+      snake: organization
+      kebob: organization
+      exported: Organization
+      unexported: organization
+    plural:
+      space: organizations
+      snake: organizations
+      kebob: organizations
+      exported: Organizations
+      unexported: organizations
   fields:
   - key:
       resource: organization
       field: id
     name:
+      space: id
       snake: id
       kebob: id
       exported: Id
@@ -252,6 +297,7 @@ resources:
       resource: organization
       field: created_at
     name:
+      space: created at
       snake: created_at
       kebob: created-at
       exported: CreatedAt
@@ -265,6 +311,7 @@ resources:
       resource: organization
       field: updated_at
     name:
+      space: updated at
       snake: updated_at
       kebob: updated-at
       exported: UpdatedAt
@@ -278,6 +325,7 @@ resources:
       resource: organization
       field: deleted_at
     name:
+      space: deleted at
       snake: deleted_at
       kebob: deleted-at
       exported: DeletedAt
@@ -291,6 +339,7 @@ resources:
       resource: organization
       field: name
     name:
+      space: name
       snake: name
       kebob: name
       exported: Name
@@ -302,38 +351,60 @@ resources:
     is_goat_field: false
   controller:
     name:
+      space: organizations
       snake: organizations
       kebob: organizations
       exported: Organizations
       unexported: organizations
-    actions: []
+    actions:
+    - list
+    - view
+    - create
+    - update
+    - delete
   repo:
     name:
+      space: organizations
       snake: organizations
       kebob: organizations
       exported: Organizations
       unexported: organizations
-    actions: []
+    actions:
+    - list
+    - view
+    - create
+    - update
+    - delete
   service:
     name:
-      snake: organization_service
-      kebob: organization-service
-      exported: OrganizationService
-      unexported: organizationService
+      space: organizations service
+      snake: organizations_service
+      kebob: organizations-service
+      exported: OrganizationsService
+      unexported: organizationsService
     actions: []
 - key:
     resource: user
     field: ""
   name:
-    snake: user
-    kebob: user
-    exported: User
-    unexported: user
+    single:
+      space: user
+      snake: user
+      kebob: user
+      exported: User
+      unexported: user
+    plural:
+      space: users
+      snake: users
+      kebob: users
+      exported: Users
+      unexported: users
   fields:
   - key:
       resource: user
       field: id
     name:
+      space: id
       snake: id
       kebob: id
       exported: Id
@@ -347,6 +418,7 @@ resources:
       resource: user
       field: created_at
     name:
+      space: created at
       snake: created_at
       kebob: created-at
       exported: CreatedAt
@@ -360,6 +432,7 @@ resources:
       resource: user
       field: updated_at
     name:
+      space: updated at
       snake: updated_at
       kebob: updated-at
       exported: UpdatedAt
@@ -373,6 +446,7 @@ resources:
       resource: user
       field: deleted_at
     name:
+      space: deleted at
       snake: deleted_at
       kebob: deleted-at
       exported: DeletedAt
@@ -386,6 +460,7 @@ resources:
       resource: user
       field: name
     name:
+      space: name
       snake: name
       kebob: name
       exported: Name
@@ -399,6 +474,7 @@ resources:
       resource: user
       field: email
     name:
+      space: email
       snake: email
       kebob: email
       exported: Email
@@ -410,38 +486,60 @@ resources:
     is_goat_field: false
   controller:
     name:
+      space: users
       snake: users
       kebob: users
       exported: Users
       unexported: users
-    actions: []
+    actions:
+    - list
+    - view
+    - create
+    - update
+    - delete
   repo:
     name:
+      space: users
       snake: users
       kebob: users
       exported: Users
       unexported: users
-    actions: []
+    actions:
+    - list
+    - view
+    - create
+    - update
+    - delete
   service:
     name:
-      snake: user_service
-      kebob: user-service
-      exported: UserService
-      unexported: userService
+      space: users service
+      snake: users_service
+      kebob: users-service
+      exported: UsersService
+      unexported: usersService
     actions: []
 - key:
     resource: token
     field: ""
   name:
-    snake: token
-    kebob: token
-    exported: Token
-    unexported: token
+    single:
+      space: token
+      snake: token
+      kebob: token
+      exported: Token
+      unexported: token
+    plural:
+      space: tokens
+      snake: tokens
+      kebob: tokens
+      exported: Tokens
+      unexported: tokens
   fields:
   - key:
       resource: token
       field: id
     name:
+      space: id
       snake: id
       kebob: id
       exported: Id
@@ -455,6 +553,7 @@ resources:
       resource: token
       field: created_at
     name:
+      space: created at
       snake: created_at
       kebob: created-at
       exported: CreatedAt
@@ -468,6 +567,7 @@ resources:
       resource: token
       field: updated_at
     name:
+      space: updated at
       snake: updated_at
       kebob: updated-at
       exported: UpdatedAt
@@ -481,6 +581,7 @@ resources:
       resource: token
       field: deleted_at
     name:
+      space: deleted at
       snake: deleted_at
       kebob: deleted-at
       exported: DeletedAt
@@ -494,6 +595,7 @@ resources:
       resource: token
       field: key
     name:
+      space: key
       snake: key
       kebob: key
       exported: Key
@@ -507,6 +609,7 @@ resources:
       resource: token
       field: expires
     name:
+      space: expires
       snake: expires
       kebob: expires
       exported: Expires
@@ -518,43 +621,31 @@ resources:
     is_goat_field: false
   controller:
     name:
+      space: tokens
       snake: tokens
       kebob: tokens
       exported: Tokens
       unexported: tokens
     actions:
-    - snake: create
-      kebob: create
-      exported: Create
-      unexported: create
-    - snake: delete
-      kebob: delete
-      exported: Delete
-      unexported: delete
+    - create
+    - delete
   repo:
     name:
+      space: tokens
       snake: tokens
       kebob: tokens
       exported: Tokens
       unexported: tokens
     actions:
-    - snake: create
-      kebob: create
-      exported: Create
-      unexported: create
-    - snake: delete
-      kebob: delete
-      exported: Delete
-      unexported: delete
+    - create
+    - delete
   service:
     name:
-      snake: token_service
-      kebob: token-service
-      exported: TokenService
-      unexported: tokenService
+      space: tokens service
+      snake: tokens_service
+      kebob: tokens-service
+      exported: TokensService
+      unexported: tokensService
     actions:
-    - snake: refresh
-      kebob: refresh
-      exported: Refresh
-      unexported: refresh
+    - refresh
 `

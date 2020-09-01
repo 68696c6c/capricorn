@@ -1,21 +1,33 @@
 package src
 
 import (
+	"github.com/68696c6c/capricorn/generator/models/data"
 	"github.com/68696c6c/capricorn/generator/models/module"
 	"github.com/68696c6c/capricorn/generator/models/templates/golang"
-	utils2 "github.com/68696c6c/capricorn/generator/models/utils"
-	"github.com/68696c6c/capricorn/generator/utils"
+	"github.com/68696c6c/capricorn/generator/models/templates/src/handlers"
+
+	"gopkg.in/yaml.v2"
 )
 
+// SRC represents the structure of a project src directory.
 type SRC struct {
 	_module  module.Module
 	basePath string
-	path     utils2.PathData
-	pkgData  utils2.PackageData
-	Main     golang.File `yaml:"main"`
-	App      App         `yaml:"app"`
-	CMD      CMD         `yaml:"cmd"`
-	HTTP     HTTP        `yaml:"http"`
+
+	Package data.PackageData `yaml:"package"`
+	Path    data.PathData    `yaml:"path"`
+
+	App  App  `yaml:"app"`
+	CMD  CMD  `yaml:"cmd"`
+	HTTP HTTP `yaml:"http"`
+}
+
+func (m SRC) String() string {
+	out, err := yaml.Marshal(&m)
+	if err != nil {
+		return "failed to marshal src to yaml"
+	}
+	return string(out)
 }
 
 type App struct {
@@ -52,74 +64,150 @@ type Domain struct {
 }
 
 func NewSRCDDD(m module.Module, rootPath string) SRC {
-	srcPath := m.Packages.SRC.Path // Base = src, Full = github.com/user/example/src
-
-	result := SRC{
+	return SRC{
 		_module:  m,
 		basePath: rootPath,
-		path: utils2.PathData{
-			Full: utils.JoinPath(rootPath, srcPath.Base),
-			Base: rootPath,
+		Path:     data.MakePathData(rootPath, m.Packages.SRC.Reference),
+		Package:  m.Packages.SRC,
+		App: App{
+			// Container: makeContainer(c),
+			Domains: makeDomains(m),
 		},
-		pkgData: utils2.MakePackageData(rootPath, srcPath.Base),
 	}
-	result.makeDomains()
-	// return SRC{
-	// 	Main: NewMainGo(modulePackages, rootPath, rootPackage),
-	// 	App: App{
-	// 		// Container: makeContainer(c),
-	// 		Domains:   makeDomains(),
-	// 	},
-	// }
-	return result
 }
 
-func (m SRC) makeDomains() []Domain {
-	// baseDomainPath := m._module.Packages.Domains.Path.Full
+func makeDomains(m module.Module) []Domain {
+	baseDomainPath := m.Packages.Domains.Path.Full
 
 	var result []Domain
-	// for _, r := range m._module.Resources {
-	// 	plural := inflection.Plural(r.Name.Snake)
-	// 	domainPKG := golang.PackageData{
-	// 		Name:   plural,
-	// 		Module: utils.JoinPath(baseDomainPath, plural),
-	// 	}
-	//
-	// 	controllerName := models.MakeName("controller")
-	//
-	// 	d := Domain{
-	// 		Controller: makeController(controllerName.Snake, domainPKG, r),
-	// 	}
-	// }
+	for _, r := range m.Resources {
+		cName := data.MakeName("controller")
+		viewResponseName := data.MakeName("response")
+		listResponseName := data.MakeName("list_response")
+		domainPKG := data.MakePackageData(baseDomainPath, r.Inflection.Plural.Snake)
+
+		d := Domain{
+			Controller: makeController(controllerMeta{
+				name:             cName,
+				receiverName:     "c",
+				viewResponseName: viewResponseName.Exported,
+				listResponseName: listResponseName.Exported,
+				fileName:         cName.Snake,
+				resource:         r,
+				packageData:      domainPKG,
+			}),
+		}
+		result = append(result, d)
+	}
 	return result
 }
 
-func makeController(baseFileName string, pkgData utils2.PackageData, resource module.Resource) golang.File {
-	fileData, pathData := utils2.MakeGoFileData(pkgData.GetImport(), baseFileName)
-	return golang.File{
+type controllerMeta struct {
+	name             data.Name
+	receiverName     string
+	viewResponseName string
+	listResponseName string
+	fileName         string
+	resource         module.Resource
+	packageData      data.PackageData
+}
+
+func makeController(c controllerMeta) golang.File {
+	fileData, pathData := data.MakeGoFileData(c.packageData.GetImport(), c.fileName)
+	result := golang.File{
 		Name:    fileData,
 		Path:    pathData,
-		Package: pkgData,
-		Imports: golang.Imports{
-			Standard: nil,
-			App:      nil,
-			Vendor:   nil,
-		},
-		InitFunction: golang.Function{
-			Name:         "",
-			Imports:      nil,
-			Arguments:    nil,
-			ReturnValues: nil,
-			Receiver: golang.Value{
-				Name: "",
-				Type: "",
+		Package: c.packageData,
+	}
+
+	plural := c.resource.Inflection.Plural
+	single := c.resource.Inflection.Single
+
+	for _, a := range c.resource.Controller.Actions {
+		switch a {
+
+		case module.ResourceActionList:
+			t := handlers.List{
+				Receiver: c.receiverName,
+				Plural:   plural,
+				Single:   single,
+				Response: c.listResponseName,
+			}
+			h := makeHandler("List", t.MustParse(), handlers.GetListImports())
+			result.Functions = append(result.Functions, h)
+			result.Imports = mergeImports(result.Imports, h.Imports)
+
+		case module.ResourceActionView:
+			t := handlers.View{
+				Receiver: c.receiverName,
+				Plural:   plural,
+				Single:   single,
+				Response: c.listResponseName,
+			}
+			h := makeHandler("View", t.MustParse(), handlers.GetViewImports())
+			result.Functions = append(result.Functions, h)
+			result.Imports = mergeImports(result.Imports, h.Imports)
+
+		case module.ResourceActionCreate:
+			t := handlers.Create{
+				Receiver: c.receiverName,
+				Plural:   plural,
+				Single:   single,
+				Response: c.listResponseName,
+			}
+			h := makeHandler("Create", t.MustParse(), handlers.GetCreateImports())
+			result.Functions = append(result.Functions, h)
+			result.Imports = mergeImports(result.Imports, h.Imports)
+
+		case module.ResourceActionUpdate:
+			t := handlers.Update{
+				Receiver: c.receiverName,
+				Plural:   plural,
+				Single:   single,
+				Response: c.listResponseName,
+			}
+			h := makeHandler("Update", t.MustParse(), handlers.GetUpdateImports())
+			result.Functions = append(result.Functions, h)
+			result.Imports = mergeImports(result.Imports, h.Imports)
+
+		case module.ResourceActionDelete:
+			t := handlers.Delete{
+				Receiver: c.receiverName,
+				Plural:   plural,
+				Single:   single,
+				Response: c.listResponseName,
+			}
+			h := makeHandler("Delete", t.MustParse(), handlers.GetDeleteImports())
+			result.Functions = append(result.Functions, h)
+			result.Imports = mergeImports(result.Imports, h.Imports)
+		}
+	}
+
+	return result
+}
+
+func mergeImports(target, additional golang.Imports) golang.Imports {
+	target.Standard = append(target.Standard, additional.Standard...)
+	target.Vendor = append(target.Vendor, additional.Vendor...)
+	target.App = append(target.App, additional.App...)
+	return target
+}
+
+func makeHandler(name, body string, i golang.Imports) golang.Function {
+	return golang.Function{
+		Name:    name,
+		Imports: i,
+		Arguments: []golang.Value{
+			{
+				Name: "cx",
+				Type: "*gin.Context",
 			},
-			Body: "",
 		},
-		Consts:     nil,
-		Vars:       nil,
-		Interfaces: nil,
-		Structs:    nil,
-		Functions:  nil,
+		ReturnValues: []golang.Value{},
+		Receiver: golang.Value{
+			Name: "c",
+			Type: "",
+		},
+		Body: body,
 	}
 }

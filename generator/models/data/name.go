@@ -1,4 +1,4 @@
-package models
+package data
 
 import (
 	"github.com/68696c6c/capricorn/generator/utils"
@@ -7,6 +7,7 @@ import (
 )
 
 type Name struct {
+	Space      string
 	Snake      string
 	Kebob      string
 	Exported   string
@@ -15,6 +16,7 @@ type Name struct {
 
 func MakeName(base string) Name {
 	return Name{
+		Space:      utils.SeparatedToSpace(base),
 		Snake:      utils.SeparatedToSnake(base),
 		Kebob:      utils.SeparatedToKebob(base),
 		Exported:   utils.SeparatedToExported(base),

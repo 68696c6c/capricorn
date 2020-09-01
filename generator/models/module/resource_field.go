@@ -2,15 +2,15 @@ package module
 
 import (
 	"fmt"
+	"github.com/68696c6c/capricorn/generator/models/data"
 
-	"github.com/68696c6c/capricorn/generator/models"
 	"github.com/68696c6c/capricorn/generator/models/spec"
 )
 
 type ResourceField struct {
 	_spec       spec.ResourceField
 	Key         resourceKey    `yaml:"key"`
-	Name        models.Name    `yaml:"name"`
+	Name        data.Name      `yaml:"name"`
 	Type        string         `yaml:"type"`
 	Index       *ResourceIndex `yaml:"index"`
 	IsRequired  bool           `yaml:"is_required"`
@@ -19,9 +19,9 @@ type ResourceField struct {
 }
 
 type ResourceIndex struct {
-	Resource models.Name `yaml:"resource_name"`
-	Field    models.Name `yaml:"field_name"`
-	Unique   bool        `yaml:"unique"`
+	Resource data.Name `yaml:"resource_name"`
+	Field    data.Name `yaml:"field_name"`
+	Unique   bool      `yaml:"unique"`
 }
 
 type resourceKey struct {
@@ -36,30 +36,30 @@ func (r resourceKey) String() string {
 	return fmt.Sprintf("%s.%.s", r.Resource, r.Field)
 }
 
-func makeResourceFields(specResource spec.Resource, recName models.Name, recKey resourceKey) []ResourceField {
+func makeResourceFields(specResource spec.Resource, recKey resourceKey) []ResourceField {
 	result := []ResourceField{
 		{
 			Key:         makeResourceKey(recKey.Resource, "id"),
-			Name:        models.MakeName("id"),
+			Name:        data.MakeName("id"),
 			Type:        "goat.ID",
 			IsPrimary:   true,
 			IsGoatField: true,
 		},
 		{
 			Key:         makeResourceKey(recKey.Resource, "created_at"),
-			Name:        models.MakeName("created_at"),
+			Name:        data.MakeName("created_at"),
 			Type:        "time.Time",
 			IsGoatField: true,
 		},
 		{
 			Key:         makeResourceKey(recKey.Resource, "updated_at"),
-			Name:        models.MakeName("updated_at"),
+			Name:        data.MakeName("updated_at"),
 			Type:        "*time.Time",
 			IsGoatField: true,
 		},
 		{
 			Key:         makeResourceKey(recKey.Resource, "deleted_at"),
-			Name:        models.MakeName("deleted_at"),
+			Name:        data.MakeName("deleted_at"),
 			Type:        "*time.Time",
 			IsGoatField: true,
 		},
@@ -68,7 +68,7 @@ func makeResourceFields(specResource spec.Resource, recName models.Name, recKey 
 		field := ResourceField{
 			_spec:      f,
 			Key:        makeResourceKey(recKey.Resource, f.Name),
-			Name:       models.MakeName(f.Name),
+			Name:       data.MakeName(f.Name),
 			Type:       f.Type,
 			IsRequired: f.Required,
 		}
