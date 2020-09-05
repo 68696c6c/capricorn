@@ -9,6 +9,8 @@ import (
 const ImportGoat = "github.com/68696c6c/goat"
 const ImportQuery = "github.com/68696c6c/goat/query"
 const ImportGin = "github.com/gin-gonic/gin"
+const ImportErrors = "github.com/pkg/errors"
+const ImportGorm = "github.com/jinzhu/gorm"
 
 type Template interface {
 	Generate() error

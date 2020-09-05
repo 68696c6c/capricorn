@@ -40,7 +40,6 @@ type Delete struct {
 	Receiver string
 	Plural   data.Name
 	Single   data.Name
-	Response string
 }
 
 func GetDeleteImports() golang.Imports {

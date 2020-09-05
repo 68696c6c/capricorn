@@ -4,8 +4,6 @@ import (
 	"github.com/68696c6c/capricorn/generator/models/data"
 	"github.com/68696c6c/capricorn/generator/models/module"
 	"github.com/68696c6c/capricorn/generator/models/templates/golang"
-	"github.com/68696c6c/capricorn/generator/models/templates/src/handlers"
-
 	"gopkg.in/yaml.v2"
 )
 
@@ -63,6 +61,14 @@ type Domain struct {
 	ServiceTest    golang.File `yaml:"service_test"`
 }
 
+type serviceMeta struct {
+	name         data.Name
+	receiverName string
+	fileName     string
+	resource     module.Resource
+	packageData  data.PackageData
+}
+
 func NewSRCDDD(m module.Module, rootPath string) SRC {
 	return SRC{
 		_module:  m,
@@ -81,106 +87,7 @@ func makeDomains(m module.Module) []Domain {
 
 	var result []Domain
 	for _, r := range m.Resources {
-		cName := data.MakeName("controller")
-		viewResponseName := data.MakeName("response")
-		listResponseName := data.MakeName("list_response")
-		domainPKG := data.MakePackageData(baseDomainPath, r.Inflection.Plural.Snake)
-
-		d := Domain{
-			Controller: makeController(controllerMeta{
-				name:             cName,
-				receiverName:     "c",
-				viewResponseName: viewResponseName.Exported,
-				listResponseName: listResponseName.Exported,
-				fileName:         cName.Snake,
-				resource:         r,
-				packageData:      domainPKG,
-			}),
-		}
-		result = append(result, d)
-	}
-	return result
-}
-
-type controllerMeta struct {
-	name             data.Name
-	receiverName     string
-	viewResponseName string
-	listResponseName string
-	fileName         string
-	resource         module.Resource
-	packageData      data.PackageData
-}
-
-func makeController(c controllerMeta) golang.File {
-	fileData, pathData := data.MakeGoFileData(c.packageData.GetImport(), c.fileName)
-	result := golang.File{
-		Name:    fileData,
-		Path:    pathData,
-		Package: c.packageData,
-	}
-
-	plural := c.resource.Inflection.Plural
-	single := c.resource.Inflection.Single
-
-	for _, a := range c.resource.Controller.Actions {
-		switch a {
-
-		case module.ResourceActionList:
-			t := handlers.List{
-				Receiver: c.receiverName,
-				Plural:   plural,
-				Single:   single,
-				Response: c.listResponseName,
-			}
-			h := makeHandler("List", t.MustParse(), handlers.GetListImports())
-			result.Functions = append(result.Functions, h)
-			result.Imports = mergeImports(result.Imports, h.Imports)
-
-		case module.ResourceActionView:
-			t := handlers.View{
-				Receiver: c.receiverName,
-				Plural:   plural,
-				Single:   single,
-				Response: c.listResponseName,
-			}
-			h := makeHandler("View", t.MustParse(), handlers.GetViewImports())
-			result.Functions = append(result.Functions, h)
-			result.Imports = mergeImports(result.Imports, h.Imports)
-
-		case module.ResourceActionCreate:
-			t := handlers.Create{
-				Receiver: c.receiverName,
-				Plural:   plural,
-				Single:   single,
-				Response: c.listResponseName,
-			}
-			h := makeHandler("Create", t.MustParse(), handlers.GetCreateImports())
-			result.Functions = append(result.Functions, h)
-			result.Imports = mergeImports(result.Imports, h.Imports)
-
-		case module.ResourceActionUpdate:
-			t := handlers.Update{
-				Receiver: c.receiverName,
-				Plural:   plural,
-				Single:   single,
-				Response: c.listResponseName,
-			}
-			h := makeHandler("Update", t.MustParse(), handlers.GetUpdateImports())
-			result.Functions = append(result.Functions, h)
-			result.Imports = mergeImports(result.Imports, h.Imports)
-
-		case module.ResourceActionDelete:
-			t := handlers.Delete{
-				Receiver: c.receiverName,
-				Plural:   plural,
-				Single:   single,
-				Response: c.listResponseName,
-			}
-			h := makeHandler("Delete", t.MustParse(), handlers.GetDeleteImports())
-			result.Functions = append(result.Functions, h)
-			result.Imports = mergeImports(result.Imports, h.Imports)
-		}
+		result = append(result, makeDomain(r, baseDomainPath))
 	}
 
 	return result
@@ -193,21 +100,37 @@ func mergeImports(target, additional golang.Imports) golang.Imports {
 	return target
 }
 
-func makeHandler(name, body string, i golang.Imports) golang.Function {
-	return golang.Function{
-		Name:    name,
-		Imports: i,
-		Arguments: []golang.Value{
-			{
-				Name: "cx",
-				Type: "*gin.Context",
+func makeDomain(r module.Resource, baseDomainPath string) Domain {
+
+	// If this function is ever called, we are definitely generating a DDD app so name things accordingly.
+	cName := data.MakeName("controller")
+	rName := data.MakeName("repository")
+	// mName := data.MakeName("model")
+	// sName := data.MakeName("service")
+	viewResponseName := data.MakeName("response")
+	listResponseName := data.MakeName("list_response")
+	pkgData := data.MakePackageData(baseDomainPath, r.Inflection.Plural.Snake)
+
+	return Domain{
+		Controller: makeController(
+			serviceMeta{
+				resource:     r,
+				packageData:  pkgData,
+				name:         cName,
+				fileName:     cName.Snake,
+				receiverName: "c",
 			},
-		},
-		ReturnValues: []golang.Value{},
-		Receiver: golang.Value{
-			Name: "c",
-			Type: "",
-		},
-		Body: body,
+			viewResponseName.Exported,
+			listResponseName.Exported,
+		),
+		Repo: makeRepo(
+			serviceMeta{
+				resource:     r,
+				packageData:  pkgData,
+				name:         rName,
+				fileName:     rName.Snake,
+				receiverName: "r",
+			},
+		),
 	}
 }

@@ -168,7 +168,7 @@ app:
           {\n\t\t\tc.errors.HandleMessage(c, \"organization does not exist\", goat.RespondNotFoundError)\n\t\t\treturn\n\t\t}
           else {\n\t\t\tc.errors.HandleErrorsM(c, errs, \"failed to get organization\",
           goat.RespondServerError)\n\t\t\treturn\n\t\t}\n\t}\n\n\tgoat.RespondData(c,
-          ListResponse{m})\n"
+          Response{m})\n"
       - name: Create
         imports:
           standard: []
@@ -188,7 +188,7 @@ app:
           @TODO generate model factories.\n\t// @TODO generate model validators.\n\tm
           := req.Organization\n\terrs := c.repo.Save(&m)\n\tif len(errs) > 0 {\n\t\tc.errors.HandleErrorsM(c,
           errs, \"failed to save organization\", goat.RespondServerError)\n\t\treturn\n\t}\n\n\tgoat.RespondCreated(c,
-          ListResponse{m})\n"
+          Response{m})\n"
       - name: Update
         imports:
           standard: []
@@ -213,7 +213,7 @@ app:
           @TODO generate model factories.\n\t// @TODO generate model validators.\n\terrs
           = c.repo.Save(&req.Organization)\n\tif len(errs) > 0 {\n\t\tc.errors.HandleErrorsM(c,
           errs, \"failed to save organization\", goat.RespondServerError)\n\t\treturn\n\t}\n\n\tgoat.RespondCreated(c,
-          ListResponse{req.Organization})\n"
+          Response{req.Organization})\n"
       - name: Delete
         imports:
           standard: []
@@ -278,26 +278,44 @@ app:
       functions: []
     repo:
       name:
-        base: ""
-        full: ""
+        base: repository
+        full: repository.go
       path:
-        base: ""
-        full: ""
+        base: github.com/68696c6c/test-example/src/app/organizations
+        full: github.com/68696c6c/test-example/src/app/organizations/repository.go
       package:
-        reference: ""
+        reference: organizations
         name:
-          space: ""
-          snake: ""
-          kebob: ""
-          exported: ""
-          unexported: ""
+          space: organizations
+          snake: organizations
+          kebob: organizations
+          exported: Organizations
+          unexported: organizations
         path:
-          base: ""
-          full: ""
+          base: github.com/68696c6c/test-example/src/app
+          full: github.com/68696c6c/test-example/src/app/organizations
       imports:
         standard: []
         app: []
-        vendor: []
+        vendor:
+        - github.com/68696c6c/goat
+        - github.com/pkg/errors
+        - github.com/68696c6c/goat/query
+        - github.com/jinzhu/gorm
+        - github.com/68696c6c/goat/query
+        - github.com/jinzhu/gorm
+        - github.com/68696c6c/goat
+        - github.com/pkg/errors
+        - github.com/68696c6c/goat/query
+        - github.com/jinzhu/gorm
+        - github.com/68696c6c/goat
+        - github.com/pkg/errors
+        - github.com/68696c6c/goat/query
+        - github.com/jinzhu/gorm
+        - github.com/68696c6c/goat
+        - github.com/68696c6c/goat
+        - github.com/68696c6c/goat
+        - github.com/68696c6c/goat
       init_function:
         name: ""
         imports:
@@ -314,7 +332,164 @@ app:
       vars: []
       interfaces: []
       structs: []
-      functions: []
+      functions:
+      - name: getBaseQuery
+        imports:
+          standard: []
+          app: []
+          vendor:
+          - github.com/68696c6c/goat
+          - github.com/pkg/errors
+          - github.com/68696c6c/goat/query
+          - github.com/jinzhu/gorm
+        arguments: []
+        return_values:
+        - name: ""
+          type: '*gorm.DB'
+        receiver:
+          name: r
+          type: ""
+        body: return r.db.Model(&Organization{})
+      - name: getFilteredQuery
+        imports:
+          standard: []
+          app: []
+          vendor:
+          - github.com/68696c6c/goat/query
+          - github.com/jinzhu/gorm
+        arguments:
+        - name: q
+          type: '*query.Query'
+        return_values:
+        - name: ""
+          type: '*gorm.DB'
+        - name: ""
+          type: error
+        receiver:
+          name: r
+          type: ""
+        body: "\n\tresult, err := q.ApplyToGorm(r.getBaseQuery())\n\tif err != nil
+          {\n\t\treturn result, err\n\t}\n\treturn result, nil\n"
+      - name: applyPaginationToQuery
+        imports:
+          standard: []
+          app: []
+          vendor:
+          - github.com/68696c6c/goat
+          - github.com/pkg/errors
+          - github.com/68696c6c/goat/query
+          - github.com/jinzhu/gorm
+        arguments:
+        - name: q
+          type: '*query.Query'
+        return_values:
+        - name: ""
+          type: error
+        receiver:
+          name: r
+          type: ""
+        body: "\n\terr := goat.ApplyPaginationToQuery(q, r.getBaseQuery())\n\tif err
+          != nil {\n\t\treturn errors.Wrap(err, \"failed to set sites query pagination\")\n\t}\n\treturn
+          nil\n"
+      - name: Filter
+        imports:
+          standard: []
+          app: []
+          vendor:
+          - github.com/68696c6c/goat
+          - github.com/pkg/errors
+          - github.com/68696c6c/goat/query
+          - github.com/jinzhu/gorm
+        arguments:
+        - name: id
+          type: goat.ID
+        return_values:
+        - name: result
+          type: '[]*Organization'
+        - name: err
+          type: error
+        receiver:
+          name: r
+          type: ""
+        body: "\n\tdataQuery, err := r.getFilteredQuery(q)\n\tif err != nil {\n\t\treturn
+          result, errors.Wrap(err, \"failed to build filter sites query\")\n\t}\n\n\terrs
+          := dataQuery.Find(&result).GetErrors()\n\tif len(errs) > 0 && goat.ErrorsBesidesRecordNotFound(errs)
+          {\n\t\terr := goat.ErrorsToError(errs)\n\t\treturn result, errors.Wrap(err,
+          \"failed to execute filter sites data query\")\n\t}\n\n\tif err := r.applyPaginationToQuery(q);
+          err != nil {\n\t\treturn result, err\n\t}\n\n\treturn result, nil\n"
+      - name: GetByID
+        imports:
+          standard: []
+          app: []
+          vendor:
+          - github.com/68696c6c/goat
+        arguments:
+        - name: id
+          type: goat.ID
+        return_values:
+        - name: ""
+          type: Organization
+        - name: ""
+          type: error
+        receiver:
+          name: r
+          type: ""
+        body: "\n\tm := Organization{\n\t\tModel: goat.Model{\n\t\t\tID: id,\n\t\t},\n\t}\n\terrs
+          := r.db.First(&m).GetErrors()\n\tif len(errs) > 0 {\n\t\treturn m, goat.ErrorsToError(errs)\n\t}\n\treturn
+          m, nil\n"
+      - name: Save
+        imports:
+          standard: []
+          app: []
+          vendor:
+          - github.com/68696c6c/goat
+        arguments:
+        - name: m
+          type: '*Organization'
+        return_values:
+        - name: ""
+          type: error
+        receiver:
+          name: r
+          type: ""
+        body: "\n\tvar errs []error\n\tif m.Model.ID.Valid() {\n\t\terrs = r.db.Save(m).GetErrors()\n\t}
+          else {\n\t\terrs = r.db.Create(m).GetErrors()\n\t}\n\tif len(errs) > 0 {\n\t\treturn
+          goat.ErrorsToError(errs)\n\t}\n\treturn nil\n"
+      - name: Save
+        imports:
+          standard: []
+          app: []
+          vendor:
+          - github.com/68696c6c/goat
+        arguments:
+        - name: m
+          type: '*Organization'
+        return_values:
+        - name: ""
+          type: error
+        receiver:
+          name: r
+          type: ""
+        body: "\n\tvar errs []error\n\tif m.Model.ID.Valid() {\n\t\terrs = r.db.Save(m).GetErrors()\n\t}
+          else {\n\t\terrs = r.db.Create(m).GetErrors()\n\t}\n\tif len(errs) > 0 {\n\t\treturn
+          goat.ErrorsToError(errs)\n\t}\n\treturn nil\n"
+      - name: Delete
+        imports:
+          standard: []
+          app: []
+          vendor:
+          - github.com/68696c6c/goat
+        arguments:
+        - name: m
+          type: '*Organization'
+        return_values:
+        - name: ""
+          type: error
+        receiver:
+          name: r
+          type: ""
+        body: "\n\terrs :=  r.db.Delete(m).GetErrors()\n\tif len(errs) > 0 {\n\t\treturn
+          goat.ErrorsToError(errs)\n\t}\n\treturn nil\n"
     repo_test:
       name:
         base: ""
@@ -600,7 +775,7 @@ app:
           errs := c.repo.GetByID(id)\n\tif len(errs) > 0 {\n\t\tif goat.RecordNotFound(errs)
           {\n\t\t\tc.errors.HandleMessage(c, \"user does not exist\", goat.RespondNotFoundError)\n\t\t\treturn\n\t\t}
           else {\n\t\t\tc.errors.HandleErrorsM(c, errs, \"failed to get user\", goat.RespondServerError)\n\t\t\treturn\n\t\t}\n\t}\n\n\tgoat.RespondData(c,
-          ListResponse{m})\n"
+          Response{m})\n"
       - name: Create
         imports:
           standard: []
@@ -620,7 +795,7 @@ app:
           @TODO generate model factories.\n\t// @TODO generate model validators.\n\tm
           := req.User\n\terrs := c.repo.Save(&m)\n\tif len(errs) > 0 {\n\t\tc.errors.HandleErrorsM(c,
           errs, \"failed to save user\", goat.RespondServerError)\n\t\treturn\n\t}\n\n\tgoat.RespondCreated(c,
-          ListResponse{m})\n"
+          Response{m})\n"
       - name: Update
         imports:
           standard: []
@@ -645,7 +820,7 @@ app:
           @TODO generate model factories.\n\t// @TODO generate model validators.\n\terrs
           = c.repo.Save(&req.User)\n\tif len(errs) > 0 {\n\t\tc.errors.HandleErrorsM(c,
           errs, \"failed to save user\", goat.RespondServerError)\n\t\treturn\n\t}\n\n\tgoat.RespondCreated(c,
-          ListResponse{req.User})\n"
+          Response{req.User})\n"
       - name: Delete
         imports:
           standard: []
@@ -709,26 +884,44 @@ app:
       functions: []
     repo:
       name:
-        base: ""
-        full: ""
+        base: repository
+        full: repository.go
       path:
-        base: ""
-        full: ""
+        base: github.com/68696c6c/test-example/src/app/users
+        full: github.com/68696c6c/test-example/src/app/users/repository.go
       package:
-        reference: ""
+        reference: users
         name:
-          space: ""
-          snake: ""
-          kebob: ""
-          exported: ""
-          unexported: ""
+          space: users
+          snake: users
+          kebob: users
+          exported: Users
+          unexported: users
         path:
-          base: ""
-          full: ""
+          base: github.com/68696c6c/test-example/src/app
+          full: github.com/68696c6c/test-example/src/app/users
       imports:
         standard: []
         app: []
-        vendor: []
+        vendor:
+        - github.com/68696c6c/goat
+        - github.com/pkg/errors
+        - github.com/68696c6c/goat/query
+        - github.com/jinzhu/gorm
+        - github.com/68696c6c/goat/query
+        - github.com/jinzhu/gorm
+        - github.com/68696c6c/goat
+        - github.com/pkg/errors
+        - github.com/68696c6c/goat/query
+        - github.com/jinzhu/gorm
+        - github.com/68696c6c/goat
+        - github.com/pkg/errors
+        - github.com/68696c6c/goat/query
+        - github.com/jinzhu/gorm
+        - github.com/68696c6c/goat
+        - github.com/68696c6c/goat
+        - github.com/68696c6c/goat
+        - github.com/68696c6c/goat
       init_function:
         name: ""
         imports:
@@ -745,7 +938,164 @@ app:
       vars: []
       interfaces: []
       structs: []
-      functions: []
+      functions:
+      - name: getBaseQuery
+        imports:
+          standard: []
+          app: []
+          vendor:
+          - github.com/68696c6c/goat
+          - github.com/pkg/errors
+          - github.com/68696c6c/goat/query
+          - github.com/jinzhu/gorm
+        arguments: []
+        return_values:
+        - name: ""
+          type: '*gorm.DB'
+        receiver:
+          name: r
+          type: ""
+        body: return r.db.Model(&User{})
+      - name: getFilteredQuery
+        imports:
+          standard: []
+          app: []
+          vendor:
+          - github.com/68696c6c/goat/query
+          - github.com/jinzhu/gorm
+        arguments:
+        - name: q
+          type: '*query.Query'
+        return_values:
+        - name: ""
+          type: '*gorm.DB'
+        - name: ""
+          type: error
+        receiver:
+          name: r
+          type: ""
+        body: "\n\tresult, err := q.ApplyToGorm(r.getBaseQuery())\n\tif err != nil
+          {\n\t\treturn result, err\n\t}\n\treturn result, nil\n"
+      - name: applyPaginationToQuery
+        imports:
+          standard: []
+          app: []
+          vendor:
+          - github.com/68696c6c/goat
+          - github.com/pkg/errors
+          - github.com/68696c6c/goat/query
+          - github.com/jinzhu/gorm
+        arguments:
+        - name: q
+          type: '*query.Query'
+        return_values:
+        - name: ""
+          type: error
+        receiver:
+          name: r
+          type: ""
+        body: "\n\terr := goat.ApplyPaginationToQuery(q, r.getBaseQuery())\n\tif err
+          != nil {\n\t\treturn errors.Wrap(err, \"failed to set sites query pagination\")\n\t}\n\treturn
+          nil\n"
+      - name: Filter
+        imports:
+          standard: []
+          app: []
+          vendor:
+          - github.com/68696c6c/goat
+          - github.com/pkg/errors
+          - github.com/68696c6c/goat/query
+          - github.com/jinzhu/gorm
+        arguments:
+        - name: id
+          type: goat.ID
+        return_values:
+        - name: result
+          type: '[]*User'
+        - name: err
+          type: error
+        receiver:
+          name: r
+          type: ""
+        body: "\n\tdataQuery, err := r.getFilteredQuery(q)\n\tif err != nil {\n\t\treturn
+          result, errors.Wrap(err, \"failed to build filter sites query\")\n\t}\n\n\terrs
+          := dataQuery.Find(&result).GetErrors()\n\tif len(errs) > 0 && goat.ErrorsBesidesRecordNotFound(errs)
+          {\n\t\terr := goat.ErrorsToError(errs)\n\t\treturn result, errors.Wrap(err,
+          \"failed to execute filter sites data query\")\n\t}\n\n\tif err := r.applyPaginationToQuery(q);
+          err != nil {\n\t\treturn result, err\n\t}\n\n\treturn result, nil\n"
+      - name: GetByID
+        imports:
+          standard: []
+          app: []
+          vendor:
+          - github.com/68696c6c/goat
+        arguments:
+        - name: id
+          type: goat.ID
+        return_values:
+        - name: ""
+          type: User
+        - name: ""
+          type: error
+        receiver:
+          name: r
+          type: ""
+        body: "\n\tm := User{\n\t\tModel: goat.Model{\n\t\t\tID: id,\n\t\t},\n\t}\n\terrs
+          := r.db.First(&m).GetErrors()\n\tif len(errs) > 0 {\n\t\treturn m, goat.ErrorsToError(errs)\n\t}\n\treturn
+          m, nil\n"
+      - name: Save
+        imports:
+          standard: []
+          app: []
+          vendor:
+          - github.com/68696c6c/goat
+        arguments:
+        - name: m
+          type: '*User'
+        return_values:
+        - name: ""
+          type: error
+        receiver:
+          name: r
+          type: ""
+        body: "\n\tvar errs []error\n\tif m.Model.ID.Valid() {\n\t\terrs = r.db.Save(m).GetErrors()\n\t}
+          else {\n\t\terrs = r.db.Create(m).GetErrors()\n\t}\n\tif len(errs) > 0 {\n\t\treturn
+          goat.ErrorsToError(errs)\n\t}\n\treturn nil\n"
+      - name: Save
+        imports:
+          standard: []
+          app: []
+          vendor:
+          - github.com/68696c6c/goat
+        arguments:
+        - name: m
+          type: '*User'
+        return_values:
+        - name: ""
+          type: error
+        receiver:
+          name: r
+          type: ""
+        body: "\n\tvar errs []error\n\tif m.Model.ID.Valid() {\n\t\terrs = r.db.Save(m).GetErrors()\n\t}
+          else {\n\t\terrs = r.db.Create(m).GetErrors()\n\t}\n\tif len(errs) > 0 {\n\t\treturn
+          goat.ErrorsToError(errs)\n\t}\n\treturn nil\n"
+      - name: Delete
+        imports:
+          standard: []
+          app: []
+          vendor:
+          - github.com/68696c6c/goat
+        arguments:
+        - name: m
+          type: '*User'
+        return_values:
+        - name: ""
+          type: error
+        receiver:
+          name: r
+          type: ""
+        body: "\n\terrs :=  r.db.Delete(m).GetErrors()\n\tif len(errs) > 0 {\n\t\treturn
+          goat.ErrorsToError(errs)\n\t}\n\treturn nil\n"
     repo_test:
       name:
         base: ""
@@ -1003,7 +1353,7 @@ app:
           @TODO generate model factories.\n\t// @TODO generate model validators.\n\tm
           := req.Token\n\terrs := c.repo.Save(&m)\n\tif len(errs) > 0 {\n\t\tc.errors.HandleErrorsM(c,
           errs, \"failed to save token\", goat.RespondServerError)\n\t\treturn\n\t}\n\n\tgoat.RespondCreated(c,
-          ListResponse{m})\n"
+          Response{m})\n"
       - name: Delete
         imports:
           standard: []
@@ -1067,26 +1417,38 @@ app:
       functions: []
     repo:
       name:
-        base: ""
-        full: ""
+        base: repository
+        full: repository.go
       path:
-        base: ""
-        full: ""
+        base: github.com/68696c6c/test-example/src/app/tokens
+        full: github.com/68696c6c/test-example/src/app/tokens/repository.go
       package:
-        reference: ""
+        reference: tokens
         name:
-          space: ""
-          snake: ""
-          kebob: ""
-          exported: ""
-          unexported: ""
+          space: tokens
+          snake: tokens
+          kebob: tokens
+          exported: Tokens
+          unexported: tokens
         path:
-          base: ""
-          full: ""
+          base: github.com/68696c6c/test-example/src/app
+          full: github.com/68696c6c/test-example/src/app/tokens
       imports:
         standard: []
         app: []
-        vendor: []
+        vendor:
+        - github.com/68696c6c/goat
+        - github.com/pkg/errors
+        - github.com/68696c6c/goat/query
+        - github.com/jinzhu/gorm
+        - github.com/68696c6c/goat/query
+        - github.com/jinzhu/gorm
+        - github.com/68696c6c/goat
+        - github.com/pkg/errors
+        - github.com/68696c6c/goat/query
+        - github.com/jinzhu/gorm
+        - github.com/68696c6c/goat
+        - github.com/68696c6c/goat
       init_function:
         name: ""
         imports:
@@ -1103,7 +1465,100 @@ app:
       vars: []
       interfaces: []
       structs: []
-      functions: []
+      functions:
+      - name: getBaseQuery
+        imports:
+          standard: []
+          app: []
+          vendor:
+          - github.com/68696c6c/goat
+          - github.com/pkg/errors
+          - github.com/68696c6c/goat/query
+          - github.com/jinzhu/gorm
+        arguments: []
+        return_values:
+        - name: ""
+          type: '*gorm.DB'
+        receiver:
+          name: r
+          type: ""
+        body: return r.db.Model(&Token{})
+      - name: getFilteredQuery
+        imports:
+          standard: []
+          app: []
+          vendor:
+          - github.com/68696c6c/goat/query
+          - github.com/jinzhu/gorm
+        arguments:
+        - name: q
+          type: '*query.Query'
+        return_values:
+        - name: ""
+          type: '*gorm.DB'
+        - name: ""
+          type: error
+        receiver:
+          name: r
+          type: ""
+        body: "\n\tresult, err := q.ApplyToGorm(r.getBaseQuery())\n\tif err != nil
+          {\n\t\treturn result, err\n\t}\n\treturn result, nil\n"
+      - name: applyPaginationToQuery
+        imports:
+          standard: []
+          app: []
+          vendor:
+          - github.com/68696c6c/goat
+          - github.com/pkg/errors
+          - github.com/68696c6c/goat/query
+          - github.com/jinzhu/gorm
+        arguments:
+        - name: q
+          type: '*query.Query'
+        return_values:
+        - name: ""
+          type: error
+        receiver:
+          name: r
+          type: ""
+        body: "\n\terr := goat.ApplyPaginationToQuery(q, r.getBaseQuery())\n\tif err
+          != nil {\n\t\treturn errors.Wrap(err, \"failed to set sites query pagination\")\n\t}\n\treturn
+          nil\n"
+      - name: Save
+        imports:
+          standard: []
+          app: []
+          vendor:
+          - github.com/68696c6c/goat
+        arguments:
+        - name: m
+          type: '*Token'
+        return_values:
+        - name: ""
+          type: error
+        receiver:
+          name: r
+          type: ""
+        body: "\n\tvar errs []error\n\tif m.Model.ID.Valid() {\n\t\terrs = r.db.Save(m).GetErrors()\n\t}
+          else {\n\t\terrs = r.db.Create(m).GetErrors()\n\t}\n\tif len(errs) > 0 {\n\t\treturn
+          goat.ErrorsToError(errs)\n\t}\n\treturn nil\n"
+      - name: Delete
+        imports:
+          standard: []
+          app: []
+          vendor:
+          - github.com/68696c6c/goat
+        arguments:
+        - name: m
+          type: '*Token'
+        return_values:
+        - name: ""
+          type: error
+        receiver:
+          name: r
+          type: ""
+        body: "\n\terrs :=  r.db.Delete(m).GetErrors()\n\tif len(errs) > 0 {\n\t\treturn
+          goat.ErrorsToError(errs)\n\t}\n\treturn nil\n"
     repo_test:
       name:
         base: ""
