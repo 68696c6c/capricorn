@@ -6,6 +6,14 @@ import (
 	"github.com/68696c6c/capricorn/generator/utils"
 )
 
+var getFilteredQueryBodyTemplate = `
+	result, err := q.ApplyToGorm(r.getBaseQuery())
+	if err != nil {
+		return result, err
+	}
+	return result, nil
+`
+
 type BaseFilteredQuery BaseQuery
 
 func (m BaseFilteredQuery) GetName() string {

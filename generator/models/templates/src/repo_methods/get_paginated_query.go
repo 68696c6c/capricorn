@@ -6,6 +6,14 @@ import (
 	"github.com/68696c6c/capricorn/generator/utils"
 )
 
+var applyPaginationToQueryBodyTemplate = `
+	err := goat.ApplyPaginationToQuery(q, r.getBaseQuery())
+	if err != nil {
+		return errors.Wrap(err, "failed to set sites query pagination")
+	}
+	return nil
+`
+
 type BasePaginatedQuery BaseQuery
 
 func (m BasePaginatedQuery) GetName() string {

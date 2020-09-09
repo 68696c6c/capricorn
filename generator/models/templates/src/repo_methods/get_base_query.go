@@ -8,22 +8,6 @@ import (
 
 var getBaseQueryBodyTemplate = `return r.db.Model(&{{ .Single.Exported }}{})`
 
-var getFilteredQueryBodyTemplate = `
-	result, err := q.ApplyToGorm(r.getBaseQuery())
-	if err != nil {
-		return result, err
-	}
-	return result, nil
-`
-
-var applyPaginationToQueryBodyTemplate = `
-	err := goat.ApplyPaginationToQuery(q, r.getBaseQuery())
-	if err != nil {
-		return errors.Wrap(err, "failed to set sites query pagination")
-	}
-	return nil
-`
-
 type Method interface {
 	GetName() string
 	MustParse() string
