@@ -281,63 +281,20 @@ resources:
   fields:
   - key:
       resource: organization
-      field: id
-    name:
-      space: id
-      snake: id
-      kebob: id
-      exported: Id
-      unexported: id
-    type: goat.ID
-    index: null
-    is_required: false
-    is_primary: true
-    is_goat_field: true
-  - key:
-      resource: organization
-      field: created_at
-    name:
-      space: created at
-      snake: created_at
-      kebob: created-at
-      exported: CreatedAt
-      unexported: createdAt
-    type: time.Time
-    index: null
-    is_required: false
-    is_primary: false
-    is_goat_field: true
-  - key:
-      resource: organization
-      field: updated_at
-    name:
-      space: updated at
-      snake: updated_at
-      kebob: updated-at
-      exported: UpdatedAt
-      unexported: updatedAt
-    type: '*time.Time'
-    index: null
-    is_required: false
-    is_primary: false
-    is_goat_field: true
-  - key:
-      resource: organization
-      field: deleted_at
-    name:
-      space: deleted at
-      snake: deleted_at
-      kebob: deleted-at
-      exported: DeletedAt
-      unexported: deletedAt
-    type: '*time.Time'
-    index: null
-    is_required: false
-    is_primary: false
-    is_goat_field: true
-  - key:
-      resource: organization
       field: name
+    relation:
+      single:
+        space: ""
+        snake: ""
+        kebob: ""
+        exported: ""
+        unexported: ""
+      plural:
+        space: ""
+        snake: ""
+        kebob: ""
+        exported: ""
+        unexported: ""
     name:
       space: name
       snake: name
@@ -345,10 +302,10 @@ resources:
       exported: Name
       unexported: name
     type: string
-    index: null
     is_required: true
+    is_unique: false
+    is_indexed: false
     is_primary: false
-    is_goat_field: false
   controller:
     name:
       space: organizations
@@ -383,6 +340,199 @@ resources:
       exported: OrganizationsService
       unexported: organizationsService
     actions: []
+  fields_meta:
+    goat:
+    - key:
+        resource: organization
+        field: id
+      relation:
+        single:
+          space: ""
+          snake: ""
+          kebob: ""
+          exported: ""
+          unexported: ""
+        plural:
+          space: ""
+          snake: ""
+          kebob: ""
+          exported: ""
+          unexported: ""
+      name:
+        space: id
+        snake: id
+        kebob: id
+        exported: Id
+        unexported: id
+      type: goat.ID
+      is_required: false
+      is_unique: false
+      is_indexed: false
+      is_primary: true
+    - key:
+        resource: organization
+        field: created_at
+      relation:
+        single:
+          space: ""
+          snake: ""
+          kebob: ""
+          exported: ""
+          unexported: ""
+        plural:
+          space: ""
+          snake: ""
+          kebob: ""
+          exported: ""
+          unexported: ""
+      name:
+        space: created at
+        snake: created_at
+        kebob: created-at
+        exported: CreatedAt
+        unexported: createdAt
+      type: time.Time
+      is_required: false
+      is_unique: false
+      is_indexed: false
+      is_primary: false
+    - key:
+        resource: organization
+        field: updated_at
+      relation:
+        single:
+          space: ""
+          snake: ""
+          kebob: ""
+          exported: ""
+          unexported: ""
+        plural:
+          space: ""
+          snake: ""
+          kebob: ""
+          exported: ""
+          unexported: ""
+      name:
+        space: updated at
+        snake: updated_at
+        kebob: updated-at
+        exported: UpdatedAt
+        unexported: updatedAt
+      type: '*time.Time'
+      is_required: false
+      is_unique: false
+      is_indexed: false
+      is_primary: false
+    - key:
+        resource: organization
+        field: deleted_at
+      relation:
+        single:
+          space: ""
+          snake: ""
+          kebob: ""
+          exported: ""
+          unexported: ""
+        plural:
+          space: ""
+          snake: ""
+          kebob: ""
+          exported: ""
+          unexported: ""
+      name:
+        space: deleted at
+        snake: deleted_at
+        kebob: deleted-at
+        exported: DeletedAt
+        unexported: deletedAt
+      type: '*time.Time'
+      is_required: false
+      is_unique: false
+      is_indexed: false
+      is_primary: false
+    - key:
+        resource: organization
+        field: name
+      relation:
+        single:
+          space: ""
+          snake: ""
+          kebob: ""
+          exported: ""
+          unexported: ""
+        plural:
+          space: ""
+          snake: ""
+          kebob: ""
+          exported: ""
+          unexported: ""
+      name:
+        space: name
+        snake: name
+        kebob: name
+        exported: Name
+        unexported: name
+      type: string
+      is_required: true
+      is_unique: false
+      is_indexed: false
+      is_primary: false
+    model:
+    - key:
+        resource: organization
+        field: name
+      relation:
+        single:
+          space: ""
+          snake: ""
+          kebob: ""
+          exported: ""
+          unexported: ""
+        plural:
+          space: ""
+          snake: ""
+          kebob: ""
+          exported: ""
+          unexported: ""
+      name:
+        space: name
+        snake: name
+        kebob: name
+        exported: Name
+        unexported: name
+      type: string
+      is_required: true
+      is_unique: false
+      is_indexed: false
+      is_primary: false
+    has_many:
+    - key:
+        resource: organization
+        field: Users
+      relation:
+        single:
+          space: user
+          snake: user
+          kebob: user
+          exported: User
+          unexported: user
+        plural:
+          space: users
+          snake: users
+          kebob: users
+          exported: Users
+          unexported: users
+      name:
+        space: users
+        snake: users
+        kebob: users
+        exported: Users
+        unexported: users
+      type: '[]*users.User'
+      is_required: false
+      is_unique: false
+      is_indexed: false
+      is_primary: false
 - key:
     resource: user
     field: ""
@@ -402,63 +552,47 @@ resources:
   fields:
   - key:
       resource: user
-      field: id
+      field: organization_id
+    relation:
+      single:
+        space: ""
+        snake: ""
+        kebob: ""
+        exported: ""
+        unexported: ""
+      plural:
+        space: ""
+        snake: ""
+        kebob: ""
+        exported: ""
+        unexported: ""
     name:
-      space: id
-      snake: id
-      kebob: id
-      exported: Id
-      unexported: id
+      space: organization id
+      snake: organization_id
+      kebob: organization-id
+      exported: OrganizationId
+      unexported: organizationId
     type: goat.ID
-    index: null
     is_required: false
-    is_primary: true
-    is_goat_field: true
-  - key:
-      resource: user
-      field: created_at
-    name:
-      space: created at
-      snake: created_at
-      kebob: created-at
-      exported: CreatedAt
-      unexported: createdAt
-    type: time.Time
-    index: null
-    is_required: false
+    is_unique: false
+    is_indexed: false
     is_primary: false
-    is_goat_field: true
-  - key:
-      resource: user
-      field: updated_at
-    name:
-      space: updated at
-      snake: updated_at
-      kebob: updated-at
-      exported: UpdatedAt
-      unexported: updatedAt
-    type: '*time.Time'
-    index: null
-    is_required: false
-    is_primary: false
-    is_goat_field: true
-  - key:
-      resource: user
-      field: deleted_at
-    name:
-      space: deleted at
-      snake: deleted_at
-      kebob: deleted-at
-      exported: DeletedAt
-      unexported: deletedAt
-    type: '*time.Time'
-    index: null
-    is_required: false
-    is_primary: false
-    is_goat_field: true
   - key:
       resource: user
       field: name
+    relation:
+      single:
+        space: ""
+        snake: ""
+        kebob: ""
+        exported: ""
+        unexported: ""
+      plural:
+        space: ""
+        snake: ""
+        kebob: ""
+        exported: ""
+        unexported: ""
     name:
       space: name
       snake: name
@@ -466,13 +600,26 @@ resources:
       exported: Name
       unexported: name
     type: string
-    index: null
     is_required: true
+    is_unique: false
+    is_indexed: false
     is_primary: false
-    is_goat_field: false
   - key:
       resource: user
       field: email
+    relation:
+      single:
+        space: ""
+        snake: ""
+        kebob: ""
+        exported: ""
+        unexported: ""
+      plural:
+        space: ""
+        snake: ""
+        kebob: ""
+        exported: ""
+        unexported: ""
     name:
       space: email
       snake: email
@@ -480,10 +627,10 @@ resources:
       exported: Email
       unexported: email
     type: string
-    index: null
     is_required: true
+    is_unique: true
+    is_indexed: false
     is_primary: false
-    is_goat_field: false
   controller:
     name:
       space: users
@@ -518,6 +665,363 @@ resources:
       exported: UsersService
       unexported: usersService
     actions: []
+  fields_meta:
+    goat:
+    - key:
+        resource: user
+        field: id
+      relation:
+        single:
+          space: ""
+          snake: ""
+          kebob: ""
+          exported: ""
+          unexported: ""
+        plural:
+          space: ""
+          snake: ""
+          kebob: ""
+          exported: ""
+          unexported: ""
+      name:
+        space: id
+        snake: id
+        kebob: id
+        exported: Id
+        unexported: id
+      type: goat.ID
+      is_required: false
+      is_unique: false
+      is_indexed: false
+      is_primary: true
+    - key:
+        resource: user
+        field: created_at
+      relation:
+        single:
+          space: ""
+          snake: ""
+          kebob: ""
+          exported: ""
+          unexported: ""
+        plural:
+          space: ""
+          snake: ""
+          kebob: ""
+          exported: ""
+          unexported: ""
+      name:
+        space: created at
+        snake: created_at
+        kebob: created-at
+        exported: CreatedAt
+        unexported: createdAt
+      type: time.Time
+      is_required: false
+      is_unique: false
+      is_indexed: false
+      is_primary: false
+    - key:
+        resource: user
+        field: updated_at
+      relation:
+        single:
+          space: ""
+          snake: ""
+          kebob: ""
+          exported: ""
+          unexported: ""
+        plural:
+          space: ""
+          snake: ""
+          kebob: ""
+          exported: ""
+          unexported: ""
+      name:
+        space: updated at
+        snake: updated_at
+        kebob: updated-at
+        exported: UpdatedAt
+        unexported: updatedAt
+      type: '*time.Time'
+      is_required: false
+      is_unique: false
+      is_indexed: false
+      is_primary: false
+    - key:
+        resource: user
+        field: deleted_at
+      relation:
+        single:
+          space: ""
+          snake: ""
+          kebob: ""
+          exported: ""
+          unexported: ""
+        plural:
+          space: ""
+          snake: ""
+          kebob: ""
+          exported: ""
+          unexported: ""
+      name:
+        space: deleted at
+        snake: deleted_at
+        kebob: deleted-at
+        exported: DeletedAt
+        unexported: deletedAt
+      type: '*time.Time'
+      is_required: false
+      is_unique: false
+      is_indexed: false
+      is_primary: false
+    - key:
+        resource: user
+        field: organization_id
+      relation:
+        single:
+          space: ""
+          snake: ""
+          kebob: ""
+          exported: ""
+          unexported: ""
+        plural:
+          space: ""
+          snake: ""
+          kebob: ""
+          exported: ""
+          unexported: ""
+      name:
+        space: organization id
+        snake: organization_id
+        kebob: organization-id
+        exported: OrganizationId
+        unexported: organizationId
+      type: goat.ID
+      is_required: false
+      is_unique: false
+      is_indexed: false
+      is_primary: false
+    - key:
+        resource: user
+        field: name
+      relation:
+        single:
+          space: ""
+          snake: ""
+          kebob: ""
+          exported: ""
+          unexported: ""
+        plural:
+          space: ""
+          snake: ""
+          kebob: ""
+          exported: ""
+          unexported: ""
+      name:
+        space: name
+        snake: name
+        kebob: name
+        exported: Name
+        unexported: name
+      type: string
+      is_required: true
+      is_unique: false
+      is_indexed: false
+      is_primary: false
+    - key:
+        resource: user
+        field: email
+      relation:
+        single:
+          space: ""
+          snake: ""
+          kebob: ""
+          exported: ""
+          unexported: ""
+        plural:
+          space: ""
+          snake: ""
+          kebob: ""
+          exported: ""
+          unexported: ""
+      name:
+        space: email
+        snake: email
+        kebob: email
+        exported: Email
+        unexported: email
+      type: string
+      is_required: true
+      is_unique: true
+      is_indexed: false
+      is_primary: false
+    model:
+    - key:
+        resource: user
+        field: organization_id
+      relation:
+        single:
+          space: ""
+          snake: ""
+          kebob: ""
+          exported: ""
+          unexported: ""
+        plural:
+          space: ""
+          snake: ""
+          kebob: ""
+          exported: ""
+          unexported: ""
+      name:
+        space: organization id
+        snake: organization_id
+        kebob: organization-id
+        exported: OrganizationId
+        unexported: organizationId
+      type: goat.ID
+      is_required: false
+      is_unique: false
+      is_indexed: false
+      is_primary: false
+    - key:
+        resource: user
+        field: name
+      relation:
+        single:
+          space: ""
+          snake: ""
+          kebob: ""
+          exported: ""
+          unexported: ""
+        plural:
+          space: ""
+          snake: ""
+          kebob: ""
+          exported: ""
+          unexported: ""
+      name:
+        space: name
+        snake: name
+        kebob: name
+        exported: Name
+        unexported: name
+      type: string
+      is_required: true
+      is_unique: false
+      is_indexed: false
+      is_primary: false
+    - key:
+        resource: user
+        field: email
+      relation:
+        single:
+          space: ""
+          snake: ""
+          kebob: ""
+          exported: ""
+          unexported: ""
+        plural:
+          space: ""
+          snake: ""
+          kebob: ""
+          exported: ""
+          unexported: ""
+      name:
+        space: email
+        snake: email
+        kebob: email
+        exported: Email
+        unexported: email
+      type: string
+      is_required: true
+      is_unique: true
+      is_indexed: false
+      is_primary: false
+    belongs_to:
+    - key:
+        resource: user
+        field: organization
+      relation:
+        single:
+          space: ""
+          snake: ""
+          kebob: ""
+          exported: ""
+          unexported: ""
+        plural:
+          space: ""
+          snake: ""
+          kebob: ""
+          exported: ""
+          unexported: ""
+      name:
+        space: organization
+        snake: organization
+        kebob: organization
+        exported: Organization
+        unexported: organization
+      type: '*organizations.Organization'
+      is_required: false
+      is_unique: false
+      is_indexed: false
+      is_primary: false
+    has_many:
+    - key:
+        resource: user
+        field: Tokens
+      relation:
+        single:
+          space: token
+          snake: token
+          kebob: token
+          exported: Token
+          unexported: token
+        plural:
+          space: tokens
+          snake: tokens
+          kebob: tokens
+          exported: Tokens
+          unexported: tokens
+      name:
+        space: tokens
+        snake: tokens
+        kebob: tokens
+        exported: Tokens
+        unexported: tokens
+      type: '[]*tokens.Token'
+      is_required: false
+      is_unique: false
+      is_indexed: false
+      is_primary: false
+    unique:
+    - key:
+        resource: user
+        field: email
+      relation:
+        single:
+          space: ""
+          snake: ""
+          kebob: ""
+          exported: ""
+          unexported: ""
+        plural:
+          space: ""
+          snake: ""
+          kebob: ""
+          exported: ""
+          unexported: ""
+      name:
+        space: email
+        snake: email
+        kebob: email
+        exported: Email
+        unexported: email
+      type: string
+      is_required: true
+      is_unique: true
+      is_indexed: false
+      is_primary: false
 - key:
     resource: token
     field: ""
@@ -537,63 +1041,47 @@ resources:
   fields:
   - key:
       resource: token
-      field: id
+      field: user_id
+    relation:
+      single:
+        space: ""
+        snake: ""
+        kebob: ""
+        exported: ""
+        unexported: ""
+      plural:
+        space: ""
+        snake: ""
+        kebob: ""
+        exported: ""
+        unexported: ""
     name:
-      space: id
-      snake: id
-      kebob: id
-      exported: Id
-      unexported: id
+      space: user id
+      snake: user_id
+      kebob: user-id
+      exported: UserId
+      unexported: userId
     type: goat.ID
-    index: null
     is_required: false
-    is_primary: true
-    is_goat_field: true
-  - key:
-      resource: token
-      field: created_at
-    name:
-      space: created at
-      snake: created_at
-      kebob: created-at
-      exported: CreatedAt
-      unexported: createdAt
-    type: time.Time
-    index: null
-    is_required: false
+    is_unique: false
+    is_indexed: false
     is_primary: false
-    is_goat_field: true
-  - key:
-      resource: token
-      field: updated_at
-    name:
-      space: updated at
-      snake: updated_at
-      kebob: updated-at
-      exported: UpdatedAt
-      unexported: updatedAt
-    type: '*time.Time'
-    index: null
-    is_required: false
-    is_primary: false
-    is_goat_field: true
-  - key:
-      resource: token
-      field: deleted_at
-    name:
-      space: deleted at
-      snake: deleted_at
-      kebob: deleted-at
-      exported: DeletedAt
-      unexported: deletedAt
-    type: '*time.Time'
-    index: null
-    is_required: false
-    is_primary: false
-    is_goat_field: true
   - key:
       resource: token
       field: key
+    relation:
+      single:
+        space: ""
+        snake: ""
+        kebob: ""
+        exported: ""
+        unexported: ""
+      plural:
+        space: ""
+        snake: ""
+        kebob: ""
+        exported: ""
+        unexported: ""
     name:
       space: key
       snake: key
@@ -601,13 +1089,26 @@ resources:
       exported: Key
       unexported: key
     type: string
-    index: null
     is_required: true
+    is_unique: true
+    is_indexed: false
     is_primary: false
-    is_goat_field: false
   - key:
       resource: token
       field: expires
+    relation:
+      single:
+        space: ""
+        snake: ""
+        kebob: ""
+        exported: ""
+        unexported: ""
+      plural:
+        space: ""
+        snake: ""
+        kebob: ""
+        exported: ""
+        unexported: ""
     name:
       space: expires
       snake: expires
@@ -615,10 +1116,10 @@ resources:
       exported: Expires
       unexported: expires
     type: time.Time
-    index: null
     is_required: true
+    is_unique: false
+    is_indexed: false
     is_primary: false
-    is_goat_field: false
   controller:
     name:
       space: tokens
@@ -648,4 +1149,333 @@ resources:
       unexported: tokensService
     actions:
     - refresh
+  fields_meta:
+    goat:
+    - key:
+        resource: token
+        field: id
+      relation:
+        single:
+          space: ""
+          snake: ""
+          kebob: ""
+          exported: ""
+          unexported: ""
+        plural:
+          space: ""
+          snake: ""
+          kebob: ""
+          exported: ""
+          unexported: ""
+      name:
+        space: id
+        snake: id
+        kebob: id
+        exported: Id
+        unexported: id
+      type: goat.ID
+      is_required: false
+      is_unique: false
+      is_indexed: false
+      is_primary: true
+    - key:
+        resource: token
+        field: created_at
+      relation:
+        single:
+          space: ""
+          snake: ""
+          kebob: ""
+          exported: ""
+          unexported: ""
+        plural:
+          space: ""
+          snake: ""
+          kebob: ""
+          exported: ""
+          unexported: ""
+      name:
+        space: created at
+        snake: created_at
+        kebob: created-at
+        exported: CreatedAt
+        unexported: createdAt
+      type: time.Time
+      is_required: false
+      is_unique: false
+      is_indexed: false
+      is_primary: false
+    - key:
+        resource: token
+        field: updated_at
+      relation:
+        single:
+          space: ""
+          snake: ""
+          kebob: ""
+          exported: ""
+          unexported: ""
+        plural:
+          space: ""
+          snake: ""
+          kebob: ""
+          exported: ""
+          unexported: ""
+      name:
+        space: updated at
+        snake: updated_at
+        kebob: updated-at
+        exported: UpdatedAt
+        unexported: updatedAt
+      type: '*time.Time'
+      is_required: false
+      is_unique: false
+      is_indexed: false
+      is_primary: false
+    - key:
+        resource: token
+        field: deleted_at
+      relation:
+        single:
+          space: ""
+          snake: ""
+          kebob: ""
+          exported: ""
+          unexported: ""
+        plural:
+          space: ""
+          snake: ""
+          kebob: ""
+          exported: ""
+          unexported: ""
+      name:
+        space: deleted at
+        snake: deleted_at
+        kebob: deleted-at
+        exported: DeletedAt
+        unexported: deletedAt
+      type: '*time.Time'
+      is_required: false
+      is_unique: false
+      is_indexed: false
+      is_primary: false
+    - key:
+        resource: token
+        field: user_id
+      relation:
+        single:
+          space: ""
+          snake: ""
+          kebob: ""
+          exported: ""
+          unexported: ""
+        plural:
+          space: ""
+          snake: ""
+          kebob: ""
+          exported: ""
+          unexported: ""
+      name:
+        space: user id
+        snake: user_id
+        kebob: user-id
+        exported: UserId
+        unexported: userId
+      type: goat.ID
+      is_required: false
+      is_unique: false
+      is_indexed: false
+      is_primary: false
+    - key:
+        resource: token
+        field: key
+      relation:
+        single:
+          space: ""
+          snake: ""
+          kebob: ""
+          exported: ""
+          unexported: ""
+        plural:
+          space: ""
+          snake: ""
+          kebob: ""
+          exported: ""
+          unexported: ""
+      name:
+        space: key
+        snake: key
+        kebob: key
+        exported: Key
+        unexported: key
+      type: string
+      is_required: true
+      is_unique: true
+      is_indexed: false
+      is_primary: false
+    - key:
+        resource: token
+        field: expires
+      relation:
+        single:
+          space: ""
+          snake: ""
+          kebob: ""
+          exported: ""
+          unexported: ""
+        plural:
+          space: ""
+          snake: ""
+          kebob: ""
+          exported: ""
+          unexported: ""
+      name:
+        space: expires
+        snake: expires
+        kebob: expires
+        exported: Expires
+        unexported: expires
+      type: time.Time
+      is_required: true
+      is_unique: false
+      is_indexed: false
+      is_primary: false
+    model:
+    - key:
+        resource: token
+        field: user_id
+      relation:
+        single:
+          space: ""
+          snake: ""
+          kebob: ""
+          exported: ""
+          unexported: ""
+        plural:
+          space: ""
+          snake: ""
+          kebob: ""
+          exported: ""
+          unexported: ""
+      name:
+        space: user id
+        snake: user_id
+        kebob: user-id
+        exported: UserId
+        unexported: userId
+      type: goat.ID
+      is_required: false
+      is_unique: false
+      is_indexed: false
+      is_primary: false
+    - key:
+        resource: token
+        field: key
+      relation:
+        single:
+          space: ""
+          snake: ""
+          kebob: ""
+          exported: ""
+          unexported: ""
+        plural:
+          space: ""
+          snake: ""
+          kebob: ""
+          exported: ""
+          unexported: ""
+      name:
+        space: key
+        snake: key
+        kebob: key
+        exported: Key
+        unexported: key
+      type: string
+      is_required: true
+      is_unique: true
+      is_indexed: false
+      is_primary: false
+    - key:
+        resource: token
+        field: expires
+      relation:
+        single:
+          space: ""
+          snake: ""
+          kebob: ""
+          exported: ""
+          unexported: ""
+        plural:
+          space: ""
+          snake: ""
+          kebob: ""
+          exported: ""
+          unexported: ""
+      name:
+        space: expires
+        snake: expires
+        kebob: expires
+        exported: Expires
+        unexported: expires
+      type: time.Time
+      is_required: true
+      is_unique: false
+      is_indexed: false
+      is_primary: false
+    belongs_to:
+    - key:
+        resource: token
+        field: user
+      relation:
+        single:
+          space: ""
+          snake: ""
+          kebob: ""
+          exported: ""
+          unexported: ""
+        plural:
+          space: ""
+          snake: ""
+          kebob: ""
+          exported: ""
+          unexported: ""
+      name:
+        space: user
+        snake: user
+        kebob: user
+        exported: User
+        unexported: user
+      type: '*users.User'
+      is_required: false
+      is_unique: false
+      is_indexed: false
+      is_primary: false
+    unique:
+    - key:
+        resource: token
+        field: key
+      relation:
+        single:
+          space: ""
+          snake: ""
+          kebob: ""
+          exported: ""
+          unexported: ""
+        plural:
+          space: ""
+          snake: ""
+          kebob: ""
+          exported: ""
+          unexported: ""
+      name:
+        space: key
+        snake: key
+        kebob: key
+        exported: Key
+        unexported: key
+      type: string
+      is_required: true
+      is_unique: true
+      is_indexed: false
+      is_primary: false
 `

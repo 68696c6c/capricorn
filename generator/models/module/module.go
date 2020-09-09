@@ -31,7 +31,7 @@ func (m Module) String() string {
 	return string(out)
 }
 
-func NewModuleFromSpec(s spec.Spec) Module {
+func NewModuleFromSpec(s spec.Spec, ddd bool) Module {
 
 	pkgData := makeModulePackage(s.Module)
 	result := Module{
@@ -41,7 +41,7 @@ func NewModuleFromSpec(s spec.Spec) Module {
 		Ops:       makeOps(pkgData.Name),
 		Packages:  makePackages(s.Module),
 		Commands:  makeCommands(s.Commands),
-		Resources: makeResources(s.Resources),
+		Resources: makeResources(s.Resources, ddd),
 	}
 
 	return result

@@ -11,7 +11,7 @@ import (
 func TestModule_ModuleFromSpec(t *testing.T) {
 	f := spec.GetFixtureSpec()
 
-	result := NewModuleFromSpec(f)
+	result := NewModuleFromSpec(f, true)
 	resultYAML := result.String()
 	println(resultYAML)
 

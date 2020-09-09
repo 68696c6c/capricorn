@@ -2,26 +2,30 @@ package module
 
 import (
 	"fmt"
-	"github.com/68696c6c/capricorn/generator/models/data"
 
+	"github.com/68696c6c/capricorn/generator/models/data"
 	"github.com/68696c6c/capricorn/generator/models/spec"
 )
 
 type ResourceField struct {
-	_spec       spec.ResourceField
-	Key         resourceKey    `yaml:"key"`
-	Name        data.Name      `yaml:"name"`
-	Type        string         `yaml:"type"`
-	Index       *ResourceIndex `yaml:"index"`
-	IsRequired  bool           `yaml:"is_required"`
-	IsPrimary   bool           `yaml:"is_primary"`
-	IsGoatField bool           `yaml:"is_goat_field"`
+	_spec      spec.ResourceField
+	Key        resourceKey     `yaml:"key"`
+	Relation   data.Inflection `yaml:"relation"`
+	Name       data.Name       `yaml:"name"`
+	Type       string          `yaml:"type"`
+	IsRequired bool            `yaml:"is_required"`
+	IsUnique   bool            `yaml:"is_unique"`
+	IsIndexed  bool            `yaml:"is_indexed"`
+	IsPrimary  bool            `yaml:"is_primary"`
 }
 
-type ResourceIndex struct {
-	Resource data.Name `yaml:"resource_name"`
-	Field    data.Name `yaml:"field_name"`
-	Unique   bool      `yaml:"unique"`
+type ResourceFields struct {
+	Database  []ResourceField `yaml:"goat,omitempty"`  // fields that exist in the database
+	Model     []ResourceField `yaml:"model,omitempty"` // fields that will be written into the model struct
+	BelongsTo []ResourceField `yaml:"belongs_to,omitempty"`
+	HasMany   []ResourceField `yaml:"has_many,omitempty"`
+	Unique    []ResourceField `yaml:"unique,omitempty"`
+	Indexed   []ResourceField `yaml:"indexed,omitempty"`
 }
 
 type resourceKey struct {
@@ -36,34 +40,57 @@ func (r resourceKey) String() string {
 	return fmt.Sprintf("%s.%.s", r.Resource, r.Field)
 }
 
-func makeResourceFields(specResource spec.Resource, recKey resourceKey) []ResourceField {
-	result := []ResourceField{
-		{
-			Key:         makeResourceKey(recKey.Resource, "id"),
-			Name:        data.MakeName("id"),
-			Type:        "goat.ID",
-			IsPrimary:   true,
-			IsGoatField: true,
-		},
-		{
-			Key:         makeResourceKey(recKey.Resource, "created_at"),
-			Name:        data.MakeName("created_at"),
-			Type:        "time.Time",
-			IsGoatField: true,
-		},
-		{
-			Key:         makeResourceKey(recKey.Resource, "updated_at"),
-			Name:        data.MakeName("updated_at"),
-			Type:        "*time.Time",
-			IsGoatField: true,
-		},
-		{
-			Key:         makeResourceKey(recKey.Resource, "deleted_at"),
-			Name:        data.MakeName("deleted_at"),
-			Type:        "*time.Time",
-			IsGoatField: true,
+func makeResourceFields(specResource spec.Resource, recKey resourceKey, ddd bool) ResourceFields {
+	result := ResourceFields{
+		Database: []ResourceField{
+			{
+				Key:       makeResourceKey(recKey.Resource, "id"),
+				Name:      data.MakeName("id"),
+				Type:      "goat.ID",
+				IsPrimary: true,
+			},
+			{
+				Key:  makeResourceKey(recKey.Resource, "created_at"),
+				Name: data.MakeName("created_at"),
+				Type: "time.Time",
+			},
+			{
+				Key:  makeResourceKey(recKey.Resource, "updated_at"),
+				Name: data.MakeName("updated_at"),
+				Type: "*time.Time",
+			},
+			{
+				Key:  makeResourceKey(recKey.Resource, "deleted_at"),
+				Name: data.MakeName("deleted_at"),
+				Type: "*time.Time",
+			},
 		},
 	}
+
+	for _, rel := range specResource.BelongsTo {
+		relName := data.MakeInflection(rel)
+		relFieldName := relName.Single.Snake
+
+		fieldName := relFieldName + "_id"
+		field := ResourceField{
+			Key:  makeResourceKey(recKey.Resource, fieldName),
+			Name: data.MakeName(fieldName),
+			Type: "goat.ID",
+		}
+
+		// These are the foreign key field.
+		result.Database = append(result.Database, field)
+		result.Model = append(result.Model, field)
+
+		// This is the field that GORM will hydrate the relation into.
+
+		result.BelongsTo = append(result.BelongsTo, ResourceField{
+			Key:  makeResourceKey(recKey.Resource, relFieldName),
+			Name: data.MakeName(relFieldName),
+			Type: makeBelongsToType(relName, ddd),
+		})
+	}
+
 	for _, f := range specResource.Fields {
 		field := ResourceField{
 			_spec:      f,
@@ -71,9 +98,33 @@ func makeResourceFields(specResource spec.Resource, recKey resourceKey) []Resour
 			Name:       data.MakeName(f.Name),
 			Type:       f.Type,
 			IsRequired: f.Required,
+			IsUnique:   f.Unique,
+			IsIndexed:  f.Indexed,
 		}
-		result = append(result, field)
+		result.Database = append(result.Database, field)
+		result.Model = append(result.Model, field)
+		if f.Unique {
+			result.Unique = append(result.Unique, field)
+		}
+		if f.Indexed {
+			result.Indexed = append(result.Indexed, field)
+		}
 	}
+
+	for _, rel := range specResource.HasMany {
+		relName := data.MakeInflection(rel)
+		field := ResourceField{
+			Key:      makeResourceKey(recKey.Resource, relName.Plural.Exported),
+			Relation: relName,
+			Name:     relName.Plural,
+			Type:     makeHasManyType(relName, ddd),
+		}
+
+		// This is the field that GORM will hydrate the relation into.
+		// HasMany relations built into the parent model, not the child, so nothing else to do for now.
+		result.HasMany = append(result.HasMany, field)
+	}
+
 	return result
 }
 
@@ -82,6 +133,26 @@ func makeResourceKey(resource, field string) resourceKey {
 		Resource: resource,
 		Field:    field,
 	}
+}
+
+func makeHasManyType(relInflection data.Inflection, ddd bool) string {
+	var t string
+	if ddd {
+		t = fmt.Sprintf("%s.%s", relInflection.Plural.Snake, relInflection.Single.Exported)
+	} else {
+		t = relInflection.Single.Exported
+	}
+	return fmt.Sprintf("[]*%s", t)
+}
+
+func makeBelongsToType(relInflection data.Inflection, ddd bool) string {
+	var t string
+	if ddd {
+		t = fmt.Sprintf("%s.%s", relInflection.Plural.Snake, relInflection.Single.Exported)
+	} else {
+		t = relInflection.Single.Exported
+	}
+	return fmt.Sprintf("*%s", t)
 }
 
 // func resourceKeyFromString(input string) resourceKey {

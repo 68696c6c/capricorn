@@ -11,7 +11,7 @@ import (
 
 func TestSRC_NewSRCDDD(t *testing.T) {
 	f := spec.GetFixtureSpec()
-	m := module.NewModuleFromSpec(f)
+	m := module.NewModuleFromSpec(f, true)
 
 	// _ = NewSRCDDD(m, "/base/path/test-example")
 	result := NewSRCDDD(m, "/base/path/test-example")
@@ -531,22 +531,22 @@ app:
       functions: []
     model:
       name:
-        base: ""
-        full: ""
+        base: model
+        full: model.go
       path:
-        base: ""
-        full: ""
+        base: github.com/68696c6c/test-example/src/app/organizations
+        full: github.com/68696c6c/test-example/src/app/organizations/model.go
       package:
-        reference: ""
+        reference: organizations
         name:
-          space: ""
-          snake: ""
-          kebob: ""
-          exported: ""
-          unexported: ""
+          space: organizations
+          snake: organizations
+          kebob: organizations
+          exported: Organizations
+          unexported: organizations
         path:
-          base: ""
-          full: ""
+          base: github.com/68696c6c/test-example/src/app
+          full: github.com/68696c6c/test-example/src/app/organizations
       imports:
         standard: []
         app: []
@@ -566,7 +566,31 @@ app:
       consts: []
       vars: []
       interfaces: []
-      structs: []
+      structs:
+      - name: Organization
+        fields:
+        - name: ""
+          type: goat.Model
+          tags: []
+        - name: Name
+          type: string
+          tags:
+          - key: json
+            values:
+            - name
+          - key: binding
+            values:
+            - required
+        - name: ""
+          type: ""
+          tags: []
+        - name: Users
+          type: '[]*users.User'
+          tags:
+          - key: json
+            values:
+            - users
+            - omitempty
       functions: []
     model_test:
       name:
@@ -1137,22 +1161,22 @@ app:
       functions: []
     model:
       name:
-        base: ""
-        full: ""
+        base: model
+        full: model.go
       path:
-        base: ""
-        full: ""
+        base: github.com/68696c6c/test-example/src/app/users
+        full: github.com/68696c6c/test-example/src/app/users/model.go
       package:
-        reference: ""
+        reference: users
         name:
-          space: ""
-          snake: ""
-          kebob: ""
-          exported: ""
-          unexported: ""
+          space: users
+          snake: users
+          kebob: users
+          exported: Users
+          unexported: users
         path:
-          base: ""
-          full: ""
+          base: github.com/68696c6c/test-example/src/app
+          full: github.com/68696c6c/test-example/src/app/users
       imports:
         standard: []
         app: []
@@ -1172,7 +1196,53 @@ app:
       consts: []
       vars: []
       interfaces: []
-      structs: []
+      structs:
+      - name: User
+        fields:
+        - name: ""
+          type: goat.Model
+          tags: []
+        - name: OrganizationId
+          type: goat.ID
+          tags:
+          - key: json
+            values:
+            - organization_id
+        - name: Name
+          type: string
+          tags:
+          - key: json
+            values:
+            - name
+          - key: binding
+            values:
+            - required
+        - name: Email
+          type: string
+          tags:
+          - key: json
+            values:
+            - email
+          - key: binding
+            values:
+            - required
+        - name: ""
+          type: ""
+          tags: []
+        - name: Organization
+          type: '*organizations.Organization'
+          tags:
+          - key: json
+            values:
+            - organization
+            - omitempty
+        - name: Tokens
+          type: '[]*tokens.Token'
+          tags:
+          - key: json
+            values:
+            - tokens
+            - omitempty
       functions: []
     model_test:
       name:
@@ -1600,22 +1670,22 @@ app:
       functions: []
     model:
       name:
-        base: ""
-        full: ""
+        base: model
+        full: model.go
       path:
-        base: ""
-        full: ""
+        base: github.com/68696c6c/test-example/src/app/tokens
+        full: github.com/68696c6c/test-example/src/app/tokens/model.go
       package:
-        reference: ""
+        reference: tokens
         name:
-          space: ""
-          snake: ""
-          kebob: ""
-          exported: ""
-          unexported: ""
+          space: tokens
+          snake: tokens
+          kebob: tokens
+          exported: Tokens
+          unexported: tokens
         path:
-          base: ""
-          full: ""
+          base: github.com/68696c6c/test-example/src/app
+          full: github.com/68696c6c/test-example/src/app/tokens
       imports:
         standard: []
         app: []
@@ -1635,7 +1705,46 @@ app:
       consts: []
       vars: []
       interfaces: []
-      structs: []
+      structs:
+      - name: Token
+        fields:
+        - name: ""
+          type: goat.Model
+          tags: []
+        - name: UserId
+          type: goat.ID
+          tags:
+          - key: json
+            values:
+            - user_id
+        - name: Key
+          type: string
+          tags:
+          - key: json
+            values:
+            - key
+          - key: binding
+            values:
+            - required
+        - name: Expires
+          type: time.Time
+          tags:
+          - key: json
+            values:
+            - expires
+          - key: binding
+            values:
+            - required
+        - name: ""
+          type: ""
+          tags: []
+        - name: User
+          type: '*users.User'
+          tags:
+          - key: json
+            values:
+            - user
+            - omitempty
       functions: []
     model_test:
       name:

@@ -36,6 +36,7 @@ type ResourceField struct {
 	Type     string `yaml:"type"`
 	Required bool   `yaml:"required"`
 	Unique   bool   `yaml:"unique"`
+	Indexed  bool   `yaml:"indexed"`
 }
 
 type Command struct {

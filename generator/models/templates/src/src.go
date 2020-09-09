@@ -105,7 +105,7 @@ func makeDomain(r module.Resource, baseDomainPath string) Domain {
 	// If this function is ever called, we are definitely generating a DDD app so name things accordingly.
 	cName := data.MakeName("controller")
 	rName := data.MakeName("repository")
-	// mName := data.MakeName("model")
+	mName := data.MakeName("model")
 	// sName := data.MakeName("service")
 	viewResponseName := data.MakeName("response")
 	listResponseName := data.MakeName("list_response")
@@ -130,6 +130,14 @@ func makeDomain(r module.Resource, baseDomainPath string) Domain {
 				name:         rName,
 				fileName:     rName.Snake,
 				receiverName: "r",
+			},
+		),
+		Model: makeModel(
+			serviceMeta{
+				resource:     r,
+				packageData:  pkgData,
+				fileName:     mName.Snake,
+				receiverName: "m",
 			},
 		),
 	}
