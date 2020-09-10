@@ -12,6 +12,7 @@ type Method interface {
 	GetName() string
 	MustParse() string
 	GetImports() golang.Imports
+	GetReceiver() golang.Value
 	GetArgs() []golang.Value
 	GetReturns() []golang.Value
 }
@@ -31,6 +32,12 @@ func (m BaseQuery) GetImports() golang.Imports {
 		Standard: []string{},
 		App:      []string{},
 		Vendor:   []string{data.ImportGoat, data.ImportErrors, data.ImportQuery, data.ImportGorm},
+	}
+}
+
+func (m BaseQuery) GetReceiver() golang.Value {
+	return golang.Value{
+		Name: m.Receiver,
 	}
 }
 

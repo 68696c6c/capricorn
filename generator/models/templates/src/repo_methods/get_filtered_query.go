@@ -28,6 +28,12 @@ func (m BaseFilteredQuery) GetImports() golang.Imports {
 	}
 }
 
+func (m BaseFilteredQuery) GetReceiver() golang.Value {
+	return golang.Value{
+		Name: m.Receiver,
+	}
+}
+
 func (m BaseFilteredQuery) GetArgs() []golang.Value {
 	return []golang.Value{
 		{

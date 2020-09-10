@@ -37,6 +37,12 @@ func (m GetByID) GetImports() golang.Imports {
 	}
 }
 
+func (m GetByID) GetReceiver() golang.Value {
+	return golang.Value{
+		Name: m.Receiver,
+	}
+}
+
 func (m GetByID) GetArgs() []golang.Value {
 	return []golang.Value{
 		{

@@ -59,6 +59,8 @@ type Domain struct {
 	ModelTest      golang.File `yaml:"model_test"`
 	Service        golang.File `yaml:"service"`
 	ServiceTest    golang.File `yaml:"service_test"`
+	Validator      golang.File `yaml:"validator"`
+	ValidatorTest  golang.File `yaml:"validator_test"`
 }
 
 type serviceMeta struct {
@@ -107,9 +109,12 @@ func makeDomain(r module.Resource, baseDomainPath string) Domain {
 	rName := data.MakeName("repository")
 	mName := data.MakeName("model")
 	// sName := data.MakeName("service")
+	vName := data.MakeName("validator")
 	viewResponseName := data.MakeName("response")
 	listResponseName := data.MakeName("list_response")
 	pkgData := data.MakePackageData(baseDomainPath, r.Inflection.Plural.Snake)
+
+	model, validationFields := makeModel(r, pkgData, mName.Snake)
 
 	return Domain{
 		Controller: makeController(
@@ -132,13 +137,16 @@ func makeDomain(r module.Resource, baseDomainPath string) Domain {
 				receiverName: "r",
 			},
 		),
-		Model: makeModel(
-			serviceMeta{
-				resource:     r,
-				packageData:  pkgData,
-				fileName:     mName.Snake,
-				receiverName: "m",
-			},
-		),
+		// Service: makeService(
+		// 	serviceMeta{
+		// 		resource:     r,
+		// 		packageData:  pkgData,
+		// 		name:         rName,
+		// 		fileName:     rName.Snake,
+		// 		receiverName: "s",
+		// 	},
+		// ),
+		Model:     model,
+		Validator: makeValidator(r, validationFields, pkgData, vName.Snake),
 	}
 }

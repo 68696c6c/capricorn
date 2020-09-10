@@ -32,6 +32,12 @@ func (m Delete) GetImports() golang.Imports {
 	}
 }
 
+func (m Delete) GetReceiver() golang.Value {
+	return golang.Value{
+		Name: m.Receiver,
+	}
+}
+
 func (m Delete) GetArgs() []golang.Value {
 	return []golang.Value{
 		{

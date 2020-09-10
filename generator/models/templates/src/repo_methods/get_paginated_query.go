@@ -28,6 +28,12 @@ func (m BasePaginatedQuery) GetImports() golang.Imports {
 	}
 }
 
+func (m BasePaginatedQuery) GetReceiver() golang.Value {
+	return golang.Value{
+		Name: m.Receiver,
+	}
+}
+
 func (m BasePaginatedQuery) GetArgs() []golang.Value {
 	return []golang.Value{
 		{

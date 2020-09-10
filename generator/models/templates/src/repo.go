@@ -97,10 +97,7 @@ func makeRepoMethod(t repos.Method) golang.Function {
 		Imports:      t.GetImports(),
 		Arguments:    t.GetArgs(),
 		ReturnValues: t.GetReturns(),
-		Receiver: golang.Value{
-			Name: "r",
-			Type: "",
-		},
-		Body: t.MustParse(),
+		Receiver:     t.GetReceiver(),
+		Body:         t.MustParse(),
 	}
 }

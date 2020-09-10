@@ -43,6 +43,12 @@ func (m Filter) GetImports() golang.Imports {
 	}
 }
 
+func (m Filter) GetReceiver() golang.Value {
+	return golang.Value{
+		Name: m.Receiver,
+	}
+}
+
 func (m Filter) GetArgs() []golang.Value {
 	return []golang.Value{
 		{
