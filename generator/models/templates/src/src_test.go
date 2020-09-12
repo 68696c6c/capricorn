@@ -13,13 +13,11 @@ func TestSRC_NewSRCDDD(t *testing.T) {
 	f := spec.GetFixtureSpec()
 	m := module.NewModuleFromSpec(f, true)
 
-	// _ = NewSRCDDD(m, "/base/path/test-example")
 	result := NewSRCDDD(m, "/base/path/test-example")
 	resultYAML := result.String()
 	println(resultYAML)
 
 	assert.Equal(t, FixtureSRCYAML, resultYAML)
-	// assert.True(t, false)
 }
 
 const FixtureSRCYAML = `package:
@@ -568,30 +566,19 @@ app:
       interfaces: []
       structs:
       - name: Organization
-        fields:
-        - name: ""
-          type: goat.Model
-          tags: []
-        - name: Name
-          type: string
-          tags:
-          - key: json
-            values:
-            - name
-          - key: binding
-            values:
-            - required
-        - name: ""
+        fields: []
+      functions:
+      - name: ""
+        imports:
+          standard: []
+          app: []
+          vendor: []
+        arguments: []
+        return_values: []
+        receiver:
+          name: ""
           type: ""
-          tags: []
-        - name: Users
-          type: '[]*users.User'
-          tags:
-          - key: json
-            values:
-            - users
-            - omitempty
-      functions: []
+        body: ""
     model_test:
       name:
         base: ""
@@ -671,6 +658,84 @@ app:
       structs: []
       functions: []
     service_test:
+      name:
+        base: ""
+        full: ""
+      path:
+        base: ""
+        full: ""
+      package:
+        reference: ""
+        name:
+          space: ""
+          snake: ""
+          kebob: ""
+          exported: ""
+          unexported: ""
+        path:
+          base: ""
+          full: ""
+      imports:
+        standard: []
+        app: []
+        vendor: []
+      init_function:
+        name: ""
+        imports:
+          standard: []
+          app: []
+          vendor: []
+        arguments: []
+        return_values: []
+        receiver:
+          name: ""
+          type: ""
+        body: ""
+      consts: []
+      vars: []
+      interfaces: []
+      structs: []
+      functions: []
+    validator:
+      name:
+        base: validator
+        full: validator.go
+      path:
+        base: github.com/68696c6c/test-example/src/app/organizations
+        full: github.com/68696c6c/test-example/src/app/organizations/validator.go
+      package:
+        reference: organizations
+        name:
+          space: organizations
+          snake: organizations
+          kebob: organizations
+          exported: Organizations
+          unexported: organizations
+        path:
+          base: github.com/68696c6c/test-example/src/app
+          full: github.com/68696c6c/test-example/src/app/organizations
+      imports:
+        standard: []
+        app: []
+        vendor: []
+      init_function:
+        name: ""
+        imports:
+          standard: []
+          app: []
+          vendor: []
+        arguments: []
+        return_values: []
+        receiver:
+          name: ""
+          type: ""
+        body: ""
+      consts: []
+      vars: []
+      interfaces: []
+      structs: []
+      functions: []
+    validator_test:
       name:
         base: ""
         full: ""
@@ -1198,52 +1263,19 @@ app:
       interfaces: []
       structs:
       - name: User
-        fields:
-        - name: ""
-          type: goat.Model
-          tags: []
-        - name: OrganizationId
-          type: goat.ID
-          tags:
-          - key: json
-            values:
-            - organization_id
-        - name: Name
-          type: string
-          tags:
-          - key: json
-            values:
-            - name
-          - key: binding
-            values:
-            - required
-        - name: Email
-          type: string
-          tags:
-          - key: json
-            values:
-            - email
-          - key: binding
-            values:
-            - required
-        - name: ""
+        fields: []
+      functions:
+      - name: ""
+        imports:
+          standard: []
+          app: []
+          vendor: []
+        arguments: []
+        return_values: []
+        receiver:
+          name: ""
           type: ""
-          tags: []
-        - name: Organization
-          type: '*organizations.Organization'
-          tags:
-          - key: json
-            values:
-            - organization
-            - omitempty
-        - name: Tokens
-          type: '[]*tokens.Token'
-          tags:
-          - key: json
-            values:
-            - tokens
-            - omitempty
-      functions: []
+        body: ""
     model_test:
       name:
         base: ""
@@ -1323,6 +1355,84 @@ app:
       structs: []
       functions: []
     service_test:
+      name:
+        base: ""
+        full: ""
+      path:
+        base: ""
+        full: ""
+      package:
+        reference: ""
+        name:
+          space: ""
+          snake: ""
+          kebob: ""
+          exported: ""
+          unexported: ""
+        path:
+          base: ""
+          full: ""
+      imports:
+        standard: []
+        app: []
+        vendor: []
+      init_function:
+        name: ""
+        imports:
+          standard: []
+          app: []
+          vendor: []
+        arguments: []
+        return_values: []
+        receiver:
+          name: ""
+          type: ""
+        body: ""
+      consts: []
+      vars: []
+      interfaces: []
+      structs: []
+      functions: []
+    validator:
+      name:
+        base: validator
+        full: validator.go
+      path:
+        base: github.com/68696c6c/test-example/src/app/users
+        full: github.com/68696c6c/test-example/src/app/users/validator.go
+      package:
+        reference: users
+        name:
+          space: users
+          snake: users
+          kebob: users
+          exported: Users
+          unexported: users
+        path:
+          base: github.com/68696c6c/test-example/src/app
+          full: github.com/68696c6c/test-example/src/app/users
+      imports:
+        standard: []
+        app: []
+        vendor: []
+      init_function:
+        name: ""
+        imports:
+          standard: []
+          app: []
+          vendor: []
+        arguments: []
+        return_values: []
+        receiver:
+          name: ""
+          type: ""
+        body: ""
+      consts: []
+      vars: []
+      interfaces: []
+      structs: []
+      functions: []
+    validator_test:
       name:
         base: ""
         full: ""
@@ -1707,45 +1817,19 @@ app:
       interfaces: []
       structs:
       - name: Token
-        fields:
-        - name: ""
-          type: goat.Model
-          tags: []
-        - name: UserId
-          type: goat.ID
-          tags:
-          - key: json
-            values:
-            - user_id
-        - name: Key
-          type: string
-          tags:
-          - key: json
-            values:
-            - key
-          - key: binding
-            values:
-            - required
-        - name: Expires
-          type: time.Time
-          tags:
-          - key: json
-            values:
-            - expires
-          - key: binding
-            values:
-            - required
-        - name: ""
+        fields: []
+      functions:
+      - name: ""
+        imports:
+          standard: []
+          app: []
+          vendor: []
+        arguments: []
+        return_values: []
+        receiver:
+          name: ""
           type: ""
-          tags: []
-        - name: User
-          type: '*users.User'
-          tags:
-          - key: json
-            values:
-            - user
-            - omitempty
-      functions: []
+        body: ""
     model_test:
       name:
         base: ""
@@ -1825,6 +1909,84 @@ app:
       structs: []
       functions: []
     service_test:
+      name:
+        base: ""
+        full: ""
+      path:
+        base: ""
+        full: ""
+      package:
+        reference: ""
+        name:
+          space: ""
+          snake: ""
+          kebob: ""
+          exported: ""
+          unexported: ""
+        path:
+          base: ""
+          full: ""
+      imports:
+        standard: []
+        app: []
+        vendor: []
+      init_function:
+        name: ""
+        imports:
+          standard: []
+          app: []
+          vendor: []
+        arguments: []
+        return_values: []
+        receiver:
+          name: ""
+          type: ""
+        body: ""
+      consts: []
+      vars: []
+      interfaces: []
+      structs: []
+      functions: []
+    validator:
+      name:
+        base: validator
+        full: validator.go
+      path:
+        base: github.com/68696c6c/test-example/src/app/tokens
+        full: github.com/68696c6c/test-example/src/app/tokens/validator.go
+      package:
+        reference: tokens
+        name:
+          space: tokens
+          snake: tokens
+          kebob: tokens
+          exported: Tokens
+          unexported: tokens
+        path:
+          base: github.com/68696c6c/test-example/src/app
+          full: github.com/68696c6c/test-example/src/app/tokens
+      imports:
+        standard: []
+        app: []
+        vendor: []
+      init_function:
+        name: ""
+        imports:
+          standard: []
+          app: []
+          vendor: []
+        arguments: []
+        return_values: []
+        receiver:
+          name: ""
+          type: ""
+        body: ""
+      consts: []
+      vars: []
+      interfaces: []
+      structs: []
+      functions: []
+    validator_test:
       name:
         base: ""
         full: ""

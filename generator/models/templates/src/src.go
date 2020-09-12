@@ -114,9 +114,24 @@ func makeDomain(r module.Resource, baseDomainPath string) Domain {
 	listResponseName := data.MakeName("list_response")
 	pkgData := data.MakePackageData(baseDomainPath, r.Inflection.Plural.Snake)
 
-	model, validationFields := makeModel(r, pkgData, mName.Snake)
+	model := newModelFromMeta(modelMeta{
+		receiverName: "m",
+		fileName:     mName.Snake,
+		resource:     r,
+		packageData:  pkgData,
+	})
+
+	validator := newValidatorFromMeta(validatorMeta{
+		receiverName: "r",
+		fileName:     vName.Snake,
+		resource:     r,
+		packageData:  pkgData,
+		fields:       model.GetValidationFields(),
+	})
 
 	return Domain{
+		Model:     model.MustGetFile(),
+		Validator: validator.MustGetFile(),
 		Controller: makeController(
 			serviceMeta{
 				resource:     r,
@@ -146,7 +161,5 @@ func makeDomain(r module.Resource, baseDomainPath string) Domain {
 		// 		receiverName: "s",
 		// 	},
 		// ),
-		Model:     model,
-		Validator: makeValidator(r, validationFields, pkgData, vName.Snake),
 	}
 }

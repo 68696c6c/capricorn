@@ -18,6 +18,8 @@ func makeRepo(meta serviceMeta) golang.File {
 	plural := meta.resource.Inflection.Plural
 	single := meta.resource.Inflection.Single
 
+	// @TODO need to make the repo struct
+
 	// Default methods.
 	getBaseQueryFunc := makeRepoMethod(repos.BaseQuery{
 		Receiver: meta.receiverName,
@@ -91,7 +93,7 @@ func makeRepo(meta serviceMeta) golang.File {
 	return result
 }
 
-func makeRepoMethod(t repos.Method) golang.Function {
+func makeRepoMethod(t Method) golang.Function {
 	return golang.Function{
 		Name:         t.GetName(),
 		Imports:      t.GetImports(),

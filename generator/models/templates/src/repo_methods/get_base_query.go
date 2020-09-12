@@ -8,15 +8,6 @@ import (
 
 var getBaseQueryBodyTemplate = `return r.db.Model(&{{ .Single.Exported }}{})`
 
-type Method interface {
-	GetName() string
-	MustParse() string
-	GetImports() golang.Imports
-	GetReceiver() golang.Value
-	GetArgs() []golang.Value
-	GetReturns() []golang.Value
-}
-
 type BaseQuery struct {
 	Receiver string
 	Plural   data.Name

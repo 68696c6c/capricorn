@@ -7,27 +7,104 @@ import (
 	"github.com/68696c6c/capricorn/generator/models/templates/src/models"
 )
 
-func makeModel(resource module.Resource, pkgData data.PackageData, fileName string) (golang.File, []module.ResourceField) {
-	fileData, pathData := data.MakeGoFileData(pkgData.GetImport(), fileName)
-	result := golang.File{
-		Name:    fileData,
-		Path:    pathData,
-		Package: pkgData,
+type modelMeta struct {
+	receiverName string
+	fileName     string
+	resource     module.Resource
+	packageData  data.PackageData
+}
+
+type Model struct {
+	receiverName     string
+	resource         module.Resource
+	single           data.Name
+	fieldsSet        bool
+	fields           []golang.Field
+	validationFields []module.ResourceField
+	fileData         data.FileData
+	pathData         data.PathData
+	packageData      data.PackageData
+}
+
+func newModelFromMeta(meta modelMeta) Model {
+	fileData, pathData := data.MakeGoFileData(meta.packageData.GetImport(), meta.fileName)
+	single := meta.resource.Inflection.Single
+	return Model{
+		receiverName: meta.receiverName,
+		resource:     meta.resource,
+		single:       single,
+		fileData:     fileData,
+		pathData:     pathData,
+		packageData:  meta.packageData,
+	}
+}
+
+func (m Model) GetValidationFields() []module.ResourceField {
+	if !m.fieldsSet {
+		m.setFields()
+	}
+	return m.validationFields
+}
+
+func (m Model) MustGetFile() golang.File {
+	return golang.File{
+		Name:      m.fileData,
+		Path:      m.pathData,
+		Package:   m.packageData,
+		Structs:   m.GetStructs(),
+		Functions: m.MustGetFunctions(),
+	}
+}
+
+func (m Model) GetStructs() []golang.Struct {
+	if !m.fieldsSet {
+		m.setFields()
 	}
 
-	single := resource.Inflection.Single
+	return []golang.Struct{
+		{
+			Name:   m.single.Exported,
+			Fields: m.fields,
+		},
+	}
+}
 
-	m := golang.Struct{
-		Name: single.Exported,
-		Fields: []golang.Field{
-			{
-				Type: "goat.Model",
-			},
+func (m Model) MustGetFunctions() []golang.Function {
+	if !m.fieldsSet {
+		m.setFields()
+	}
+
+	result := []golang.Function{m.getConstructor()}
+
+	if len(m.validationFields) == 0 {
+		return result
+	}
+
+	v := models.NewValidate(m.receiverName, m.single, m.validationFields)
+
+	result = append(result, v.MustGetFunction())
+
+	return result
+}
+
+// @TODO this should be used for making model factories for use in tests, seeders, etc.
+func (m Model) getConstructor() golang.Function {
+	return golang.Function{}
+}
+
+func (m Model) setFields() {
+	if m.fieldsSet {
+		return
+	}
+
+	// @TODO support different base models for soft and hard deletes, uuid or integer ids, different timestamp configurations, etc.
+	m.fields = []golang.Field{
+		{
+			Type: "goat.Model",
 		},
 	}
 
-	var validationFields []module.ResourceField
-	for _, f := range resource.Fields {
+	for _, f := range m.resource.Fields {
 		field := golang.Field{
 			Name: f.Name.Exported,
 			Type: f.Type,
@@ -44,20 +121,20 @@ func makeModel(resource module.Resource, pkgData data.PackageData, fileName stri
 				Values: []string{"required"},
 			})
 		}
-		m.Fields = append(m.Fields, field)
+		m.fields = append(m.fields, field)
 
 		if f.IsRequired || f.IsUnique {
-			validationFields = append(validationFields, f)
+			m.validationFields = append(m.validationFields, f)
 		}
 	}
 
 	// @TODO does this add a line break between the fields?
-	m.Fields = append(m.Fields, golang.Field{
+	m.fields = append(m.fields, golang.Field{
 		Name: "",
 		Type: "",
 	})
 
-	for _, f := range resource.FieldsMeta.BelongsTo {
+	for _, f := range m.resource.FieldsMeta.BelongsTo {
 		field := golang.Field{
 			Name: f.Name.Exported,
 			Type: f.Type,
@@ -68,10 +145,10 @@ func makeModel(resource module.Resource, pkgData data.PackageData, fileName stri
 				},
 			},
 		}
-		m.Fields = append(m.Fields, field)
+		m.fields = append(m.fields, field)
 	}
 
-	for _, f := range resource.FieldsMeta.HasMany {
+	for _, f := range m.resource.FieldsMeta.HasMany {
 		field := golang.Field{
 			Name: f.Name.Exported,
 			Type: f.Type,
@@ -82,19 +159,8 @@ func makeModel(resource module.Resource, pkgData data.PackageData, fileName stri
 				},
 			},
 		}
-		m.Fields = append(m.Fields, field)
+		m.fields = append(m.fields, field)
 	}
 
-	result.Structs = []golang.Struct{m}
-
-	if len(validationFields) > 0 {
-		v := models.Validate{
-			Receiver: "m",
-			Single:   single,
-			Fields:   validationFields,
-		}
-		result.Functions = append(result.Functions, v.MustMakeFunction())
-	}
-
-	return result, validationFields
+	m.fieldsSet = true
 }

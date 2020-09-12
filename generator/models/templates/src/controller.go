@@ -21,6 +21,8 @@ func makeController(meta serviceMeta, viewResponseName, listResponseName string)
 	plural := meta.resource.Inflection.Plural
 	single := meta.resource.Inflection.Single
 
+	// @TODO need to make the repo struct
+
 	for _, a := range meta.resource.Controller.Actions {
 		switch a {
 
