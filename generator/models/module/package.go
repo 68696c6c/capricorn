@@ -3,7 +3,7 @@ package module
 import "github.com/68696c6c/capricorn/generator/models/data"
 
 const (
-	pkgSRC        = "src"
+	pkgSRC        = ""
 	pkgOPS        = "ops"
 	pkgDocker     = "docker"
 	pkgApp        = "app"

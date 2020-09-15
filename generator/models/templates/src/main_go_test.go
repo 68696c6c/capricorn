@@ -3,14 +3,11 @@ package src
 import (
 	"testing"
 
-	"github.com/68696c6c/capricorn/generator/models/module"
-
 	"github.com/stretchr/testify/assert"
 )
 
 func TestMainGo(t *testing.T) {
-	f := module.GetFixtureModule()
-	input := NewMainGo(f.Packages, "/root/path", "base/module")
+	input := NewMainGo("/root/path", "github.com/68696c6c/test-example", "github.com/68696c6c/test-example/cmd")
 
 	result := input.MustParse()
 
@@ -19,7 +16,7 @@ func TestMainGo(t *testing.T) {
 import (
 	"os"
 
-	"github.com/68696c6c/test-example/src/cmd"
+	"github.com/68696c6c/test-example/cmd"
 )
 
 

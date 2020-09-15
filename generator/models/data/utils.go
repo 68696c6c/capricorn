@@ -51,9 +51,13 @@ func (m PackageData) GetReference() string {
 }
 
 func MakePathData(basePath, name string) PathData {
+	fullPath := basePath
+	if name != "" {
+		fullPath = utils.JoinPath(basePath, name)
+	}
 	return PathData{
 		Base: basePath,
-		Full: utils.JoinPath(basePath, name),
+		Full: fullPath,
 	}
 }
 

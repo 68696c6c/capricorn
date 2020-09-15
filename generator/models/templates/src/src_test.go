@@ -16,7 +16,7 @@ func TestSRC_NewSRCDDD(t *testing.T) {
 
 	result := NewSRCDDD(m, "/base/path/test-example")
 	resultYAML := result.String()
-	println(resultYAML)
+	// println(resultYAML)
 
 	assert.Equal(t, FixtureSRCYAML, resultYAML)
 }
@@ -42,19 +42,19 @@ func Test_mergeImports(t *testing.T) {
 }
 
 const FixtureSRCYAML = `package:
-  reference: src
+  reference: ""
   name:
-    space: src
-    snake: src
-    kebob: src
-    exported: Src
-    unexported: src
+    space: ""
+    snake: ""
+    kebob: ""
+    exported: ""
+    unexported: ""
   path:
     base: github.com/68696c6c/test-example
-    full: github.com/68696c6c/test-example/src
+    full: github.com/68696c6c/test-example
 path:
   base: /base/path/test-example
-  full: /base/path/test-example/src
+  full: /base/path/test-example
 app:
   domains:
   - controller:
@@ -62,8 +62,8 @@ app:
         base: controller
         full: controller.go
       path:
-        base: github.com/68696c6c/test-example/src/app/organizations
-        full: github.com/68696c6c/test-example/src/app/organizations/controller.go
+        base: github.com/68696c6c/test-example/app/organizations
+        full: github.com/68696c6c/test-example/app/organizations/controller.go
       package:
         reference: organizations
         name:
@@ -73,8 +73,8 @@ app:
           exported: Organizations
           unexported: organizations
         path:
-          base: github.com/68696c6c/test-example/src/app
-          full: github.com/68696c6c/test-example/src/app/organizations
+          base: github.com/68696c6c/test-example/app
+          full: github.com/68696c6c/test-example/app/organizations
       imports:
         vendor:
         - github.com/jinzhu/gorm
@@ -223,8 +223,8 @@ app:
         base: repo
         full: repo.go
       path:
-        base: github.com/68696c6c/test-example/src/app/organizations
-        full: github.com/68696c6c/test-example/src/app/organizations/repo.go
+        base: github.com/68696c6c/test-example/app/organizations
+        full: github.com/68696c6c/test-example/app/organizations/repo.go
       package:
         reference: organizations
         name:
@@ -234,8 +234,8 @@ app:
           exported: Organizations
           unexported: organizations
         path:
-          base: github.com/68696c6c/test-example/src/app
-          full: github.com/68696c6c/test-example/src/app/organizations
+          base: github.com/68696c6c/test-example/app
+          full: github.com/68696c6c/test-example/app/organizations
       imports:
         vendor:
         - github.com/jinzhu/gorm
@@ -538,8 +538,8 @@ app:
         base: model
         full: model.go
       path:
-        base: github.com/68696c6c/test-example/src/app/organizations
-        full: github.com/68696c6c/test-example/src/app/organizations/model.go
+        base: github.com/68696c6c/test-example/app/organizations
+        full: github.com/68696c6c/test-example/app/organizations/model.go
       package:
         reference: organizations
         name:
@@ -549,8 +549,8 @@ app:
           exported: Organizations
           unexported: organizations
         path:
-          base: github.com/68696c6c/test-example/src/app
-          full: github.com/68696c6c/test-example/src/app/organizations
+          base: github.com/68696c6c/test-example/app
+          full: github.com/68696c6c/test-example/app/organizations
       structs:
       - name: Organization
       functions:
@@ -560,8 +560,8 @@ app:
         base: validator
         full: validator.go
       path:
-        base: github.com/68696c6c/test-example/src/app/organizations
-        full: github.com/68696c6c/test-example/src/app/organizations/validator.go
+        base: github.com/68696c6c/test-example/app/organizations
+        full: github.com/68696c6c/test-example/app/organizations/validator.go
       package:
         reference: organizations
         name:
@@ -571,15 +571,15 @@ app:
           exported: Organizations
           unexported: organizations
         path:
-          base: github.com/68696c6c/test-example/src/app
-          full: github.com/68696c6c/test-example/src/app/organizations
+          base: github.com/68696c6c/test-example/app
+          full: github.com/68696c6c/test-example/app/organizations
   - controller:
       name:
         base: controller
         full: controller.go
       path:
-        base: github.com/68696c6c/test-example/src/app/users
-        full: github.com/68696c6c/test-example/src/app/users/controller.go
+        base: github.com/68696c6c/test-example/app/users
+        full: github.com/68696c6c/test-example/app/users/controller.go
       package:
         reference: users
         name:
@@ -589,8 +589,8 @@ app:
           exported: Users
           unexported: users
         path:
-          base: github.com/68696c6c/test-example/src/app
-          full: github.com/68696c6c/test-example/src/app/users
+          base: github.com/68696c6c/test-example/app
+          full: github.com/68696c6c/test-example/app/users
       imports:
         vendor:
         - github.com/jinzhu/gorm
@@ -737,8 +737,8 @@ app:
         base: repo
         full: repo.go
       path:
-        base: github.com/68696c6c/test-example/src/app/users
-        full: github.com/68696c6c/test-example/src/app/users/repo.go
+        base: github.com/68696c6c/test-example/app/users
+        full: github.com/68696c6c/test-example/app/users/repo.go
       package:
         reference: users
         name:
@@ -748,8 +748,8 @@ app:
           exported: Users
           unexported: users
         path:
-          base: github.com/68696c6c/test-example/src/app
-          full: github.com/68696c6c/test-example/src/app/users
+          base: github.com/68696c6c/test-example/app
+          full: github.com/68696c6c/test-example/app/users
       imports:
         vendor:
         - github.com/jinzhu/gorm
@@ -1052,8 +1052,8 @@ app:
         base: model
         full: model.go
       path:
-        base: github.com/68696c6c/test-example/src/app/users
-        full: github.com/68696c6c/test-example/src/app/users/model.go
+        base: github.com/68696c6c/test-example/app/users
+        full: github.com/68696c6c/test-example/app/users/model.go
       package:
         reference: users
         name:
@@ -1063,8 +1063,8 @@ app:
           exported: Users
           unexported: users
         path:
-          base: github.com/68696c6c/test-example/src/app
-          full: github.com/68696c6c/test-example/src/app/users
+          base: github.com/68696c6c/test-example/app
+          full: github.com/68696c6c/test-example/app/users
       structs:
       - name: User
       functions:
@@ -1074,8 +1074,8 @@ app:
         base: validator
         full: validator.go
       path:
-        base: github.com/68696c6c/test-example/src/app/users
-        full: github.com/68696c6c/test-example/src/app/users/validator.go
+        base: github.com/68696c6c/test-example/app/users
+        full: github.com/68696c6c/test-example/app/users/validator.go
       package:
         reference: users
         name:
@@ -1085,15 +1085,15 @@ app:
           exported: Users
           unexported: users
         path:
-          base: github.com/68696c6c/test-example/src/app
-          full: github.com/68696c6c/test-example/src/app/users
+          base: github.com/68696c6c/test-example/app
+          full: github.com/68696c6c/test-example/app/users
   - controller:
       name:
         base: controller
         full: controller.go
       path:
-        base: github.com/68696c6c/test-example/src/app/tokens
-        full: github.com/68696c6c/test-example/src/app/tokens/controller.go
+        base: github.com/68696c6c/test-example/app/tokens
+        full: github.com/68696c6c/test-example/app/tokens/controller.go
       package:
         reference: tokens
         name:
@@ -1103,8 +1103,8 @@ app:
           exported: Tokens
           unexported: tokens
         path:
-          base: github.com/68696c6c/test-example/src/app
-          full: github.com/68696c6c/test-example/src/app/tokens
+          base: github.com/68696c6c/test-example/app
+          full: github.com/68696c6c/test-example/app/tokens
       imports:
         vendor:
         - github.com/jinzhu/gorm
@@ -1178,8 +1178,8 @@ app:
         base: repo
         full: repo.go
       path:
-        base: github.com/68696c6c/test-example/src/app/tokens
-        full: github.com/68696c6c/test-example/src/app/tokens/repo.go
+        base: github.com/68696c6c/test-example/app/tokens
+        full: github.com/68696c6c/test-example/app/tokens/repo.go
       package:
         reference: tokens
         name:
@@ -1189,8 +1189,8 @@ app:
           exported: Tokens
           unexported: tokens
         path:
-          base: github.com/68696c6c/test-example/src/app
-          full: github.com/68696c6c/test-example/src/app/tokens
+          base: github.com/68696c6c/test-example/app
+          full: github.com/68696c6c/test-example/app/tokens
       imports:
         vendor:
         - github.com/jinzhu/gorm
@@ -1383,8 +1383,8 @@ app:
         base: model
         full: model.go
       path:
-        base: github.com/68696c6c/test-example/src/app/tokens
-        full: github.com/68696c6c/test-example/src/app/tokens/model.go
+        base: github.com/68696c6c/test-example/app/tokens
+        full: github.com/68696c6c/test-example/app/tokens/model.go
       package:
         reference: tokens
         name:
@@ -1394,8 +1394,8 @@ app:
           exported: Tokens
           unexported: tokens
         path:
-          base: github.com/68696c6c/test-example/src/app
-          full: github.com/68696c6c/test-example/src/app/tokens
+          base: github.com/68696c6c/test-example/app
+          full: github.com/68696c6c/test-example/app/tokens
       structs:
       - name: Token
       functions:
@@ -1405,8 +1405,8 @@ app:
         base: validator
         full: validator.go
       path:
-        base: github.com/68696c6c/test-example/src/app/tokens
-        full: github.com/68696c6c/test-example/src/app/tokens/validator.go
+        base: github.com/68696c6c/test-example/app/tokens
+        full: github.com/68696c6c/test-example/app/tokens/validator.go
       package:
         reference: tokens
         name:
@@ -1416,6 +1416,32 @@ app:
           exported: Tokens
           unexported: tokens
         path:
-          base: github.com/68696c6c/test-example/src/app
-          full: github.com/68696c6c/test-example/src/app/tokens
+          base: github.com/68696c6c/test-example/app
+          full: github.com/68696c6c/test-example/app/tokens
+main:
+  name:
+    base: main
+    full: main.go
+  path:
+    base: /base/path/test-example
+    full: /base/path/test-example/main.go
+  package:
+    reference: main
+    name:
+      space: main
+      snake: main
+      kebob: main
+      exported: Main
+      unexported: main
+    path:
+      base: github.com/68696c6c/test-example
+      full: github.com/68696c6c/test-example/main
+  imports:
+    standard:
+    - os
+    app:
+    - github.com/68696c6c/test-example/cmd
+  functions:
+  - name: main
+    body: "\n\tif err := cmd.Root.Execute(); err != nil {\n\t\tprintln(err)\n\t\tos.Exit(1)\n\t}"
 `

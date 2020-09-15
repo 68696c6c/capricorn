@@ -15,9 +15,10 @@ type SRC struct {
 	Package data.PackageData `yaml:"package,omitempty"`
 	Path    data.PathData    `yaml:"path,omitempty"`
 
-	App  App  `yaml:"app,omitempty"`
-	CMD  CMD  `yaml:"cmd,omitempty"`
-	HTTP HTTP `yaml:"http,omitempty"`
+	App  App         `yaml:"app,omitempty"`
+	CMD  CMD         `yaml:"cmd,omitempty"`
+	HTTP HTTP        `yaml:"http,omitempty"`
+	Main golang.File `yaml:"main,omitempty"`
 }
 
 func (m SRC) String() string {
@@ -81,11 +82,12 @@ func NewSRCDDD(m module.Module, rootPath string) SRC {
 			// Container: makeContainer(c),
 			Domains: makeDomains(m),
 		},
+		Main: NewMainGo(rootPath, m.Packages.SRC.GetImport(), m.Packages.CMD.GetImport()),
 	}
 }
 
 func makeDomains(m module.Module) []Domain {
-	baseDomainPath := m.Packages.Domains.Path.Full
+	baseDomainPath := m.Packages.Domains.GetImport()
 
 	var result []Domain
 	for _, r := range m.Resources {

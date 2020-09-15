@@ -111,16 +111,16 @@ ops:
     debug: "1"
 packages:
   src:
-    reference: src
+    reference: ""
     name:
-      space: src
-      snake: src
-      kebob: src
-      exported: Src
-      unexported: src
+      space: ""
+      snake: ""
+      kebob: ""
+      exported: ""
+      unexported: ""
     path:
       base: github.com/68696c6c/test-example
-      full: github.com/68696c6c/test-example/src
+      full: github.com/68696c6c/test-example
   ops:
     reference: ops
     name:
@@ -152,8 +152,8 @@ packages:
       exported: App
       unexported: app
     path:
-      base: github.com/68696c6c/test-example/src
-      full: github.com/68696c6c/test-example/src/app
+      base: github.com/68696c6c/test-example
+      full: github.com/68696c6c/test-example/app
   cmd:
     reference: cmd
     name:
@@ -163,8 +163,8 @@ packages:
       exported: Cmd
       unexported: cmd
     path:
-      base: github.com/68696c6c/test-example/src
-      full: github.com/68696c6c/test-example/src/cmd
+      base: github.com/68696c6c/test-example
+      full: github.com/68696c6c/test-example/cmd
   database:
     reference: db
     name:
@@ -174,8 +174,8 @@ packages:
       exported: Db
       unexported: db
     path:
-      base: github.com/68696c6c/test-example/src
-      full: github.com/68696c6c/test-example/src/db
+      base: github.com/68696c6c/test-example
+      full: github.com/68696c6c/test-example/db
   http:
     reference: http
     name:
@@ -185,8 +185,8 @@ packages:
       exported: Http
       unexported: http
     path:
-      base: github.com/68696c6c/test-example/src
-      full: github.com/68696c6c/test-example/src/http
+      base: github.com/68696c6c/test-example
+      full: github.com/68696c6c/test-example/http
   repos:
     reference: repos
     name:
@@ -196,8 +196,8 @@ packages:
       exported: Repos
       unexported: repos
     path:
-      base: github.com/68696c6c/test-example/src
-      full: github.com/68696c6c/test-example/src/repos
+      base: github.com/68696c6c/test-example
+      full: github.com/68696c6c/test-example/repos
   models:
     reference: models
     name:
@@ -207,8 +207,8 @@ packages:
       exported: Models
       unexported: models
     path:
-      base: github.com/68696c6c/test-example/src
-      full: github.com/68696c6c/test-example/src/models
+      base: github.com/68696c6c/test-example
+      full: github.com/68696c6c/test-example/models
   migrations:
     reference: migrations
     name:
@@ -218,8 +218,8 @@ packages:
       exported: Migrations
       unexported: migrations
     path:
-      base: github.com/68696c6c/test-example/src/db
-      full: github.com/68696c6c/test-example/src/db/migrations
+      base: github.com/68696c6c/test-example/db
+      full: github.com/68696c6c/test-example/db/migrations
   seeders:
     reference: seeders
     name:
@@ -229,8 +229,8 @@ packages:
       exported: Seeders
       unexported: seeders
     path:
-      base: github.com/68696c6c/test-example/src/db
-      full: github.com/68696c6c/test-example/src/db/seeders
+      base: github.com/68696c6c/test-example/db
+      full: github.com/68696c6c/test-example/db/seeders
   domains:
     reference: app
     name:
@@ -240,8 +240,8 @@ packages:
       exported: App
       unexported: app
     path:
-      base: github.com/68696c6c/test-example/src
-      full: github.com/68696c6c/test-example/src/app
+      base: github.com/68696c6c/test-example
+      full: github.com/68696c6c/test-example/app
 commands:
 - name:
     space: cmd
