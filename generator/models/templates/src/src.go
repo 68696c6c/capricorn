@@ -110,6 +110,8 @@ func makeDomain(r module.Resource, baseDomainPath string) Domain {
 	mName := data.MakeName("model")
 	// sName := data.MakeName("service")
 	vName := data.MakeName("validator")
+	createRequestName := data.MakeName("create_request")
+	updateRequestName := data.MakeName("update_request")
 	viewResponseName := data.MakeName("response")
 	listResponseName := data.MakeName("list_response")
 	pkgData := data.MakePackageData(baseDomainPath, r.Inflection.Plural.Snake)
@@ -138,21 +140,25 @@ func makeDomain(r module.Resource, baseDomainPath string) Domain {
 		name:         rName,
 	})
 
+	controller := newControllerFromMeta(serviceMeta{
+		receiverName: "c",
+		fileName:     cName.Snake,
+		resource:     r,
+		packageData:  pkgData,
+		name:         cName,
+	}, controllerMeta{
+		createRequestName: createRequestName.Exported,
+		updateRequestName: updateRequestName.Exported,
+		viewResponseName:  viewResponseName.Exported,
+		listResponseName:  listResponseName.Exported,
+		repoType:          repo.GetInterface().Name,
+	})
+
 	return Domain{
-		Model:     model.MustGetFile(),
-		Validator: validator.MustGetFile(),
-		Controller: makeController(
-			serviceMeta{
-				resource:     r,
-				packageData:  pkgData,
-				name:         cName,
-				fileName:     cName.Snake,
-				receiverName: "c",
-			},
-			viewResponseName.Exported,
-			listResponseName.Exported,
-		),
-		Repo: repo.MustGetFile(),
+		Model:      model.MustGetFile(),
+		Validator:  validator.MustGetFile(),
+		Controller: controller.MustGetFile(),
+		Repo:       repo.MustGetFile(),
 		// Service: makeService(
 		// 	serviceMeta{
 		// 		resource:     r,

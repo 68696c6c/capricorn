@@ -15,21 +15,21 @@ type Repo struct {
 	resource    module.Resource
 	receiver    golang.Value
 
+	built      bool
 	methodMeta repos.MethodMeta
+	functions  []golang.Function
+	imports    golang.Imports
 
 	dbFieldName string
-	built       bool
-	functions   []golang.Function
-	imports     golang.Imports
 }
 
-func newRepoFromMeta(meta serviceMeta) Repo {
+func newRepoFromMeta(meta serviceMeta) *Repo {
 	fileData, pathData := data.MakeGoFileData(meta.packageData.GetImport(), meta.fileName)
 	receiver := golang.Value{
 		Name: meta.receiverName,
 		Type: meta.name.Exported + "Gorm",
 	}
-	return Repo{
+	return &Repo{
 		fileData:    fileData,
 		pathData:    pathData,
 		packageData: meta.packageData,
@@ -44,7 +44,7 @@ func newRepoFromMeta(meta serviceMeta) Repo {
 	}
 }
 
-func (m Repo) GetInterface() golang.Interface {
+func (m *Repo) GetInterface() golang.Interface {
 	if !m.built {
 		m.build()
 	}
@@ -54,7 +54,7 @@ func (m Repo) GetInterface() golang.Interface {
 	}
 }
 
-func (m Repo) MustGetFile() golang.File {
+func (m *Repo) MustGetFile() golang.File {
 	return golang.File{
 		Name:         m.fileData,
 		Path:         m.pathData,
@@ -69,30 +69,30 @@ func (m Repo) MustGetFile() golang.File {
 	}
 }
 
-func (m Repo) GetImports() golang.Imports {
+func (m *Repo) GetImports() golang.Imports {
 	if !m.built {
 		m.build()
 	}
 	return m.imports
 }
 
-func (m Repo) GetInit() golang.Function {
+func (m *Repo) GetInit() golang.Function {
 	return golang.Function{}
 }
 
-func (m Repo) GetConsts() []golang.Const {
+func (m *Repo) GetConsts() []golang.Const {
 	return []golang.Const{}
 }
 
-func (m Repo) GetVars() []golang.Var {
+func (m *Repo) GetVars() []golang.Var {
 	return []golang.Var{}
 }
 
-func (m Repo) GetInterfaces() []golang.Interface {
+func (m *Repo) GetInterfaces() []golang.Interface {
 	return []golang.Interface{m.GetInterface()}
 }
 
-func (m Repo) GetStructs() []golang.Struct {
+func (m *Repo) GetStructs() []golang.Struct {
 	return []golang.Struct{
 		{
 			Name: m.resource.Inflection.Single.Exported,
@@ -106,14 +106,14 @@ func (m Repo) GetStructs() []golang.Struct {
 	}
 }
 
-func (m Repo) MustGetFunctions() []golang.Function {
+func (m *Repo) MustGetFunctions() []golang.Function {
 	if !m.built {
 		m.build()
 	}
 	return m.functions
 }
 
-func (m Repo) build() {
+func (m *Repo) build() {
 	var imports golang.Imports
 	var methods []golang.Function
 
@@ -167,100 +167,3 @@ func (m Repo) build() {
 	m.imports = imports
 	m.built = true
 }
-
-// func makeRepo(meta serviceMeta) golang.File {
-// 	fileData, pathData := data.MakeGoFileData(meta.packageData.GetImport(), meta.fileName)
-// 	result := golang.File{
-// 		Name:    fileData,
-// 		Path:    pathData,
-// 		Package: meta.packageData,
-// 	}
-//
-// 	// plural := meta.resource.Inflection.Plural
-// 	// single := meta.resource.Inflection.Single
-// 	//
-// 	// // @TODO need to make the repo struct
-// 	//
-// 	// // Default methods.
-// 	// getBaseQueryFunc := makeRepoMethod(repos.BaseQuery{
-// 	// 	Receiver: meta.receiverName,
-// 	// 	Plural:   plural,
-// 	// 	Single:   single,
-// 	// })
-// 	// result.Functions = append(result.Functions, getBaseQueryFunc)
-// 	// result.Imports = mergeImports(result.Imports, getBaseQueryFunc.Imports)
-// 	//
-// 	// getFilteredQueryFunc := makeRepoMethod(repos.BaseFilteredQuery{
-// 	// 	Receiver: meta.receiverName,
-// 	// 	Plural:   plural,
-// 	// 	Single:   single,
-// 	// })
-// 	// result.Functions = append(result.Functions, getFilteredQueryFunc)
-// 	// result.Imports = mergeImports(result.Imports, getFilteredQueryFunc.Imports)
-// 	//
-// 	// getPageQueryFunc := makeRepoMethod(repos.BasePaginatedQuery{
-// 	// 	Receiver: meta.receiverName,
-// 	// 	Plural:   plural,
-// 	// 	Single:   single,
-// 	// })
-// 	// result.Functions = append(result.Functions, getPageQueryFunc)
-// 	// result.Imports = mergeImports(result.Imports, getPageQueryFunc.Imports)
-// 	//
-// 	// // CRUD methods.
-// 	// for _, a := range meta.resource.Repo.Actions {
-// 	// 	switch a {
-// 	//
-// 	// 	case module.ResourceActionList:
-// 	// 		m := makeRepoMethod(repos.Filter{
-// 	// 			Receiver: meta.receiverName,
-// 	// 			Plural:   plural,
-// 	// 			Single:   single,
-// 	// 		})
-// 	// 		result.Functions = append(result.Functions, m)
-// 	// 		result.Imports = mergeImports(result.Imports, m.Imports)
-// 	//
-// 	// 	case module.ResourceActionView:
-// 	// 		m := makeRepoMethod(repos.GetByID{
-// 	// 			Receiver: meta.receiverName,
-// 	// 			Plural:   plural,
-// 	// 			Single:   single,
-// 	// 		})
-// 	// 		result.Functions = append(result.Functions, m)
-// 	// 		result.Imports = mergeImports(result.Imports, m.Imports)
-// 	//
-// 	// 	case module.ResourceActionCreate:
-// 	// 		fallthrough
-// 	// 	case module.ResourceActionUpdate:
-// 	// 		m := makeRepoMethod(repos.Save{
-// 	// 			Receiver: meta.receiverName,
-// 	// 			Plural:   plural,
-// 	// 			Single:   single,
-// 	// 		})
-// 	// 		result.Functions = append(result.Functions, m)
-// 	// 		result.Imports = mergeImports(result.Imports, m.Imports)
-// 	//
-// 	// 	case module.ResourceActionDelete:
-// 	// 		m := makeRepoMethod(repos.Delete{
-// 	// 			Receiver: meta.receiverName,
-// 	// 			Plural:   plural,
-// 	// 			Single:   single,
-// 	// 		})
-// 	// 		result.Functions = append(result.Functions, m)
-// 	// 		result.Imports = mergeImports(result.Imports, m.Imports)
-// 	//
-// 	// 	}
-// 	// }
-//
-// 	return result
-// }
-
-// func makeRepoMethod(t Method) golang.Function {
-// 	return golang.Function{
-// 		Name:         t.GetName(),
-// 		Imports:      t.GetImports(),
-// 		Arguments:    t.GetArgs(),
-// 		ReturnValues: t.GetReturns(),
-// 		Receiver:     t.GetReceiver(),
-// 		Body:         t.MustParse(),
-// 	}
-// }

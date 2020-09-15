@@ -1,60 +1,111 @@
 package handlers
 
 import (
+	"fmt"
+
 	"github.com/68696c6c/capricorn/generator/models/data"
 	"github.com/68696c6c/capricorn/generator/models/templates/golang"
 	"github.com/68696c6c/capricorn/generator/utils"
 )
 
 var updateBodyTemplate = `
-	i := c.Param("id")
+	i := {{ .Context.Name }}.Param("id")
 	id, err := goat.ParseID(i)
 	if err != nil {
-		{{ .Receiver }}.errors.HandleErrorM(c, err, "failed to parse id: "+i, goat.RespondBadRequestError)
+		{{ .GetErrorsReference }}.HandleErrorM({{ .Context.Name }}, err, "failed to parse id: "+i, goat.RespondBadRequestError)
 		return
 	}
 
-	_, errs := {{ .Receiver }}.repo.GetByID(id)
+	// @TODO replace this block with an existence validator and build "not found" handling into the repo.
+	_, errs := {{ .GetRepoReference }}.GetByID(id)
 	if len(errs) > 0 {
 		if goat.RecordNotFound(errs) {
-			{{ .Receiver }}.errors.HandleMessage(c, "{{ .Single.Space }} does not exist", goat.RespondNotFoundError)
+			{{ .GetErrorsReference }}.HandleMessage({{ .Context.Name }}, "{{ .Single.Space }} does not exist", goat.RespondNotFoundError)
 			return
 		} else {
-			{{ .Receiver }}.errors.HandleErrorsM(c, errs, "failed to get {{ .Single.Space }}", goat.RespondServerError)
+			{{ .GetErrorsReference }}.HandleErrorsM({{ .Context.Name }}, errs, "failed to get {{ .Single.Space }}", goat.RespondServerError)
 			return
 		}
 	}
 
-	req, ok := goat.GetRequest(c).(*UpdateRequest)
+	req, ok := goat.GetRequest({{ .Context.Name }}).(*UpdateRequest)
 	if !ok {
-		{{ .Receiver }}.errors.HandleMessage(c, "failed to get request", goat.RespondBadRequestError)
+		{{ .GetErrorsReference }}.HandleMessage({{ .Context.Name }}, "failed to get request", goat.RespondBadRequestError)
 		return
 	}
 
 	// @TODO generate model factories.
 	// @TODO generate model validators.
-	errs = {{ .Receiver }}.repo.Save(&req.{{ .Single.Exported }})
+	errs = {{ .GetRepoReference }}.Save(&req.{{ .Single.Exported }})
 	if len(errs) > 0 {
-		{{ .Receiver }}.errors.HandleErrorsM(c, errs, "failed to save {{ .Single.Space }}", goat.RespondServerError)
+		{{ .GetErrorsReference }}.HandleErrorsM({{ .Context.Name }}, errs, "failed to save {{ .Single.Space }}", goat.RespondServerError)
 		return
 	}
 
-	goat.RespondCreated(c, {{ .Response }}{req.{{ .Single.Exported }}})
+	goat.RespondCreated({{ .Context.Name }}, {{ .ResponseType }}{req.{{ .Single.Exported }}})
 `
 
 type Update struct {
-	Receiver string
-	Plural   data.Name
-	Single   data.Name
-	Response string
+	receiver     golang.Value
+	repo         golang.Value
+	errors       golang.Value
+	Context      golang.Value
+	Single       data.Name
+	ResponseType string
 }
 
-func GetUpdateImports() golang.Imports {
+func NewUpdate(meta MethodMeta) Update {
+	return Update{
+		receiver:     meta.Receiver,
+		repo:         meta.RepoField,
+		errors:       meta.ErrorsField,
+		Context:      meta.ContextValue,
+		Single:       meta.Resource.Inflection.Single,
+		ResponseType: meta.ViewResponseType,
+	}
+}
+
+func (m Update) GetRepoReference() string {
+	return fmt.Sprintf("%s.%s", m.receiver.Name, m.repo.Name)
+}
+
+func (m Update) GetErrorsReference() string {
+	return fmt.Sprintf("%s.%s", m.receiver.Name, m.errors.Name)
+}
+
+func (m Update) MustGetFunction() golang.Function {
+	return golang.Function{
+		Name:         m.GetName(),
+		Imports:      m.GetImports(),
+		Receiver:     m.GetReceiver(),
+		Arguments:    m.GetArgs(),
+		ReturnValues: m.GetReturns(),
+		Body:         m.MustParse(),
+	}
+}
+
+func (m Update) GetName() string {
+	return "Update"
+}
+
+func (m Update) GetImports() golang.Imports {
 	return golang.Imports{
 		Standard: nil,
 		App:      nil,
 		Vendor:   []string{data.ImportGoat, data.ImportGin},
 	}
+}
+
+func (m Update) GetReceiver() golang.Value {
+	return m.receiver
+}
+
+func (m Update) GetArgs() []golang.Value {
+	return []golang.Value{m.Context}
+}
+
+func (m Update) GetReturns() []golang.Value {
+	return []golang.Value{}
 }
 
 func (m Update) MustParse() string {

@@ -1,46 +1,96 @@
 package handlers
 
 import (
+	"fmt"
+
 	"github.com/68696c6c/capricorn/generator/models/data"
 	"github.com/68696c6c/capricorn/generator/models/templates/golang"
 	"github.com/68696c6c/capricorn/generator/utils"
 )
 
 var viewBodyTemplate = `
-	i := c.Param("id")
+	i := {{ .Context.Name }}.Param("id")
 	id, err := goat.ParseID(i)
 	if err != nil {
-		{{ .Receiver }}.errors.HandleErrorM(c, err, "failed to parse id: "+i, goat.RespondBadRequestError)
+		{{ .GetErrorsReference }}.HandleErrorM({{ .Context.Name }}, err, "failed to parse id: "+i, goat.RespondBadRequestError)
 		return
 	}
 
-	m, errs := {{ .Receiver }}.repo.GetByID(id)
+	m, errs := {{ .GetRepoReference }}.GetByID(id)
 	if len(errs) > 0 {
 		if goat.RecordNotFound(errs) {
-			{{ .Receiver }}.errors.HandleMessage(c, "{{ .Single.Space }} does not exist", goat.RespondNotFoundError)
+			{{ .GetErrorsReference }}.HandleMessage({{ .Context.Name }}, "{{ .Single.Space }} does not exist", goat.RespondNotFoundError)
 			return
 		} else {
-			{{ .Receiver }}.errors.HandleErrorsM(c, errs, "failed to get {{ .Single.Space }}", goat.RespondServerError)
+			{{ .GetErrorsReference }}.HandleErrorsM({{ .Context.Name }}, errs, "failed to get {{ .Single.Space }}", goat.RespondServerError)
 			return
 		}
 	}
 
-	goat.RespondData(c, {{ .Response }}{m})
+	goat.RespondData({{ .Context.Name }}, {{ .ResponseType }}{m})
 `
 
 type View struct {
-	Receiver string
-	Plural   data.Name
-	Single   data.Name
-	Response string
+	receiver     golang.Value
+	repo         golang.Value
+	errors       golang.Value
+	Context      golang.Value
+	Single       data.Name
+	ResponseType string
 }
 
-func GetViewImports() golang.Imports {
+func NewView(meta MethodMeta) View {
+	return View{
+		receiver:     meta.Receiver,
+		repo:         meta.RepoField,
+		errors:       meta.ErrorsField,
+		Context:      meta.ContextValue,
+		Single:       meta.Resource.Inflection.Single,
+		ResponseType: meta.ViewResponseType,
+	}
+}
+
+func (m View) GetRepoReference() string {
+	return fmt.Sprintf("%s.%s", m.receiver.Name, m.repo.Name)
+}
+
+func (m View) GetErrorsReference() string {
+	return fmt.Sprintf("%s.%s", m.receiver.Name, m.errors.Name)
+}
+
+func (m View) MustGetFunction() golang.Function {
+	return golang.Function{
+		Name:         m.GetName(),
+		Imports:      m.GetImports(),
+		Receiver:     m.GetReceiver(),
+		Arguments:    m.GetArgs(),
+		ReturnValues: m.GetReturns(),
+		Body:         m.MustParse(),
+	}
+}
+
+func (m View) GetName() string {
+	return "View"
+}
+
+func (m View) GetImports() golang.Imports {
 	return golang.Imports{
 		Standard: nil,
 		App:      nil,
 		Vendor:   []string{data.ImportGoat, data.ImportGin},
 	}
+}
+
+func (m View) GetReceiver() golang.Value {
+	return m.receiver
+}
+
+func (m View) GetArgs() []golang.Value {
+	return []golang.Value{m.Context}
+}
+
+func (m View) GetReturns() []golang.Value {
+	return []golang.Value{}
 }
 
 func (m View) MustParse() string {
