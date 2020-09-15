@@ -7,7 +7,7 @@ import (
 )
 
 var filterBodyTemplate = `
-	dataQuery, err := r.getFilteredQuery(q)
+	dataQuery, err := {{ .ReceiverName }}.getFilteredQuery(q)
 	if err != nil {
 		return result, errors.Wrap(err, "failed to build filter sites query")
 	}
@@ -18,7 +18,7 @@ var filterBodyTemplate = `
 		return result, errors.Wrap(err, "failed to execute filter sites data query")
 	}
 
-	if err := r.applyPaginationToQuery(q); err != nil {
+	if err := {{ .ReceiverName }}.applyPaginationToQuery(q); err != nil {
 		return result, err
 	}
 
@@ -26,9 +26,28 @@ var filterBodyTemplate = `
 `
 
 type Filter struct {
-	Receiver string
-	Plural   data.Name
-	Single   data.Name
+	receiver     golang.Value
+	ReceiverName string
+	Single       data.Name
+}
+
+func NewFilter(meta MethodMeta) Filter {
+	return Filter{
+		receiver:     meta.Receiver,
+		ReceiverName: meta.Receiver.Name,
+		Single:       meta.Resource.Inflection.Single,
+	}
+}
+
+func (m Filter) MustGetFunction() golang.Function {
+	return golang.Function{
+		Name:         m.GetName(),
+		Imports:      m.GetImports(),
+		Receiver:     m.GetReceiver(),
+		Arguments:    m.GetArgs(),
+		ReturnValues: m.GetReturns(),
+		Body:         m.MustParse(),
+	}
 }
 
 func (m Filter) GetName() string {
@@ -44,9 +63,7 @@ func (m Filter) GetImports() golang.Imports {
 }
 
 func (m Filter) GetReceiver() golang.Value {
-	return golang.Value{
-		Name: m.Receiver,
-	}
+	return m.receiver
 }
 
 func (m Filter) GetArgs() []golang.Value {

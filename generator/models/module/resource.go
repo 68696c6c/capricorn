@@ -10,7 +10,7 @@ import (
 type Resource struct {
 	_spec      spec.Resource
 	Key        resourceKey     `yaml:"key"`
-	Inflection data.Inflection `yaml:"name"`
+	Inflection data.Inflection `yaml:"inflection"`
 	Fields     []ResourceField `yaml:"fields,omitempty"`
 	Controller ResourceService `yaml:"controller,omitempty"`
 	Repo       ResourceService `yaml:"repo,omitempty"`

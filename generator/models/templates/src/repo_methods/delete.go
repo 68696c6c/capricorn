@@ -1,13 +1,15 @@
 package repo_methods
 
 import (
+	"fmt"
+
 	"github.com/68696c6c/capricorn/generator/models/data"
 	"github.com/68696c6c/capricorn/generator/models/templates/golang"
 	"github.com/68696c6c/capricorn/generator/utils"
 )
 
 var deleteBodyTemplate = `
-	errs :=  r.db.Delete(m).GetErrors()
+	errs :=  {{ .GetDbReference }}.Delete(m).GetErrors()
 	if len(errs) > 0 {
 		return goat.ErrorsToError(errs)
 	}
@@ -15,9 +17,32 @@ var deleteBodyTemplate = `
 `
 
 type Delete struct {
-	Receiver string
-	Plural   data.Name
-	Single   data.Name
+	dbFieldName string
+	receiver    golang.Value
+	Single      data.Name
+}
+
+func NewDelete(meta MethodMeta) Delete {
+	return Delete{
+		dbFieldName: meta.DBFieldName,
+		receiver:    meta.Receiver,
+		Single:      meta.Resource.Inflection.Single,
+	}
+}
+
+func (m Delete) GetDbReference() string {
+	return fmt.Sprintf("%s.%s", m.receiver.Name, m.dbFieldName)
+}
+
+func (m Delete) MustGetFunction() golang.Function {
+	return golang.Function{
+		Name:         m.GetName(),
+		Imports:      m.GetImports(),
+		Receiver:     m.GetReceiver(),
+		Arguments:    m.GetArgs(),
+		ReturnValues: m.GetReturns(),
+		Body:         m.MustParse(),
+	}
 }
 
 func (m Delete) GetName() string {
@@ -33,9 +58,7 @@ func (m Delete) GetImports() golang.Imports {
 }
 
 func (m Delete) GetReceiver() golang.Value {
-	return golang.Value{
-		Name: m.Receiver,
-	}
+	return m.receiver
 }
 
 func (m Delete) GetArgs() []golang.Value {

@@ -7,7 +7,7 @@ import (
 )
 
 var getFilteredQueryBodyTemplate = `
-	result, err := q.ApplyToGorm(r.getBaseQuery())
+	result, err := q.ApplyToGorm({{ .GetReceiverName }}.getBaseQuery())
 	if err != nil {
 		return result, err
 	}
@@ -15,6 +15,30 @@ var getFilteredQueryBodyTemplate = `
 `
 
 type BaseFilteredQuery BaseQuery
+
+func NewBaseFilteredQuery(meta MethodMeta) BaseFilteredQuery {
+	return BaseFilteredQuery{
+		dbFieldName: meta.DBFieldName,
+		receiver:    meta.Receiver,
+		Plural:      meta.Resource.Inflection.Plural,
+		Single:      meta.Resource.Inflection.Single,
+	}
+}
+
+func (m BaseFilteredQuery) GetReceiverName() string {
+	return m.receiver.Name
+}
+
+func (m BaseFilteredQuery) MustGetFunction() golang.Function {
+	return golang.Function{
+		Name:         m.GetName(),
+		Imports:      m.GetImports(),
+		Receiver:     m.GetReceiver(),
+		Arguments:    m.GetArgs(),
+		ReturnValues: m.GetReturns(),
+		Body:         m.MustParse(),
+	}
+}
 
 func (m BaseFilteredQuery) GetName() string {
 	return "getFilteredQuery"
@@ -29,9 +53,7 @@ func (m BaseFilteredQuery) GetImports() golang.Imports {
 }
 
 func (m BaseFilteredQuery) GetReceiver() golang.Value {
-	return golang.Value{
-		Name: m.Receiver,
-	}
+	return m.receiver
 }
 
 func (m BaseFilteredQuery) GetArgs() []golang.Value {

@@ -106,7 +106,7 @@ func makeDomain(r module.Resource, baseDomainPath string) Domain {
 
 	// If this function is ever called, we are definitely generating a DDD app so name things accordingly.
 	cName := data.MakeName("controller")
-	rName := data.MakeName("repository")
+	rName := data.MakeName("repo")
 	mName := data.MakeName("model")
 	// sName := data.MakeName("service")
 	vName := data.MakeName("validator")
@@ -129,6 +129,14 @@ func makeDomain(r module.Resource, baseDomainPath string) Domain {
 		fields:       model.GetValidationFields(),
 	})
 
+	repo := newRepoFromMeta(serviceMeta{
+		receiverName: "r",
+		fileName:     rName.Snake,
+		resource:     r,
+		packageData:  pkgData,
+		name:         rName,
+	})
+
 	return Domain{
 		Model:     model.MustGetFile(),
 		Validator: validator.MustGetFile(),
@@ -143,15 +151,7 @@ func makeDomain(r module.Resource, baseDomainPath string) Domain {
 			viewResponseName.Exported,
 			listResponseName.Exported,
 		),
-		Repo: makeRepo(
-			serviceMeta{
-				resource:     r,
-				packageData:  pkgData,
-				name:         rName,
-				fileName:     rName.Snake,
-				receiverName: "r",
-			},
-		),
+		Repo: repo.MustGetFile(),
 		// Service: makeService(
 		// 	serviceMeta{
 		// 		resource:     r,

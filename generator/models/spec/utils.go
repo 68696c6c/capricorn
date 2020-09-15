@@ -265,7 +265,7 @@ resources:
 - key:
     resource: organization
     field: ""
-  name:
+  inflection:
     single:
       space: organization
       snake: organization
@@ -536,7 +536,7 @@ resources:
 - key:
     resource: user
     field: ""
-  name:
+  inflection:
     single:
       space: user
       snake: user
@@ -1025,7 +1025,7 @@ resources:
 - key:
     resource: token
     field: ""
-  name:
+  inflection:
     single:
       space: token
       snake: token

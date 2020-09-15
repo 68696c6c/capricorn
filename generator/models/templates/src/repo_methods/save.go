@@ -1,6 +1,8 @@
 package repo_methods
 
 import (
+	"fmt"
+
 	"github.com/68696c6c/capricorn/generator/models/data"
 	"github.com/68696c6c/capricorn/generator/models/templates/golang"
 	"github.com/68696c6c/capricorn/generator/utils"
@@ -9,9 +11,9 @@ import (
 var saveBodyTemplate = `
 	var errs []error
 	if m.Model.ID.Valid() {
-		errs = r.db.Save(m).GetErrors()
+		errs = {{ .GetDbReference }}.Save(m).GetErrors()
 	} else {
-		errs = r.db.Create(m).GetErrors()
+		errs = {{ .GetDbReference }}.Create(m).GetErrors()
 	}
 	if len(errs) > 0 {
 		return goat.ErrorsToError(errs)
@@ -20,9 +22,32 @@ var saveBodyTemplate = `
 `
 
 type Save struct {
-	Receiver string
-	Plural   data.Name
-	Single   data.Name
+	dbFieldName string
+	receiver    golang.Value
+	Single      data.Name
+}
+
+func NewSave(meta MethodMeta) Save {
+	return Save{
+		dbFieldName: meta.DBFieldName,
+		receiver:    meta.Receiver,
+		Single:      meta.Resource.Inflection.Single,
+	}
+}
+
+func (m Save) GetDbReference() string {
+	return fmt.Sprintf("%s.%s", m.receiver.Name, m.dbFieldName)
+}
+
+func (m Save) MustGetFunction() golang.Function {
+	return golang.Function{
+		Name:         m.GetName(),
+		Imports:      m.GetImports(),
+		Receiver:     m.GetReceiver(),
+		Arguments:    m.GetArgs(),
+		ReturnValues: m.GetReturns(),
+		Body:         m.MustParse(),
+	}
 }
 
 func (m Save) GetName() string {
@@ -38,9 +63,7 @@ func (m Save) GetImports() golang.Imports {
 }
 
 func (m Save) GetReceiver() golang.Value {
-	return golang.Value{
-		Name: m.Receiver,
-	}
+	return m.receiver
 }
 
 func (m Save) GetArgs() []golang.Value {

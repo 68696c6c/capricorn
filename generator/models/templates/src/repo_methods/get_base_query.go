@@ -1,17 +1,44 @@
 package repo_methods
 
 import (
+	"fmt"
+
 	"github.com/68696c6c/capricorn/generator/models/data"
 	"github.com/68696c6c/capricorn/generator/models/templates/golang"
 	"github.com/68696c6c/capricorn/generator/utils"
 )
 
-var getBaseQueryBodyTemplate = `return r.db.Model(&{{ .Single.Exported }}{})`
+var getBaseQueryBodyTemplate = `return {{ .GetDbReference }}.Model(&{{ .Single.Exported }}{})`
 
 type BaseQuery struct {
-	Receiver string
-	Plural   data.Name
-	Single   data.Name
+	dbFieldName string
+	receiver    golang.Value
+	Plural      data.Name
+	Single      data.Name
+}
+
+func NewBaseQuery(meta MethodMeta) BaseQuery {
+	return BaseQuery{
+		dbFieldName: meta.DBFieldName,
+		receiver:    meta.Receiver,
+		Plural:      meta.Resource.Inflection.Plural,
+		Single:      meta.Resource.Inflection.Single,
+	}
+}
+
+func (m BaseQuery) GetDbReference() string {
+	return fmt.Sprintf("%s.%s", m.receiver.Name, m.dbFieldName)
+}
+
+func (m BaseQuery) MustGetFunction() golang.Function {
+	return golang.Function{
+		Name:         m.GetName(),
+		Imports:      m.GetImports(),
+		Receiver:     m.GetReceiver(),
+		Arguments:    m.GetArgs(),
+		ReturnValues: m.GetReturns(),
+		Body:         m.MustParse(),
+	}
 }
 
 func (m BaseQuery) GetName() string {
@@ -27,9 +54,7 @@ func (m BaseQuery) GetImports() golang.Imports {
 }
 
 func (m BaseQuery) GetReceiver() golang.Value {
-	return golang.Value{
-		Name: m.Receiver,
-	}
+	return m.receiver
 }
 
 func (m BaseQuery) GetArgs() []golang.Value {
