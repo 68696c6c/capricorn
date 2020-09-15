@@ -13,15 +13,17 @@ var validateBodyTemplate = `
 `
 
 type Validate struct {
+	receiver     golang.Value
 	ReceiverName string
 	DB           string
 	Single       data.Name
 	Fields       []module.ResourceField
 }
 
-func NewValidate(receiverName string, singleName data.Name, fields []module.ResourceField) Validate {
+func NewValidate(receiver golang.Value, singleName data.Name, fields []module.ResourceField) Validate {
 	return Validate{
-		ReceiverName: receiverName,
+		receiver:     receiver,
+		ReceiverName: receiver.Name,
 		Single:       singleName,
 		Fields:       fields,
 	}
@@ -50,9 +52,7 @@ func (m Validate) GetImports() golang.Imports {
 }
 
 func (m Validate) GetReceiver() golang.Value {
-	return golang.Value{
-		Name: "*" + m.ReceiverName,
-	}
+	return m.receiver
 }
 
 func (m Validate) GetArgs() []golang.Value {

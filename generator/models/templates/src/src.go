@@ -114,11 +114,12 @@ func makeDomain(r module.Resource, baseDomainPath string) Domain {
 	listResponseName := data.MakeName("list_response")
 	pkgData := data.MakePackageData(baseDomainPath, r.Inflection.Plural.Snake)
 
-	model := newModelFromMeta(modelMeta{
+	model := newModelFromMeta(serviceMeta{
 		receiverName: "m",
 		fileName:     mName.Snake,
 		resource:     r,
 		packageData:  pkgData,
+		name:         r.Inflection.Single,
 	})
 
 	validator := newValidatorFromMeta(validatorMeta{

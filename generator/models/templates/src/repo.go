@@ -56,13 +56,16 @@ func (m Repo) GetInterface() golang.Interface {
 
 func (m Repo) MustGetFile() golang.File {
 	return golang.File{
-		Name:       m.fileData,
-		Path:       m.pathData,
-		Package:    m.packageData,
-		Interfaces: m.GetInterfaces(),
-		Imports:    m.GetImports(),
-		Structs:    m.GetStructs(),
-		Functions:  m.MustGetFunctions(),
+		Name:         m.fileData,
+		Path:         m.pathData,
+		Package:      m.packageData,
+		Imports:      m.GetImports(),
+		InitFunction: m.GetInit(),
+		Consts:       m.GetConsts(),
+		Vars:         m.GetVars(),
+		Interfaces:   m.GetInterfaces(),
+		Structs:      m.GetStructs(),
+		Functions:    m.MustGetFunctions(),
 	}
 }
 

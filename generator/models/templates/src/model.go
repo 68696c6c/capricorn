@@ -7,71 +7,94 @@ import (
 	"github.com/68696c6c/capricorn/generator/models/templates/src/models"
 )
 
-type modelMeta struct {
-	receiverName string
-	fileName     string
-	resource     module.Resource
-	packageData  data.PackageData
-}
-
 type Model struct {
-	receiverName     string
-	resource         module.Resource
-	single           data.Name
-	fieldsSet        bool
+	fileData    data.FileData
+	pathData    data.PathData
+	packageData data.PackageData
+	name        data.Name
+	resource    module.Resource
+	receiver    golang.Value
+
+	built            bool
 	fields           []golang.Field
 	validationFields []module.ResourceField
-	fileData         data.FileData
-	pathData         data.PathData
-	packageData      data.PackageData
 }
 
-func newModelFromMeta(meta modelMeta) Model {
+func newModelFromMeta(meta serviceMeta) Model {
 	fileData, pathData := data.MakeGoFileData(meta.packageData.GetImport(), meta.fileName)
-	single := meta.resource.Inflection.Single
+	name := meta.resource.Inflection.Single
+	receiver := golang.Value{
+		Name: meta.receiverName,
+		Type: "*" + name.Exported,
+	}
 	return Model{
-		receiverName: meta.receiverName,
-		resource:     meta.resource,
-		single:       single,
-		fileData:     fileData,
-		pathData:     pathData,
-		packageData:  meta.packageData,
+		fileData:    fileData,
+		pathData:    pathData,
+		packageData: meta.packageData,
+		name:        name,
+		resource:    meta.resource,
+		receiver:    receiver,
 	}
 }
 
 func (m Model) GetValidationFields() []module.ResourceField {
-	if !m.fieldsSet {
-		m.setFields()
+	if !m.built {
+		m.build()
 	}
 	return m.validationFields
 }
 
 func (m Model) MustGetFile() golang.File {
 	return golang.File{
-		Name:      m.fileData,
-		Path:      m.pathData,
-		Package:   m.packageData,
-		Structs:   m.GetStructs(),
-		Functions: m.MustGetFunctions(),
+		Name:         m.fileData,
+		Path:         m.pathData,
+		Package:      m.packageData,
+		Imports:      m.GetImports(),
+		InitFunction: m.GetInit(),
+		Consts:       m.GetConsts(),
+		Vars:         m.GetVars(),
+		Interfaces:   m.GetInterfaces(),
+		Structs:      m.GetStructs(),
+		Functions:    m.MustGetFunctions(),
 	}
 }
 
+func (m Model) GetImports() golang.Imports {
+	return golang.Imports{}
+}
+
+func (m Model) GetInit() golang.Function {
+	return golang.Function{}
+}
+
+func (m Model) GetConsts() []golang.Const {
+	return []golang.Const{}
+}
+
+func (m Model) GetVars() []golang.Var {
+	return []golang.Var{}
+}
+
+func (m Model) GetInterfaces() []golang.Interface {
+	return []golang.Interface{}
+}
+
 func (m Model) GetStructs() []golang.Struct {
-	if !m.fieldsSet {
-		m.setFields()
+	if !m.built {
+		m.build()
 	}
 
 	return []golang.Struct{
 		{
-			Name:   m.single.Exported,
+			Name:   m.name.Exported,
 			Fields: m.fields,
 		},
 	}
 }
 
 func (m Model) MustGetFunctions() []golang.Function {
-	if !m.fieldsSet {
-		m.setFields()
+	if !m.built {
+		m.build()
 	}
 
 	result := []golang.Function{m.getConstructor()}
@@ -80,7 +103,7 @@ func (m Model) MustGetFunctions() []golang.Function {
 		return result
 	}
 
-	v := models.NewValidate(m.receiverName, m.single, m.validationFields)
+	v := models.NewValidate(m.receiver, m.name, m.validationFields)
 
 	result = append(result, v.MustGetFunction())
 
@@ -92,8 +115,8 @@ func (m Model) getConstructor() golang.Function {
 	return golang.Function{}
 }
 
-func (m Model) setFields() {
-	if m.fieldsSet {
+func (m Model) build() {
+	if m.built {
 		return
 	}
 
@@ -162,5 +185,5 @@ func (m Model) setFields() {
 		m.fields = append(m.fields, field)
 	}
 
-	m.fieldsSet = true
+	m.built = true
 }
