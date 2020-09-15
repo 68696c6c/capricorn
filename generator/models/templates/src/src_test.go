@@ -1,11 +1,11 @@
 package src
 
 import (
-	"github.com/68696c6c/capricorn/generator/models/templates/golang"
 	"testing"
 
 	"github.com/68696c6c/capricorn/generator/models/module"
 	"github.com/68696c6c/capricorn/generator/models/spec"
+	"github.com/68696c6c/capricorn/generator/models/templates/golang"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -16,7 +16,7 @@ func TestSRC_NewSRCDDD(t *testing.T) {
 
 	result := NewSRCDDD(m, "/base/path/test-example")
 	resultYAML := result.String()
-	// println(resultYAML)
+	println(resultYAML)
 
 	assert.Equal(t, FixtureSRCYAML, resultYAML)
 }
@@ -121,14 +121,6 @@ app:
         - github.com/jinzhu/gorm
         - github.com/68696c6c/goat
         - github.com/68696c6c/goat/query
-        - github.com/gin-gonic/gin
-        - github.com/68696c6c/goat
-        - github.com/gin-gonic/gin
-        - github.com/68696c6c/goat
-        - github.com/gin-gonic/gin
-        - github.com/68696c6c/goat
-        - github.com/gin-gonic/gin
-        - github.com/68696c6c/goat
         - github.com/gin-gonic/gin
       init_function:
         name: ""
@@ -377,21 +369,6 @@ app:
         - github.com/68696c6c/goat
         - github.com/pkg/errors
         - github.com/68696c6c/goat/query
-        - github.com/jinzhu/gorm
-        - github.com/68696c6c/goat/query
-        - github.com/jinzhu/gorm
-        - github.com/68696c6c/goat
-        - github.com/pkg/errors
-        - github.com/68696c6c/goat/query
-        - github.com/jinzhu/gorm
-        - github.com/68696c6c/goat
-        - github.com/pkg/errors
-        - github.com/68696c6c/goat/query
-        - github.com/jinzhu/gorm
-        - github.com/68696c6c/goat
-        - github.com/68696c6c/goat
-        - github.com/68696c6c/goat
-        - github.com/68696c6c/goat
       init_function:
         name: ""
         imports:
@@ -1074,14 +1051,6 @@ app:
         - github.com/68696c6c/goat
         - github.com/68696c6c/goat/query
         - github.com/gin-gonic/gin
-        - github.com/68696c6c/goat
-        - github.com/gin-gonic/gin
-        - github.com/68696c6c/goat
-        - github.com/gin-gonic/gin
-        - github.com/68696c6c/goat
-        - github.com/gin-gonic/gin
-        - github.com/68696c6c/goat
-        - github.com/gin-gonic/gin
       init_function:
         name: ""
         imports:
@@ -1327,21 +1296,6 @@ app:
         - github.com/68696c6c/goat
         - github.com/pkg/errors
         - github.com/68696c6c/goat/query
-        - github.com/jinzhu/gorm
-        - github.com/68696c6c/goat/query
-        - github.com/jinzhu/gorm
-        - github.com/68696c6c/goat
-        - github.com/pkg/errors
-        - github.com/68696c6c/goat/query
-        - github.com/jinzhu/gorm
-        - github.com/68696c6c/goat
-        - github.com/pkg/errors
-        - github.com/68696c6c/goat/query
-        - github.com/jinzhu/gorm
-        - github.com/68696c6c/goat
-        - github.com/68696c6c/goat
-        - github.com/68696c6c/goat
-        - github.com/68696c6c/goat
       init_function:
         name: ""
         imports:
@@ -2023,8 +1977,6 @@ app:
         - github.com/jinzhu/gorm
         - github.com/68696c6c/goat
         - github.com/gin-gonic/gin
-        - github.com/68696c6c/goat
-        - github.com/gin-gonic/gin
       init_function:
         name: ""
         imports:
@@ -2186,15 +2138,6 @@ app:
         - github.com/68696c6c/goat
         - github.com/pkg/errors
         - github.com/68696c6c/goat/query
-        - github.com/jinzhu/gorm
-        - github.com/68696c6c/goat/query
-        - github.com/jinzhu/gorm
-        - github.com/68696c6c/goat
-        - github.com/pkg/errors
-        - github.com/68696c6c/goat/query
-        - github.com/jinzhu/gorm
-        - github.com/68696c6c/goat
-        - github.com/68696c6c/goat
       init_function:
         name: ""
         imports:

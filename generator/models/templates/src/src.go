@@ -95,11 +95,27 @@ func makeDomains(m module.Module) []Domain {
 	return result
 }
 
+func removeDuplicateStrings(items []string) []string {
+	keys := make(map[string]bool)
+	var result []string
+	for _, i := range items {
+		if _, ok := keys[i]; !ok {
+			keys[i] = true
+			result = append(result, i)
+		}
+	}
+	return result
+}
+
 func mergeImports(target, additional golang.Imports) golang.Imports {
 	target.Standard = append(target.Standard, additional.Standard...)
-	target.Vendor = append(target.Vendor, additional.Vendor...)
 	target.App = append(target.App, additional.App...)
-	return target
+	target.Vendor = append(target.Vendor, additional.Vendor...)
+	return golang.Imports{
+		Standard: removeDuplicateStrings(target.Standard),
+		App:      removeDuplicateStrings(target.App),
+		Vendor:   removeDuplicateStrings(target.Vendor),
+	}
 }
 
 func makeDomain(r module.Resource, baseDomainPath string) Domain {
