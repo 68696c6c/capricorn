@@ -8,17 +8,17 @@ import (
 )
 
 type Spec struct {
-	Name      string     `yaml:"name"`
-	Module    string     `yaml:"module"`
-	License   string     `yaml:"license"`
-	Author    Author     `yaml:"author"`
-	Resources []Resource `yaml:"resources"`
-	Commands  []Command  `yaml:"commands"`
+	Name      string     `yaml:"name,omitempty"`
+	Module    string     `yaml:"module,omitempty"`
+	License   string     `yaml:"license,omitempty"`
+	Author    Author     `yaml:"author,omitempty"`
+	Resources []Resource `yaml:"resources,omitempty"`
+	Commands  []Command  `yaml:"commands,omitempty"`
 }
 
 type Author struct {
-	Name         string `yaml:"name"`
-	Email        string `yaml:"email"`
+	Name         string `yaml:"name,omitempty"`
+	Email        string `yaml:"email,omitempty"`
 	Organization string `yaml:"organization"`
 }
 

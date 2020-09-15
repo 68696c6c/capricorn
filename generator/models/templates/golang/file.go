@@ -9,17 +9,17 @@ import (
 )
 
 type File struct {
-	Name    data.FileData    `yaml:"name"`
-	Path    data.PathData    `yaml:"path"`
-	Package data.PackageData `yaml:"package"`
+	Name    data.FileData    `yaml:"name,omitempty"`
+	Path    data.PathData    `yaml:"path,omitempty"`
+	Package data.PackageData `yaml:"package,omitempty"`
 
-	Imports      Imports     `yaml:"imports"`
-	InitFunction Function    `yaml:"init_function"`
-	Consts       []Const     `yaml:"consts"`
-	Vars         []Var       `yaml:"vars"`
-	Interfaces   []Interface `yaml:"interfaces"`
-	Structs      []Struct    `yaml:"structs"`
-	Functions    []Function  `yaml:"functions"`
+	Imports      Imports     `yaml:"imports,omitempty"`
+	InitFunction Function    `yaml:"init_function,omitempty"`
+	Consts       []Const     `yaml:"consts,omitempty"`
+	Vars         []Var       `yaml:"vars,omitempty"`
+	Interfaces   []Interface `yaml:"interfaces,omitempty"`
+	Structs      []Struct    `yaml:"structs,omitempty"`
+	Functions    []Function  `yaml:"functions,omitempty"`
 }
 
 func (m File) MustParseConsts() string {

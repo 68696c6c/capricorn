@@ -9,8 +9,8 @@ var interfaceTemplate = `type {{ .Name }} interface {
 }`
 
 type Interface struct {
-	Name      string     `yaml:"name"`
-	Functions []Function `yaml:"functions"`
+	Name      string     `yaml:"name,omitempty"`
+	Functions []Function `yaml:"functions,omitempty"`
 }
 
 func (m Interface) MustParse() string {

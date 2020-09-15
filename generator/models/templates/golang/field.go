@@ -10,9 +10,9 @@ import (
 var structFieldTemplate = `{{ .Name }} {{ .Type }}{{ .GetTags }}`
 
 type Field struct {
-	Name string `yaml:"name"`
-	Type string `yaml:"type"`
-	Tags []Tag  `yaml:"tags"`
+	Name string `yaml:"name,omitempty"`
+	Type string `yaml:"type,omitempty"`
+	Tags []Tag  `yaml:"tags,omitempty"`
 }
 
 func (m Field) GetTags() string {

@@ -12,12 +12,12 @@ type SRC struct {
 	_module  module.Module
 	basePath string
 
-	Package data.PackageData `yaml:"package"`
-	Path    data.PathData    `yaml:"path"`
+	Package data.PackageData `yaml:"package,omitempty"`
+	Path    data.PathData    `yaml:"path,omitempty"`
 
-	App  App  `yaml:"app"`
-	CMD  CMD  `yaml:"cmd"`
-	HTTP HTTP `yaml:"http"`
+	App  App  `yaml:"app,omitempty"`
+	CMD  CMD  `yaml:"cmd,omitempty"`
+	HTTP HTTP `yaml:"http,omitempty"`
 }
 
 func (m SRC) String() string {
@@ -29,38 +29,38 @@ func (m SRC) String() string {
 }
 
 type App struct {
-	Container golang.File `yaml:"container"`
-	Domains   []Domain    `yaml:"domains"`
+	Container golang.File `yaml:"container,omitempty"`
+	Domains   []Domain    `yaml:"domains,omitempty"`
 }
 
 type CMD struct {
-	Root    golang.File   `yaml:"root"`
-	Server  golang.File   `yaml:"server"`
-	Migrate golang.File   `yaml:"migrate"`
-	Seed    golang.File   `yaml:"seed"`
-	Custom  []golang.File `yaml:"custom"`
+	Root    golang.File   `yaml:"root,omitempty"`
+	Server  golang.File   `yaml:"server,omitempty"`
+	Migrate golang.File   `yaml:"migrate,omitempty"`
+	Seed    golang.File   `yaml:"seed,omitempty"`
+	Custom  []golang.File `yaml:"custom,omitempty"`
 }
 
 type DB struct {
-	Migrations []golang.File `yaml:"migrations"`
-	Seeders    []golang.File `yaml:"seeders"`
+	Migrations []golang.File `yaml:"migrations,omitempty"`
+	Seeders    []golang.File `yaml:"seeders,omitempty"`
 }
 
 type HTTP struct {
-	Routes golang.File `yaml:"routes"`
+	Routes golang.File `yaml:"routes,omitempty"`
 }
 
 type Domain struct {
-	Controller     golang.File `yaml:"controller"`
-	ControllerTest golang.File `yaml:"controller_test"`
-	Repo           golang.File `yaml:"repo"`
-	RepoTest       golang.File `yaml:"repo_test"`
-	Model          golang.File `yaml:"model"`
-	ModelTest      golang.File `yaml:"model_test"`
-	Service        golang.File `yaml:"service"`
-	ServiceTest    golang.File `yaml:"service_test"`
-	Validator      golang.File `yaml:"validator"`
-	ValidatorTest  golang.File `yaml:"validator_test"`
+	Controller     golang.File `yaml:"controller,omitempty"`
+	ControllerTest golang.File `yaml:"controller_test,omitempty"`
+	Repo           golang.File `yaml:"repo,omitempty"`
+	RepoTest       golang.File `yaml:"repo_test,omitempty"`
+	Model          golang.File `yaml:"model,omitempty"`
+	ModelTest      golang.File `yaml:"model_test,omitempty"`
+	Service        golang.File `yaml:"service,omitempty"`
+	ServiceTest    golang.File `yaml:"service_test,omitempty"`
+	Validator      golang.File `yaml:"validator,omitempty"`
+	ValidatorTest  golang.File `yaml:"validator_test,omitempty"`
 }
 
 type serviceMeta struct {

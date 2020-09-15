@@ -10,8 +10,8 @@ var valueTemplate = `{{ .Name }} {{ .Type }}`
 
 // Represents an argument or return value.
 type Value struct {
-	Name string `yaml:"name"`
-	Type string `yaml:"type"`
+	Name string `yaml:"name,omitempty"`
+	Type string `yaml:"type,omitempty"`
 }
 
 func (m Value) MustParse() string {

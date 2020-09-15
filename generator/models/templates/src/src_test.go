@@ -56,45 +56,6 @@ path:
   base: /base/path/test-example
   full: /base/path/test-example/src
 app:
-  container:
-    name:
-      base: ""
-      full: ""
-    path:
-      base: ""
-      full: ""
-    package:
-      reference: ""
-      name:
-        space: ""
-        snake: ""
-        kebob: ""
-        exported: ""
-        unexported: ""
-      path:
-        base: ""
-        full: ""
-    imports:
-      standard: []
-      app: []
-      vendor: []
-    init_function:
-      name: ""
-      imports:
-        standard: []
-        app: []
-        vendor: []
-      arguments: []
-      return_values: []
-      receiver:
-        name: ""
-        type: ""
-      body: ""
-    consts: []
-    vars: []
-    interfaces: []
-    structs: []
-    functions: []
   domains:
   - controller:
       name:
@@ -115,52 +76,27 @@ app:
           base: github.com/68696c6c/test-example/src/app
           full: github.com/68696c6c/test-example/src/app/organizations
       imports:
-        standard: []
-        app: []
         vendor:
         - github.com/jinzhu/gorm
         - github.com/68696c6c/goat
         - github.com/68696c6c/goat/query
         - github.com/gin-gonic/gin
-      init_function:
-        name: ""
-        imports:
-          standard: []
-          app: []
-          vendor: []
-        arguments: []
-        return_values: []
-        receiver:
-          name: ""
-          type: ""
-        body: ""
-      consts: []
-      vars: []
-      interfaces: []
       structs:
       - name: Organizations
         fields:
         - name: repo
           type: Repo
-          tags: []
         - name: errors
           type: goat.ErrorHandler
-          tags: []
       - name: CreateRequest
         fields:
         - name: Organization
-          type: ""
-          tags: []
       - name: UpdateRequest
         fields:
         - name: Organization
-          type: ""
-          tags: []
       - name: Response
         fields:
         - name: Organization
-          type: ""
-          tags: []
       - name: ListResponse
         fields:
         - name: Data
@@ -169,8 +105,7 @@ app:
           - key: json
             values:
             - data
-        - name: ""
-          type: query.Pagination
+        - type: query.Pagination
           tags:
           - key: json
             values:
@@ -178,8 +113,6 @@ app:
       functions:
       - name: NewController
         imports:
-          standard: []
-          app: []
           vendor:
           - github.com/jinzhu/gorm
         arguments:
@@ -188,16 +121,10 @@ app:
         - name: errors
           type: goat.ErrorHandler
         return_values:
-        - name: ""
-          type: Controller
-        receiver:
-          name: ""
-          type: ""
+        - type: Controller
         body: "\n\treturn Controller{\n\t\trepo: repo,\n\t\terrors: errors,\n\t}\n"
       - name: List
         imports:
-          standard: []
-          app: []
           vendor:
           - github.com/68696c6c/goat
           - github.com/68696c6c/goat/query
@@ -205,7 +132,6 @@ app:
         arguments:
         - name: cx
           type: '*gin.Context'
-        return_values: []
         receiver:
           name: c
           type: Controller
@@ -215,15 +141,12 @@ app:
           result,\n\t\tPagination: q.Pagination,\n\t})\n"
       - name: View
         imports:
-          standard: []
-          app: []
           vendor:
           - github.com/68696c6c/goat
           - github.com/gin-gonic/gin
         arguments:
         - name: cx
           type: '*gin.Context'
-        return_values: []
         receiver:
           name: c
           type: Controller
@@ -236,15 +159,12 @@ app:
           Response{m})\n"
       - name: Create
         imports:
-          standard: []
-          app: []
           vendor:
           - github.com/68696c6c/goat
           - github.com/gin-gonic/gin
         arguments:
         - name: cx
           type: '*gin.Context'
-        return_values: []
         receiver:
           name: c
           type: Controller
@@ -256,15 +176,12 @@ app:
           Response{m})\n"
       - name: Update
         imports:
-          standard: []
-          app: []
           vendor:
           - github.com/68696c6c/goat
           - github.com/gin-gonic/gin
         arguments:
         - name: cx
           type: '*gin.Context'
-        return_values: []
         receiver:
           name: c
           type: Controller
@@ -283,15 +200,12 @@ app:
           Response{req.Organization})\n"
       - name: Delete
         imports:
-          standard: []
-          app: []
           vendor:
           - github.com/68696c6c/goat
           - github.com/gin-gonic/gin
         arguments:
         - name: cx
           type: '*gin.Context'
-        return_values: []
         receiver:
           name: c
           type: Controller
@@ -304,45 +218,6 @@ app:
           model factories.\n\t// @TODO generate model validators.\n\terrs = c.repo.Delete(&m)\n\tif
           len(errs) > 0 {\n\t\tc.errors.HandleErrorsM(cx, errs, \"failed to delete
           organization\", goat.RespondServerError)\n\t\treturn\n\t}\n\n\tgoat.RespondValid(cx)\n"
-    controller_test:
-      name:
-        base: ""
-        full: ""
-      path:
-        base: ""
-        full: ""
-      package:
-        reference: ""
-        name:
-          space: ""
-          snake: ""
-          kebob: ""
-          exported: ""
-          unexported: ""
-        path:
-          base: ""
-          full: ""
-      imports:
-        standard: []
-        app: []
-        vendor: []
-      init_function:
-        name: ""
-        imports:
-          standard: []
-          app: []
-          vendor: []
-        arguments: []
-        return_values: []
-        receiver:
-          name: ""
-          type: ""
-        body: ""
-      consts: []
-      vars: []
-      interfaces: []
-      structs: []
-      functions: []
     repo:
       name:
         base: repo
@@ -362,67 +237,39 @@ app:
           base: github.com/68696c6c/test-example/src/app
           full: github.com/68696c6c/test-example/src/app/organizations
       imports:
-        standard: []
-        app: []
         vendor:
         - github.com/jinzhu/gorm
         - github.com/68696c6c/goat
         - github.com/pkg/errors
         - github.com/68696c6c/goat/query
-      init_function:
-        name: ""
-        imports:
-          standard: []
-          app: []
-          vendor: []
-        arguments: []
-        return_values: []
-        receiver:
-          name: ""
-          type: ""
-        body: ""
-      consts: []
-      vars: []
       interfaces:
       - name: Repo
         functions:
         - name: NewRepo
           imports:
-            standard: []
-            app: []
             vendor:
             - github.com/jinzhu/gorm
           arguments:
           - name: d
             type: '*gorm.DB'
           return_values:
-          - name: ""
-            type: Repo
-          receiver:
-            name: ""
-            type: ""
+          - type: Repo
           body: "\n\treturn {\n\t\tdb: d,\n\t}\n"
         - name: getBaseQuery
           imports:
-            standard: []
-            app: []
             vendor:
             - github.com/68696c6c/goat
             - github.com/pkg/errors
             - github.com/68696c6c/goat/query
             - github.com/jinzhu/gorm
-          arguments: []
           return_values:
-          - name: ""
-            type: '*gorm.DB'
+          - type: '*gorm.DB'
           receiver:
             name: r
             type: RepoGorm
           body: return r.db.Model(&Organization{})
         - name: getFilteredQuery
           imports:
-            standard: []
-            app: []
             vendor:
             - github.com/68696c6c/goat/query
             - github.com/jinzhu/gorm
@@ -430,10 +277,8 @@ app:
           - name: q
             type: '*query.Query'
           return_values:
-          - name: ""
-            type: '*gorm.DB'
-          - name: ""
-            type: error
+          - type: '*gorm.DB'
+          - type: error
           receiver:
             name: r
             type: RepoGorm
@@ -441,8 +286,6 @@ app:
             {\n\t\treturn result, err\n\t}\n\treturn result, nil\n"
         - name: applyPaginationToQuery
           imports:
-            standard: []
-            app: []
             vendor:
             - github.com/68696c6c/goat
             - github.com/pkg/errors
@@ -452,8 +295,7 @@ app:
           - name: q
             type: '*query.Query'
           return_values:
-          - name: ""
-            type: error
+          - type: error
           receiver:
             name: r
             type: RepoGorm
@@ -462,8 +304,6 @@ app:
             query pagination\")\n\t}\n\treturn nil\n"
         - name: Filter
           imports:
-            standard: []
-            app: []
             vendor:
             - github.com/68696c6c/goat
             - github.com/pkg/errors
@@ -488,18 +328,14 @@ app:
             err != nil {\n\t\treturn result, err\n\t}\n\n\treturn result, nil\n"
         - name: GetByID
           imports:
-            standard: []
-            app: []
             vendor:
             - github.com/68696c6c/goat
           arguments:
           - name: id
             type: goat.ID
           return_values:
-          - name: ""
-            type: Organization
-          - name: ""
-            type: error
+          - type: Organization
+          - type: error
           receiver:
             name: r
             type: RepoGorm
@@ -508,16 +344,13 @@ app:
             m, nil\n"
         - name: Save
           imports:
-            standard: []
-            app: []
             vendor:
             - github.com/68696c6c/goat
           arguments:
           - name: m
             type: '*Organization'
           return_values:
-          - name: ""
-            type: error
+          - type: error
           receiver:
             name: r
             type: RepoGorm
@@ -526,16 +359,13 @@ app:
             {\n\t\treturn goat.ErrorsToError(errs)\n\t}\n\treturn nil\n"
         - name: Save
           imports:
-            standard: []
-            app: []
             vendor:
             - github.com/68696c6c/goat
           arguments:
           - name: m
             type: '*Organization'
           return_values:
-          - name: ""
-            type: error
+          - type: error
           receiver:
             name: r
             type: RepoGorm
@@ -544,16 +374,13 @@ app:
             {\n\t\treturn goat.ErrorsToError(errs)\n\t}\n\treturn nil\n"
         - name: Delete
           imports:
-            standard: []
-            app: []
             vendor:
             - github.com/68696c6c/goat
           arguments:
           - name: m
             type: '*Organization'
           return_values:
-          - name: ""
-            type: error
+          - type: error
           receiver:
             name: r
             type: RepoGorm
@@ -564,45 +391,32 @@ app:
         fields:
         - name: db
           type: '*gorm.DB'
-          tags: []
       functions:
       - name: NewRepo
         imports:
-          standard: []
-          app: []
           vendor:
           - github.com/jinzhu/gorm
         arguments:
         - name: d
           type: '*gorm.DB'
         return_values:
-        - name: ""
-          type: Repo
-        receiver:
-          name: ""
-          type: ""
+        - type: Repo
         body: "\n\treturn {\n\t\tdb: d,\n\t}\n"
       - name: getBaseQuery
         imports:
-          standard: []
-          app: []
           vendor:
           - github.com/68696c6c/goat
           - github.com/pkg/errors
           - github.com/68696c6c/goat/query
           - github.com/jinzhu/gorm
-        arguments: []
         return_values:
-        - name: ""
-          type: '*gorm.DB'
+        - type: '*gorm.DB'
         receiver:
           name: r
           type: RepoGorm
         body: return r.db.Model(&Organization{})
       - name: getFilteredQuery
         imports:
-          standard: []
-          app: []
           vendor:
           - github.com/68696c6c/goat/query
           - github.com/jinzhu/gorm
@@ -610,10 +424,8 @@ app:
         - name: q
           type: '*query.Query'
         return_values:
-        - name: ""
-          type: '*gorm.DB'
-        - name: ""
-          type: error
+        - type: '*gorm.DB'
+        - type: error
         receiver:
           name: r
           type: RepoGorm
@@ -621,8 +433,6 @@ app:
           {\n\t\treturn result, err\n\t}\n\treturn result, nil\n"
       - name: applyPaginationToQuery
         imports:
-          standard: []
-          app: []
           vendor:
           - github.com/68696c6c/goat
           - github.com/pkg/errors
@@ -632,8 +442,7 @@ app:
         - name: q
           type: '*query.Query'
         return_values:
-        - name: ""
-          type: error
+        - type: error
         receiver:
           name: r
           type: RepoGorm
@@ -642,8 +451,6 @@ app:
           pagination\")\n\t}\n\treturn nil\n"
       - name: Filter
         imports:
-          standard: []
-          app: []
           vendor:
           - github.com/68696c6c/goat
           - github.com/pkg/errors
@@ -668,18 +475,14 @@ app:
           err != nil {\n\t\treturn result, err\n\t}\n\n\treturn result, nil\n"
       - name: GetByID
         imports:
-          standard: []
-          app: []
           vendor:
           - github.com/68696c6c/goat
         arguments:
         - name: id
           type: goat.ID
         return_values:
-        - name: ""
-          type: Organization
-        - name: ""
-          type: error
+        - type: Organization
+        - type: error
         receiver:
           name: r
           type: RepoGorm
@@ -688,16 +491,13 @@ app:
           m, nil\n"
       - name: Save
         imports:
-          standard: []
-          app: []
           vendor:
           - github.com/68696c6c/goat
         arguments:
         - name: m
           type: '*Organization'
         return_values:
-        - name: ""
-          type: error
+        - type: error
         receiver:
           name: r
           type: RepoGorm
@@ -706,16 +506,13 @@ app:
           goat.ErrorsToError(errs)\n\t}\n\treturn nil\n"
       - name: Save
         imports:
-          standard: []
-          app: []
           vendor:
           - github.com/68696c6c/goat
         arguments:
         - name: m
           type: '*Organization'
         return_values:
-        - name: ""
-          type: error
+        - type: error
         receiver:
           name: r
           type: RepoGorm
@@ -724,60 +521,18 @@ app:
           goat.ErrorsToError(errs)\n\t}\n\treturn nil\n"
       - name: Delete
         imports:
-          standard: []
-          app: []
           vendor:
           - github.com/68696c6c/goat
         arguments:
         - name: m
           type: '*Organization'
         return_values:
-        - name: ""
-          type: error
+        - type: error
         receiver:
           name: r
           type: RepoGorm
         body: "\n\terrs :=  r.db.Delete(m).GetErrors()\n\tif len(errs) > 0 {\n\t\treturn
           goat.ErrorsToError(errs)\n\t}\n\treturn nil\n"
-    repo_test:
-      name:
-        base: ""
-        full: ""
-      path:
-        base: ""
-        full: ""
-      package:
-        reference: ""
-        name:
-          space: ""
-          snake: ""
-          kebob: ""
-          exported: ""
-          unexported: ""
-        path:
-          base: ""
-          full: ""
-      imports:
-        standard: []
-        app: []
-        vendor: []
-      init_function:
-        name: ""
-        imports:
-          standard: []
-          app: []
-          vendor: []
-        arguments: []
-        return_values: []
-        receiver:
-          name: ""
-          type: ""
-        body: ""
-      consts: []
-      vars: []
-      interfaces: []
-      structs: []
-      functions: []
     model:
       name:
         base: model
@@ -796,157 +551,10 @@ app:
         path:
           base: github.com/68696c6c/test-example/src/app
           full: github.com/68696c6c/test-example/src/app/organizations
-      imports:
-        standard: []
-        app: []
-        vendor: []
-      init_function:
-        name: ""
-        imports:
-          standard: []
-          app: []
-          vendor: []
-        arguments: []
-        return_values: []
-        receiver:
-          name: ""
-          type: ""
-        body: ""
-      consts: []
-      vars: []
-      interfaces: []
       structs:
       - name: Organization
-        fields: []
       functions:
-      - name: ""
-        imports:
-          standard: []
-          app: []
-          vendor: []
-        arguments: []
-        return_values: []
-        receiver:
-          name: ""
-          type: ""
-        body: ""
-    model_test:
-      name:
-        base: ""
-        full: ""
-      path:
-        base: ""
-        full: ""
-      package:
-        reference: ""
-        name:
-          space: ""
-          snake: ""
-          kebob: ""
-          exported: ""
-          unexported: ""
-        path:
-          base: ""
-          full: ""
-      imports:
-        standard: []
-        app: []
-        vendor: []
-      init_function:
-        name: ""
-        imports:
-          standard: []
-          app: []
-          vendor: []
-        arguments: []
-        return_values: []
-        receiver:
-          name: ""
-          type: ""
-        body: ""
-      consts: []
-      vars: []
-      interfaces: []
-      structs: []
-      functions: []
-    service:
-      name:
-        base: ""
-        full: ""
-      path:
-        base: ""
-        full: ""
-      package:
-        reference: ""
-        name:
-          space: ""
-          snake: ""
-          kebob: ""
-          exported: ""
-          unexported: ""
-        path:
-          base: ""
-          full: ""
-      imports:
-        standard: []
-        app: []
-        vendor: []
-      init_function:
-        name: ""
-        imports:
-          standard: []
-          app: []
-          vendor: []
-        arguments: []
-        return_values: []
-        receiver:
-          name: ""
-          type: ""
-        body: ""
-      consts: []
-      vars: []
-      interfaces: []
-      structs: []
-      functions: []
-    service_test:
-      name:
-        base: ""
-        full: ""
-      path:
-        base: ""
-        full: ""
-      package:
-        reference: ""
-        name:
-          space: ""
-          snake: ""
-          kebob: ""
-          exported: ""
-          unexported: ""
-        path:
-          base: ""
-          full: ""
-      imports:
-        standard: []
-        app: []
-        vendor: []
-      init_function:
-        name: ""
-        imports:
-          standard: []
-          app: []
-          vendor: []
-        arguments: []
-        return_values: []
-        receiver:
-          name: ""
-          type: ""
-        body: ""
-      consts: []
-      vars: []
-      interfaces: []
-      structs: []
-      functions: []
+      - {}
     validator:
       name:
         base: validator
@@ -965,66 +573,6 @@ app:
         path:
           base: github.com/68696c6c/test-example/src/app
           full: github.com/68696c6c/test-example/src/app/organizations
-      imports:
-        standard: []
-        app: []
-        vendor: []
-      init_function:
-        name: ""
-        imports:
-          standard: []
-          app: []
-          vendor: []
-        arguments: []
-        return_values: []
-        receiver:
-          name: ""
-          type: ""
-        body: ""
-      consts: []
-      vars: []
-      interfaces: []
-      structs: []
-      functions: []
-    validator_test:
-      name:
-        base: ""
-        full: ""
-      path:
-        base: ""
-        full: ""
-      package:
-        reference: ""
-        name:
-          space: ""
-          snake: ""
-          kebob: ""
-          exported: ""
-          unexported: ""
-        path:
-          base: ""
-          full: ""
-      imports:
-        standard: []
-        app: []
-        vendor: []
-      init_function:
-        name: ""
-        imports:
-          standard: []
-          app: []
-          vendor: []
-        arguments: []
-        return_values: []
-        receiver:
-          name: ""
-          type: ""
-        body: ""
-      consts: []
-      vars: []
-      interfaces: []
-      structs: []
-      functions: []
   - controller:
       name:
         base: controller
@@ -1044,52 +592,27 @@ app:
           base: github.com/68696c6c/test-example/src/app
           full: github.com/68696c6c/test-example/src/app/users
       imports:
-        standard: []
-        app: []
         vendor:
         - github.com/jinzhu/gorm
         - github.com/68696c6c/goat
         - github.com/68696c6c/goat/query
         - github.com/gin-gonic/gin
-      init_function:
-        name: ""
-        imports:
-          standard: []
-          app: []
-          vendor: []
-        arguments: []
-        return_values: []
-        receiver:
-          name: ""
-          type: ""
-        body: ""
-      consts: []
-      vars: []
-      interfaces: []
       structs:
       - name: Users
         fields:
         - name: repo
           type: Repo
-          tags: []
         - name: errors
           type: goat.ErrorHandler
-          tags: []
       - name: CreateRequest
         fields:
         - name: User
-          type: ""
-          tags: []
       - name: UpdateRequest
         fields:
         - name: User
-          type: ""
-          tags: []
       - name: Response
         fields:
         - name: User
-          type: ""
-          tags: []
       - name: ListResponse
         fields:
         - name: Data
@@ -1098,8 +621,7 @@ app:
           - key: json
             values:
             - data
-        - name: ""
-          type: query.Pagination
+        - type: query.Pagination
           tags:
           - key: json
             values:
@@ -1107,8 +629,6 @@ app:
       functions:
       - name: NewController
         imports:
-          standard: []
-          app: []
           vendor:
           - github.com/jinzhu/gorm
         arguments:
@@ -1117,16 +637,10 @@ app:
         - name: errors
           type: goat.ErrorHandler
         return_values:
-        - name: ""
-          type: Controller
-        receiver:
-          name: ""
-          type: ""
+        - type: Controller
         body: "\n\treturn Controller{\n\t\trepo: repo,\n\t\terrors: errors,\n\t}\n"
       - name: List
         imports:
-          standard: []
-          app: []
           vendor:
           - github.com/68696c6c/goat
           - github.com/68696c6c/goat/query
@@ -1134,7 +648,6 @@ app:
         arguments:
         - name: cx
           type: '*gin.Context'
-        return_values: []
         receiver:
           name: c
           type: Controller
@@ -1144,15 +657,12 @@ app:
           result,\n\t\tPagination: q.Pagination,\n\t})\n"
       - name: View
         imports:
-          standard: []
-          app: []
           vendor:
           - github.com/68696c6c/goat
           - github.com/gin-gonic/gin
         arguments:
         - name: cx
           type: '*gin.Context'
-        return_values: []
         receiver:
           name: c
           type: Controller
@@ -1164,15 +674,12 @@ app:
           Response{m})\n"
       - name: Create
         imports:
-          standard: []
-          app: []
           vendor:
           - github.com/68696c6c/goat
           - github.com/gin-gonic/gin
         arguments:
         - name: cx
           type: '*gin.Context'
-        return_values: []
         receiver:
           name: c
           type: Controller
@@ -1184,15 +691,12 @@ app:
           Response{m})\n"
       - name: Update
         imports:
-          standard: []
-          app: []
           vendor:
           - github.com/68696c6c/goat
           - github.com/gin-gonic/gin
         arguments:
         - name: cx
           type: '*gin.Context'
-        return_values: []
         receiver:
           name: c
           type: Controller
@@ -1211,15 +715,12 @@ app:
           Response{req.User})\n"
       - name: Delete
         imports:
-          standard: []
-          app: []
           vendor:
           - github.com/68696c6c/goat
           - github.com/gin-gonic/gin
         arguments:
         - name: cx
           type: '*gin.Context'
-        return_values: []
         receiver:
           name: c
           type: Controller
@@ -1231,45 +732,6 @@ app:
           @TODO generate model factories.\n\t// @TODO generate model validators.\n\terrs
           = c.repo.Delete(&m)\n\tif len(errs) > 0 {\n\t\tc.errors.HandleErrorsM(cx,
           errs, \"failed to delete user\", goat.RespondServerError)\n\t\treturn\n\t}\n\n\tgoat.RespondValid(cx)\n"
-    controller_test:
-      name:
-        base: ""
-        full: ""
-      path:
-        base: ""
-        full: ""
-      package:
-        reference: ""
-        name:
-          space: ""
-          snake: ""
-          kebob: ""
-          exported: ""
-          unexported: ""
-        path:
-          base: ""
-          full: ""
-      imports:
-        standard: []
-        app: []
-        vendor: []
-      init_function:
-        name: ""
-        imports:
-          standard: []
-          app: []
-          vendor: []
-        arguments: []
-        return_values: []
-        receiver:
-          name: ""
-          type: ""
-        body: ""
-      consts: []
-      vars: []
-      interfaces: []
-      structs: []
-      functions: []
     repo:
       name:
         base: repo
@@ -1289,67 +751,39 @@ app:
           base: github.com/68696c6c/test-example/src/app
           full: github.com/68696c6c/test-example/src/app/users
       imports:
-        standard: []
-        app: []
         vendor:
         - github.com/jinzhu/gorm
         - github.com/68696c6c/goat
         - github.com/pkg/errors
         - github.com/68696c6c/goat/query
-      init_function:
-        name: ""
-        imports:
-          standard: []
-          app: []
-          vendor: []
-        arguments: []
-        return_values: []
-        receiver:
-          name: ""
-          type: ""
-        body: ""
-      consts: []
-      vars: []
       interfaces:
       - name: Repo
         functions:
         - name: NewRepo
           imports:
-            standard: []
-            app: []
             vendor:
             - github.com/jinzhu/gorm
           arguments:
           - name: d
             type: '*gorm.DB'
           return_values:
-          - name: ""
-            type: Repo
-          receiver:
-            name: ""
-            type: ""
+          - type: Repo
           body: "\n\treturn {\n\t\tdb: d,\n\t}\n"
         - name: getBaseQuery
           imports:
-            standard: []
-            app: []
             vendor:
             - github.com/68696c6c/goat
             - github.com/pkg/errors
             - github.com/68696c6c/goat/query
             - github.com/jinzhu/gorm
-          arguments: []
           return_values:
-          - name: ""
-            type: '*gorm.DB'
+          - type: '*gorm.DB'
           receiver:
             name: r
             type: RepoGorm
           body: return r.db.Model(&User{})
         - name: getFilteredQuery
           imports:
-            standard: []
-            app: []
             vendor:
             - github.com/68696c6c/goat/query
             - github.com/jinzhu/gorm
@@ -1357,10 +791,8 @@ app:
           - name: q
             type: '*query.Query'
           return_values:
-          - name: ""
-            type: '*gorm.DB'
-          - name: ""
-            type: error
+          - type: '*gorm.DB'
+          - type: error
           receiver:
             name: r
             type: RepoGorm
@@ -1368,8 +800,6 @@ app:
             {\n\t\treturn result, err\n\t}\n\treturn result, nil\n"
         - name: applyPaginationToQuery
           imports:
-            standard: []
-            app: []
             vendor:
             - github.com/68696c6c/goat
             - github.com/pkg/errors
@@ -1379,8 +809,7 @@ app:
           - name: q
             type: '*query.Query'
           return_values:
-          - name: ""
-            type: error
+          - type: error
           receiver:
             name: r
             type: RepoGorm
@@ -1389,8 +818,6 @@ app:
             nil\n"
         - name: Filter
           imports:
-            standard: []
-            app: []
             vendor:
             - github.com/68696c6c/goat
             - github.com/pkg/errors
@@ -1415,18 +842,14 @@ app:
             err != nil {\n\t\treturn result, err\n\t}\n\n\treturn result, nil\n"
         - name: GetByID
           imports:
-            standard: []
-            app: []
             vendor:
             - github.com/68696c6c/goat
           arguments:
           - name: id
             type: goat.ID
           return_values:
-          - name: ""
-            type: User
-          - name: ""
-            type: error
+          - type: User
+          - type: error
           receiver:
             name: r
             type: RepoGorm
@@ -1435,16 +858,13 @@ app:
             m, nil\n"
         - name: Save
           imports:
-            standard: []
-            app: []
             vendor:
             - github.com/68696c6c/goat
           arguments:
           - name: m
             type: '*User'
           return_values:
-          - name: ""
-            type: error
+          - type: error
           receiver:
             name: r
             type: RepoGorm
@@ -1453,16 +873,13 @@ app:
             {\n\t\treturn goat.ErrorsToError(errs)\n\t}\n\treturn nil\n"
         - name: Save
           imports:
-            standard: []
-            app: []
             vendor:
             - github.com/68696c6c/goat
           arguments:
           - name: m
             type: '*User'
           return_values:
-          - name: ""
-            type: error
+          - type: error
           receiver:
             name: r
             type: RepoGorm
@@ -1471,16 +888,13 @@ app:
             {\n\t\treturn goat.ErrorsToError(errs)\n\t}\n\treturn nil\n"
         - name: Delete
           imports:
-            standard: []
-            app: []
             vendor:
             - github.com/68696c6c/goat
           arguments:
           - name: m
             type: '*User'
           return_values:
-          - name: ""
-            type: error
+          - type: error
           receiver:
             name: r
             type: RepoGorm
@@ -1491,45 +905,32 @@ app:
         fields:
         - name: db
           type: '*gorm.DB'
-          tags: []
       functions:
       - name: NewRepo
         imports:
-          standard: []
-          app: []
           vendor:
           - github.com/jinzhu/gorm
         arguments:
         - name: d
           type: '*gorm.DB'
         return_values:
-        - name: ""
-          type: Repo
-        receiver:
-          name: ""
-          type: ""
+        - type: Repo
         body: "\n\treturn {\n\t\tdb: d,\n\t}\n"
       - name: getBaseQuery
         imports:
-          standard: []
-          app: []
           vendor:
           - github.com/68696c6c/goat
           - github.com/pkg/errors
           - github.com/68696c6c/goat/query
           - github.com/jinzhu/gorm
-        arguments: []
         return_values:
-        - name: ""
-          type: '*gorm.DB'
+        - type: '*gorm.DB'
         receiver:
           name: r
           type: RepoGorm
         body: return r.db.Model(&User{})
       - name: getFilteredQuery
         imports:
-          standard: []
-          app: []
           vendor:
           - github.com/68696c6c/goat/query
           - github.com/jinzhu/gorm
@@ -1537,10 +938,8 @@ app:
         - name: q
           type: '*query.Query'
         return_values:
-        - name: ""
-          type: '*gorm.DB'
-        - name: ""
-          type: error
+        - type: '*gorm.DB'
+        - type: error
         receiver:
           name: r
           type: RepoGorm
@@ -1548,8 +947,6 @@ app:
           {\n\t\treturn result, err\n\t}\n\treturn result, nil\n"
       - name: applyPaginationToQuery
         imports:
-          standard: []
-          app: []
           vendor:
           - github.com/68696c6c/goat
           - github.com/pkg/errors
@@ -1559,8 +956,7 @@ app:
         - name: q
           type: '*query.Query'
         return_values:
-        - name: ""
-          type: error
+        - type: error
         receiver:
           name: r
           type: RepoGorm
@@ -1569,8 +965,6 @@ app:
           nil\n"
       - name: Filter
         imports:
-          standard: []
-          app: []
           vendor:
           - github.com/68696c6c/goat
           - github.com/pkg/errors
@@ -1595,18 +989,14 @@ app:
           err != nil {\n\t\treturn result, err\n\t}\n\n\treturn result, nil\n"
       - name: GetByID
         imports:
-          standard: []
-          app: []
           vendor:
           - github.com/68696c6c/goat
         arguments:
         - name: id
           type: goat.ID
         return_values:
-        - name: ""
-          type: User
-        - name: ""
-          type: error
+        - type: User
+        - type: error
         receiver:
           name: r
           type: RepoGorm
@@ -1615,16 +1005,13 @@ app:
           m, nil\n"
       - name: Save
         imports:
-          standard: []
-          app: []
           vendor:
           - github.com/68696c6c/goat
         arguments:
         - name: m
           type: '*User'
         return_values:
-        - name: ""
-          type: error
+        - type: error
         receiver:
           name: r
           type: RepoGorm
@@ -1633,16 +1020,13 @@ app:
           goat.ErrorsToError(errs)\n\t}\n\treturn nil\n"
       - name: Save
         imports:
-          standard: []
-          app: []
           vendor:
           - github.com/68696c6c/goat
         arguments:
         - name: m
           type: '*User'
         return_values:
-        - name: ""
-          type: error
+        - type: error
         receiver:
           name: r
           type: RepoGorm
@@ -1651,60 +1035,18 @@ app:
           goat.ErrorsToError(errs)\n\t}\n\treturn nil\n"
       - name: Delete
         imports:
-          standard: []
-          app: []
           vendor:
           - github.com/68696c6c/goat
         arguments:
         - name: m
           type: '*User'
         return_values:
-        - name: ""
-          type: error
+        - type: error
         receiver:
           name: r
           type: RepoGorm
         body: "\n\terrs :=  r.db.Delete(m).GetErrors()\n\tif len(errs) > 0 {\n\t\treturn
           goat.ErrorsToError(errs)\n\t}\n\treturn nil\n"
-    repo_test:
-      name:
-        base: ""
-        full: ""
-      path:
-        base: ""
-        full: ""
-      package:
-        reference: ""
-        name:
-          space: ""
-          snake: ""
-          kebob: ""
-          exported: ""
-          unexported: ""
-        path:
-          base: ""
-          full: ""
-      imports:
-        standard: []
-        app: []
-        vendor: []
-      init_function:
-        name: ""
-        imports:
-          standard: []
-          app: []
-          vendor: []
-        arguments: []
-        return_values: []
-        receiver:
-          name: ""
-          type: ""
-        body: ""
-      consts: []
-      vars: []
-      interfaces: []
-      structs: []
-      functions: []
     model:
       name:
         base: model
@@ -1723,157 +1065,10 @@ app:
         path:
           base: github.com/68696c6c/test-example/src/app
           full: github.com/68696c6c/test-example/src/app/users
-      imports:
-        standard: []
-        app: []
-        vendor: []
-      init_function:
-        name: ""
-        imports:
-          standard: []
-          app: []
-          vendor: []
-        arguments: []
-        return_values: []
-        receiver:
-          name: ""
-          type: ""
-        body: ""
-      consts: []
-      vars: []
-      interfaces: []
       structs:
       - name: User
-        fields: []
       functions:
-      - name: ""
-        imports:
-          standard: []
-          app: []
-          vendor: []
-        arguments: []
-        return_values: []
-        receiver:
-          name: ""
-          type: ""
-        body: ""
-    model_test:
-      name:
-        base: ""
-        full: ""
-      path:
-        base: ""
-        full: ""
-      package:
-        reference: ""
-        name:
-          space: ""
-          snake: ""
-          kebob: ""
-          exported: ""
-          unexported: ""
-        path:
-          base: ""
-          full: ""
-      imports:
-        standard: []
-        app: []
-        vendor: []
-      init_function:
-        name: ""
-        imports:
-          standard: []
-          app: []
-          vendor: []
-        arguments: []
-        return_values: []
-        receiver:
-          name: ""
-          type: ""
-        body: ""
-      consts: []
-      vars: []
-      interfaces: []
-      structs: []
-      functions: []
-    service:
-      name:
-        base: ""
-        full: ""
-      path:
-        base: ""
-        full: ""
-      package:
-        reference: ""
-        name:
-          space: ""
-          snake: ""
-          kebob: ""
-          exported: ""
-          unexported: ""
-        path:
-          base: ""
-          full: ""
-      imports:
-        standard: []
-        app: []
-        vendor: []
-      init_function:
-        name: ""
-        imports:
-          standard: []
-          app: []
-          vendor: []
-        arguments: []
-        return_values: []
-        receiver:
-          name: ""
-          type: ""
-        body: ""
-      consts: []
-      vars: []
-      interfaces: []
-      structs: []
-      functions: []
-    service_test:
-      name:
-        base: ""
-        full: ""
-      path:
-        base: ""
-        full: ""
-      package:
-        reference: ""
-        name:
-          space: ""
-          snake: ""
-          kebob: ""
-          exported: ""
-          unexported: ""
-        path:
-          base: ""
-          full: ""
-      imports:
-        standard: []
-        app: []
-        vendor: []
-      init_function:
-        name: ""
-        imports:
-          standard: []
-          app: []
-          vendor: []
-        arguments: []
-        return_values: []
-        receiver:
-          name: ""
-          type: ""
-        body: ""
-      consts: []
-      vars: []
-      interfaces: []
-      structs: []
-      functions: []
+      - {}
     validator:
       name:
         base: validator
@@ -1892,66 +1087,6 @@ app:
         path:
           base: github.com/68696c6c/test-example/src/app
           full: github.com/68696c6c/test-example/src/app/users
-      imports:
-        standard: []
-        app: []
-        vendor: []
-      init_function:
-        name: ""
-        imports:
-          standard: []
-          app: []
-          vendor: []
-        arguments: []
-        return_values: []
-        receiver:
-          name: ""
-          type: ""
-        body: ""
-      consts: []
-      vars: []
-      interfaces: []
-      structs: []
-      functions: []
-    validator_test:
-      name:
-        base: ""
-        full: ""
-      path:
-        base: ""
-        full: ""
-      package:
-        reference: ""
-        name:
-          space: ""
-          snake: ""
-          kebob: ""
-          exported: ""
-          unexported: ""
-        path:
-          base: ""
-          full: ""
-      imports:
-        standard: []
-        app: []
-        vendor: []
-      init_function:
-        name: ""
-        imports:
-          standard: []
-          app: []
-          vendor: []
-        arguments: []
-        return_values: []
-        receiver:
-          name: ""
-          type: ""
-        body: ""
-      consts: []
-      vars: []
-      interfaces: []
-      structs: []
-      functions: []
   - controller:
       name:
         base: controller
@@ -1971,51 +1106,26 @@ app:
           base: github.com/68696c6c/test-example/src/app
           full: github.com/68696c6c/test-example/src/app/tokens
       imports:
-        standard: []
-        app: []
         vendor:
         - github.com/jinzhu/gorm
         - github.com/68696c6c/goat
         - github.com/gin-gonic/gin
-      init_function:
-        name: ""
-        imports:
-          standard: []
-          app: []
-          vendor: []
-        arguments: []
-        return_values: []
-        receiver:
-          name: ""
-          type: ""
-        body: ""
-      consts: []
-      vars: []
-      interfaces: []
       structs:
       - name: Tokens
         fields:
         - name: repo
           type: Repo
-          tags: []
         - name: errors
           type: goat.ErrorHandler
-          tags: []
       - name: CreateRequest
         fields:
         - name: Token
-          type: ""
-          tags: []
       - name: Response
         fields:
         - name: Token
-          type: ""
-          tags: []
       functions:
       - name: NewController
         imports:
-          standard: []
-          app: []
           vendor:
           - github.com/jinzhu/gorm
         arguments:
@@ -2024,23 +1134,16 @@ app:
         - name: errors
           type: goat.ErrorHandler
         return_values:
-        - name: ""
-          type: Controller
-        receiver:
-          name: ""
-          type: ""
+        - type: Controller
         body: "\n\treturn Controller{\n\t\trepo: repo,\n\t\terrors: errors,\n\t}\n"
       - name: Create
         imports:
-          standard: []
-          app: []
           vendor:
           - github.com/68696c6c/goat
           - github.com/gin-gonic/gin
         arguments:
         - name: cx
           type: '*gin.Context'
-        return_values: []
         receiver:
           name: c
           type: Controller
@@ -2052,15 +1155,12 @@ app:
           Response{m})\n"
       - name: Delete
         imports:
-          standard: []
-          app: []
           vendor:
           - github.com/68696c6c/goat
           - github.com/gin-gonic/gin
         arguments:
         - name: cx
           type: '*gin.Context'
-        return_values: []
         receiver:
           name: c
           type: Controller
@@ -2073,45 +1173,6 @@ app:
           model factories.\n\t// @TODO generate model validators.\n\terrs = c.repo.Delete(&m)\n\tif
           len(errs) > 0 {\n\t\tc.errors.HandleErrorsM(cx, errs, \"failed to delete
           token\", goat.RespondServerError)\n\t\treturn\n\t}\n\n\tgoat.RespondValid(cx)\n"
-    controller_test:
-      name:
-        base: ""
-        full: ""
-      path:
-        base: ""
-        full: ""
-      package:
-        reference: ""
-        name:
-          space: ""
-          snake: ""
-          kebob: ""
-          exported: ""
-          unexported: ""
-        path:
-          base: ""
-          full: ""
-      imports:
-        standard: []
-        app: []
-        vendor: []
-      init_function:
-        name: ""
-        imports:
-          standard: []
-          app: []
-          vendor: []
-        arguments: []
-        return_values: []
-        receiver:
-          name: ""
-          type: ""
-        body: ""
-      consts: []
-      vars: []
-      interfaces: []
-      structs: []
-      functions: []
     repo:
       name:
         base: repo
@@ -2131,67 +1192,39 @@ app:
           base: github.com/68696c6c/test-example/src/app
           full: github.com/68696c6c/test-example/src/app/tokens
       imports:
-        standard: []
-        app: []
         vendor:
         - github.com/jinzhu/gorm
         - github.com/68696c6c/goat
         - github.com/pkg/errors
         - github.com/68696c6c/goat/query
-      init_function:
-        name: ""
-        imports:
-          standard: []
-          app: []
-          vendor: []
-        arguments: []
-        return_values: []
-        receiver:
-          name: ""
-          type: ""
-        body: ""
-      consts: []
-      vars: []
       interfaces:
       - name: Repo
         functions:
         - name: NewRepo
           imports:
-            standard: []
-            app: []
             vendor:
             - github.com/jinzhu/gorm
           arguments:
           - name: d
             type: '*gorm.DB'
           return_values:
-          - name: ""
-            type: Repo
-          receiver:
-            name: ""
-            type: ""
+          - type: Repo
           body: "\n\treturn {\n\t\tdb: d,\n\t}\n"
         - name: getBaseQuery
           imports:
-            standard: []
-            app: []
             vendor:
             - github.com/68696c6c/goat
             - github.com/pkg/errors
             - github.com/68696c6c/goat/query
             - github.com/jinzhu/gorm
-          arguments: []
           return_values:
-          - name: ""
-            type: '*gorm.DB'
+          - type: '*gorm.DB'
           receiver:
             name: r
             type: RepoGorm
           body: return r.db.Model(&Token{})
         - name: getFilteredQuery
           imports:
-            standard: []
-            app: []
             vendor:
             - github.com/68696c6c/goat/query
             - github.com/jinzhu/gorm
@@ -2199,10 +1232,8 @@ app:
           - name: q
             type: '*query.Query'
           return_values:
-          - name: ""
-            type: '*gorm.DB'
-          - name: ""
-            type: error
+          - type: '*gorm.DB'
+          - type: error
           receiver:
             name: r
             type: RepoGorm
@@ -2210,8 +1241,6 @@ app:
             {\n\t\treturn result, err\n\t}\n\treturn result, nil\n"
         - name: applyPaginationToQuery
           imports:
-            standard: []
-            app: []
             vendor:
             - github.com/68696c6c/goat
             - github.com/pkg/errors
@@ -2221,8 +1250,7 @@ app:
           - name: q
             type: '*query.Query'
           return_values:
-          - name: ""
-            type: error
+          - type: error
           receiver:
             name: r
             type: RepoGorm
@@ -2231,16 +1259,13 @@ app:
             pagination\")\n\t}\n\treturn nil\n"
         - name: Save
           imports:
-            standard: []
-            app: []
             vendor:
             - github.com/68696c6c/goat
           arguments:
           - name: m
             type: '*Token'
           return_values:
-          - name: ""
-            type: error
+          - type: error
           receiver:
             name: r
             type: RepoGorm
@@ -2249,16 +1274,13 @@ app:
             {\n\t\treturn goat.ErrorsToError(errs)\n\t}\n\treturn nil\n"
         - name: Delete
           imports:
-            standard: []
-            app: []
             vendor:
             - github.com/68696c6c/goat
           arguments:
           - name: m
             type: '*Token'
           return_values:
-          - name: ""
-            type: error
+          - type: error
           receiver:
             name: r
             type: RepoGorm
@@ -2269,45 +1291,32 @@ app:
         fields:
         - name: db
           type: '*gorm.DB'
-          tags: []
       functions:
       - name: NewRepo
         imports:
-          standard: []
-          app: []
           vendor:
           - github.com/jinzhu/gorm
         arguments:
         - name: d
           type: '*gorm.DB'
         return_values:
-        - name: ""
-          type: Repo
-        receiver:
-          name: ""
-          type: ""
+        - type: Repo
         body: "\n\treturn {\n\t\tdb: d,\n\t}\n"
       - name: getBaseQuery
         imports:
-          standard: []
-          app: []
           vendor:
           - github.com/68696c6c/goat
           - github.com/pkg/errors
           - github.com/68696c6c/goat/query
           - github.com/jinzhu/gorm
-        arguments: []
         return_values:
-        - name: ""
-          type: '*gorm.DB'
+        - type: '*gorm.DB'
         receiver:
           name: r
           type: RepoGorm
         body: return r.db.Model(&Token{})
       - name: getFilteredQuery
         imports:
-          standard: []
-          app: []
           vendor:
           - github.com/68696c6c/goat/query
           - github.com/jinzhu/gorm
@@ -2315,10 +1324,8 @@ app:
         - name: q
           type: '*query.Query'
         return_values:
-        - name: ""
-          type: '*gorm.DB'
-        - name: ""
-          type: error
+        - type: '*gorm.DB'
+        - type: error
         receiver:
           name: r
           type: RepoGorm
@@ -2326,8 +1333,6 @@ app:
           {\n\t\treturn result, err\n\t}\n\treturn result, nil\n"
       - name: applyPaginationToQuery
         imports:
-          standard: []
-          app: []
           vendor:
           - github.com/68696c6c/goat
           - github.com/pkg/errors
@@ -2337,8 +1342,7 @@ app:
         - name: q
           type: '*query.Query'
         return_values:
-        - name: ""
-          type: error
+        - type: error
         receiver:
           name: r
           type: RepoGorm
@@ -2347,16 +1351,13 @@ app:
           nil\n"
       - name: Save
         imports:
-          standard: []
-          app: []
           vendor:
           - github.com/68696c6c/goat
         arguments:
         - name: m
           type: '*Token'
         return_values:
-        - name: ""
-          type: error
+        - type: error
         receiver:
           name: r
           type: RepoGorm
@@ -2365,60 +1366,18 @@ app:
           goat.ErrorsToError(errs)\n\t}\n\treturn nil\n"
       - name: Delete
         imports:
-          standard: []
-          app: []
           vendor:
           - github.com/68696c6c/goat
         arguments:
         - name: m
           type: '*Token'
         return_values:
-        - name: ""
-          type: error
+        - type: error
         receiver:
           name: r
           type: RepoGorm
         body: "\n\terrs :=  r.db.Delete(m).GetErrors()\n\tif len(errs) > 0 {\n\t\treturn
           goat.ErrorsToError(errs)\n\t}\n\treturn nil\n"
-    repo_test:
-      name:
-        base: ""
-        full: ""
-      path:
-        base: ""
-        full: ""
-      package:
-        reference: ""
-        name:
-          space: ""
-          snake: ""
-          kebob: ""
-          exported: ""
-          unexported: ""
-        path:
-          base: ""
-          full: ""
-      imports:
-        standard: []
-        app: []
-        vendor: []
-      init_function:
-        name: ""
-        imports:
-          standard: []
-          app: []
-          vendor: []
-        arguments: []
-        return_values: []
-        receiver:
-          name: ""
-          type: ""
-        body: ""
-      consts: []
-      vars: []
-      interfaces: []
-      structs: []
-      functions: []
     model:
       name:
         base: model
@@ -2437,157 +1396,10 @@ app:
         path:
           base: github.com/68696c6c/test-example/src/app
           full: github.com/68696c6c/test-example/src/app/tokens
-      imports:
-        standard: []
-        app: []
-        vendor: []
-      init_function:
-        name: ""
-        imports:
-          standard: []
-          app: []
-          vendor: []
-        arguments: []
-        return_values: []
-        receiver:
-          name: ""
-          type: ""
-        body: ""
-      consts: []
-      vars: []
-      interfaces: []
       structs:
       - name: Token
-        fields: []
       functions:
-      - name: ""
-        imports:
-          standard: []
-          app: []
-          vendor: []
-        arguments: []
-        return_values: []
-        receiver:
-          name: ""
-          type: ""
-        body: ""
-    model_test:
-      name:
-        base: ""
-        full: ""
-      path:
-        base: ""
-        full: ""
-      package:
-        reference: ""
-        name:
-          space: ""
-          snake: ""
-          kebob: ""
-          exported: ""
-          unexported: ""
-        path:
-          base: ""
-          full: ""
-      imports:
-        standard: []
-        app: []
-        vendor: []
-      init_function:
-        name: ""
-        imports:
-          standard: []
-          app: []
-          vendor: []
-        arguments: []
-        return_values: []
-        receiver:
-          name: ""
-          type: ""
-        body: ""
-      consts: []
-      vars: []
-      interfaces: []
-      structs: []
-      functions: []
-    service:
-      name:
-        base: ""
-        full: ""
-      path:
-        base: ""
-        full: ""
-      package:
-        reference: ""
-        name:
-          space: ""
-          snake: ""
-          kebob: ""
-          exported: ""
-          unexported: ""
-        path:
-          base: ""
-          full: ""
-      imports:
-        standard: []
-        app: []
-        vendor: []
-      init_function:
-        name: ""
-        imports:
-          standard: []
-          app: []
-          vendor: []
-        arguments: []
-        return_values: []
-        receiver:
-          name: ""
-          type: ""
-        body: ""
-      consts: []
-      vars: []
-      interfaces: []
-      structs: []
-      functions: []
-    service_test:
-      name:
-        base: ""
-        full: ""
-      path:
-        base: ""
-        full: ""
-      package:
-        reference: ""
-        name:
-          space: ""
-          snake: ""
-          kebob: ""
-          exported: ""
-          unexported: ""
-        path:
-          base: ""
-          full: ""
-      imports:
-        standard: []
-        app: []
-        vendor: []
-      init_function:
-        name: ""
-        imports:
-          standard: []
-          app: []
-          vendor: []
-        arguments: []
-        return_values: []
-        receiver:
-          name: ""
-          type: ""
-        body: ""
-      consts: []
-      vars: []
-      interfaces: []
-      structs: []
-      functions: []
+      - {}
     validator:
       name:
         base: validator
@@ -2606,262 +1418,4 @@ app:
         path:
           base: github.com/68696c6c/test-example/src/app
           full: github.com/68696c6c/test-example/src/app/tokens
-      imports:
-        standard: []
-        app: []
-        vendor: []
-      init_function:
-        name: ""
-        imports:
-          standard: []
-          app: []
-          vendor: []
-        arguments: []
-        return_values: []
-        receiver:
-          name: ""
-          type: ""
-        body: ""
-      consts: []
-      vars: []
-      interfaces: []
-      structs: []
-      functions: []
-    validator_test:
-      name:
-        base: ""
-        full: ""
-      path:
-        base: ""
-        full: ""
-      package:
-        reference: ""
-        name:
-          space: ""
-          snake: ""
-          kebob: ""
-          exported: ""
-          unexported: ""
-        path:
-          base: ""
-          full: ""
-      imports:
-        standard: []
-        app: []
-        vendor: []
-      init_function:
-        name: ""
-        imports:
-          standard: []
-          app: []
-          vendor: []
-        arguments: []
-        return_values: []
-        receiver:
-          name: ""
-          type: ""
-        body: ""
-      consts: []
-      vars: []
-      interfaces: []
-      structs: []
-      functions: []
-cmd:
-  root:
-    name:
-      base: ""
-      full: ""
-    path:
-      base: ""
-      full: ""
-    package:
-      reference: ""
-      name:
-        space: ""
-        snake: ""
-        kebob: ""
-        exported: ""
-        unexported: ""
-      path:
-        base: ""
-        full: ""
-    imports:
-      standard: []
-      app: []
-      vendor: []
-    init_function:
-      name: ""
-      imports:
-        standard: []
-        app: []
-        vendor: []
-      arguments: []
-      return_values: []
-      receiver:
-        name: ""
-        type: ""
-      body: ""
-    consts: []
-    vars: []
-    interfaces: []
-    structs: []
-    functions: []
-  server:
-    name:
-      base: ""
-      full: ""
-    path:
-      base: ""
-      full: ""
-    package:
-      reference: ""
-      name:
-        space: ""
-        snake: ""
-        kebob: ""
-        exported: ""
-        unexported: ""
-      path:
-        base: ""
-        full: ""
-    imports:
-      standard: []
-      app: []
-      vendor: []
-    init_function:
-      name: ""
-      imports:
-        standard: []
-        app: []
-        vendor: []
-      arguments: []
-      return_values: []
-      receiver:
-        name: ""
-        type: ""
-      body: ""
-    consts: []
-    vars: []
-    interfaces: []
-    structs: []
-    functions: []
-  migrate:
-    name:
-      base: ""
-      full: ""
-    path:
-      base: ""
-      full: ""
-    package:
-      reference: ""
-      name:
-        space: ""
-        snake: ""
-        kebob: ""
-        exported: ""
-        unexported: ""
-      path:
-        base: ""
-        full: ""
-    imports:
-      standard: []
-      app: []
-      vendor: []
-    init_function:
-      name: ""
-      imports:
-        standard: []
-        app: []
-        vendor: []
-      arguments: []
-      return_values: []
-      receiver:
-        name: ""
-        type: ""
-      body: ""
-    consts: []
-    vars: []
-    interfaces: []
-    structs: []
-    functions: []
-  seed:
-    name:
-      base: ""
-      full: ""
-    path:
-      base: ""
-      full: ""
-    package:
-      reference: ""
-      name:
-        space: ""
-        snake: ""
-        kebob: ""
-        exported: ""
-        unexported: ""
-      path:
-        base: ""
-        full: ""
-    imports:
-      standard: []
-      app: []
-      vendor: []
-    init_function:
-      name: ""
-      imports:
-        standard: []
-        app: []
-        vendor: []
-      arguments: []
-      return_values: []
-      receiver:
-        name: ""
-        type: ""
-      body: ""
-    consts: []
-    vars: []
-    interfaces: []
-    structs: []
-    functions: []
-  custom: []
-http:
-  routes:
-    name:
-      base: ""
-      full: ""
-    path:
-      base: ""
-      full: ""
-    package:
-      reference: ""
-      name:
-        space: ""
-        snake: ""
-        kebob: ""
-        exported: ""
-        unexported: ""
-      path:
-        base: ""
-        full: ""
-    imports:
-      standard: []
-      app: []
-      vendor: []
-    init_function:
-      name: ""
-      imports:
-        standard: []
-        app: []
-        vendor: []
-      arguments: []
-      return_values: []
-      receiver:
-        name: ""
-        type: ""
-      body: ""
-    consts: []
-    vars: []
-    interfaces: []
-    structs: []
-    functions: []
 `

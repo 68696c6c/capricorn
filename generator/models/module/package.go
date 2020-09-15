@@ -17,18 +17,18 @@ const (
 )
 
 type Packages struct {
-	SRC        data.PackageData `yaml:"src"`
-	OPS        data.PackageData `yaml:"ops"`
-	Docker     data.PackageData `yaml:"docker"`
-	App        data.PackageData `yaml:"app"`
-	CMD        data.PackageData `yaml:"cmd"`
-	DB         data.PackageData `yaml:"database"`
-	HTTP       data.PackageData `yaml:"http"`
-	Repos      data.PackageData `yaml:"repos"`
-	Models     data.PackageData `yaml:"models"`
-	Migrations data.PackageData `yaml:"migrations"`
-	Seeders    data.PackageData `yaml:"seeders"`
-	Domains    data.PackageData `yaml:"domains"`
+	SRC        data.PackageData `yaml:"src,omitempty"`
+	OPS        data.PackageData `yaml:"ops,omitempty"`
+	Docker     data.PackageData `yaml:"docker,omitempty"`
+	App        data.PackageData `yaml:"app,omitempty"`
+	CMD        data.PackageData `yaml:"cmd,omitempty"`
+	DB         data.PackageData `yaml:"database,omitempty"`
+	HTTP       data.PackageData `yaml:"http,omitempty"`
+	Repos      data.PackageData `yaml:"repos,omitempty"`
+	Models     data.PackageData `yaml:"models,omitempty"`
+	Migrations data.PackageData `yaml:"migrations,omitempty"`
+	Seeders    data.PackageData `yaml:"seeders,omitempty"`
+	Domains    data.PackageData `yaml:"domains,omitempty"`
 }
 
 func makePackages(root string) Packages {

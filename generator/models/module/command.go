@@ -7,7 +7,7 @@ import (
 
 type Command struct {
 	_spec spec.Command
-	Name  data.Name
+	Name  data.Name `yaml:"name,omitempty"`
 }
 
 func makeCommands(specCommands []spec.Command) []Command {

@@ -12,12 +12,12 @@ var functionTemplate = `func {{ .GetReceiver }}{{ .GetSignature }} {
 }`
 
 type Function struct {
-	Name         string  `yaml:"name"`
-	Imports      Imports `yaml:"imports"` // Any imports that this function requires.
-	Arguments    []Value `yaml:"arguments"`
-	ReturnValues []Value `yaml:"return_values"`
-	Receiver     Value   `yaml:"receiver"`
-	Body         string  `yaml:"body"` // The actual function code.
+	Name         string  `yaml:"name,omitempty"`
+	Imports      Imports `yaml:"imports,omitempty"` // Any imports that this function requires.
+	Arguments    []Value `yaml:"arguments,omitempty"`
+	ReturnValues []Value `yaml:"return_values,omitempty"`
+	Receiver     Value   `yaml:"receiver,omitempty"`
+	Body         string  `yaml:"body,omitempty"` // The actual function code.
 }
 
 func (m Function) GetReceiver() string {

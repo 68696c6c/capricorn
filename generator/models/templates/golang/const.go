@@ -6,8 +6,8 @@ var constTemplate = `const {{ .Name }} = {{ .Value }}`
 
 // Represents a global const declaration.
 type Const struct {
-	Name  string `yaml:"name"`
-	Value string `yaml:"value"`
+	Name  string `yaml:"name,omitempty"`
+	Value string `yaml:"value,omitempty"`
 }
 
 func (m Const) MustParse() string {

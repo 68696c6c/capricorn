@@ -9,8 +9,8 @@ import (
 
 type Resource struct {
 	_spec      spec.Resource
-	Key        resourceKey     `yaml:"key"`
-	Inflection data.Inflection `yaml:"inflection"`
+	Key        resourceKey     `yaml:"key,omitempty"`
+	Inflection data.Inflection `yaml:"inflection,omitempty"`
 	Fields     []ResourceField `yaml:"fields,omitempty"`
 	Controller ResourceService `yaml:"controller,omitempty"`
 	Repo       ResourceService `yaml:"repo,omitempty"`
@@ -36,10 +36,10 @@ type Indexes struct {
 }
 
 type Index struct {
-	Key               string    `yaml:"key"`
-	FieldName         data.Name `yaml:"field_name"`
-	ResourceName      data.Name `yaml:"resource_name"`
-	ResourceFieldName data.Name `yaml:"resource_field_name"`
+	Key               string    `yaml:"key,omitempty"`
+	FieldName         data.Name `yaml:"field_name,omitempty"`
+	ResourceName      data.Name `yaml:"resource_name,omitempty"`
+	ResourceFieldName data.Name `yaml:"resource_field_name,omitempty"`
 }
 
 func makeResources(specResources []spec.Resource, ddd bool) []Resource {

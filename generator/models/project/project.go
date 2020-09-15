@@ -8,15 +8,15 @@ import (
 
 type Project struct {
 	// Ops files
-	AppEnv        ops.AppEnv        `yaml:"app_env"`
-	AppEnvExample ops.AppEnv        `yaml:"app_env_example"`
-	Gitignore     ops.Gitignore     `yaml:"gitignore"`
-	Makefile      ops.Makefile      `yaml:"makefile"`
-	Dockerfile    ops.Dockerfile    `yaml:"dockerfile"`
-	DockerCompose ops.DockerCompose `yaml:"docker_compose"`
-	// GoMod ops.GoMod `yaml:"go_mod"`
+	AppEnv        ops.AppEnv        `yaml:"app_env,omitempty"`
+	AppEnvExample ops.AppEnv        `yaml:"app_env_example,omitempty"`
+	Gitignore     ops.Gitignore     `yaml:"gitignore,omitempty"`
+	Makefile      ops.Makefile      `yaml:"makefile,omitempty"`
+	Dockerfile    ops.Dockerfile    `yaml:"dockerfile,omitempty"`
+	DockerCompose ops.DockerCompose `yaml:"docker_compose,omitempty"`
+	// GoMod ops.GoMod `yaml:"go_mod,omitempty"`
 
-	SRC src.SRC `yaml:"src"`
+	SRC src.SRC `yaml:"src,omitempty"`
 }
 
 func NewProjectFromModule(m module.Module, projectPath string, ddd bool) (Project, error) {

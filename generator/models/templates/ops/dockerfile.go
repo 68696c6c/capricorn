@@ -47,10 +47,10 @@ RUN go build -i -o app
 `
 
 type Dockerfile struct {
-	Name data.FileData `yaml:"name"`
-	Path data.PathData `yaml:"path"`
+	Name data.FileData `yaml:"name,omitempty"`
+	Path data.PathData `yaml:"path,omitempty"`
 
-	Data Ops `yaml:"data"`
+	Data Ops `yaml:"data,omitempty"`
 }
 
 // This is only used for testing.

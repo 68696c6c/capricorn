@@ -6,8 +6,8 @@ var varTemplate = `var {{ .Name }} = {{ .Value }}`
 
 // Represents a global var declaration.
 type Var struct {
-	Name  string `yaml:"name"`
-	Value string `yaml:"value"`
+	Name  string `yaml:"name,omitempty"`
+	Value string `yaml:"value,omitempty"`
 }
 
 func (m Var) MustParse() string {

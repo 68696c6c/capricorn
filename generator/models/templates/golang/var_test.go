@@ -9,9 +9,9 @@ import (
 func TestVar_MustParse(t *testing.T) {
 	input := Var{
 		Name:  "example",
-		Value: `"example value"`,
+		Value: `"example value,omitempty"`,
 	}
-	expected := `var example = "example value"`
+	expected := `var example = "example value,omitempty"`
 	result := input.MustParse()
 	assert.Equal(t, expected, result)
 }

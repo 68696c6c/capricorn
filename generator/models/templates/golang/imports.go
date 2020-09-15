@@ -6,9 +6,9 @@ import (
 )
 
 type Imports struct {
-	Standard []string `yaml:"standard"`
-	App      []string `yaml:"app"`
-	Vendor   []string `yaml:"vendor"`
+	Standard []string `yaml:"standard,omitempty"`
+	App      []string `yaml:"app,omitempty"`
+	Vendor   []string `yaml:"vendor,omitempty"`
 }
 
 func (m Imports) HasImports() bool {

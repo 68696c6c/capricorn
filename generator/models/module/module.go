@@ -13,11 +13,11 @@ import (
 type Module struct {
 	_spec spec.Spec
 
-	Name    data.Name        `yaml:"name"`
-	Package data.PackageData `yaml:"package"`
-	Ops     ops.Ops          `yaml:"ops"`
+	Name    data.Name        `yaml:"name,omitempty"`
+	Package data.PackageData `yaml:"package,omitempty"`
+	Ops     ops.Ops          `yaml:"ops,omitempty"`
 
-	Packages Packages `yaml:"packages"`
+	Packages Packages `yaml:"packages,omitempty"`
 
 	Commands  []Command  `yaml:"commands,omitempty"`
 	Resources []Resource `yaml:"resources,omitempty"`

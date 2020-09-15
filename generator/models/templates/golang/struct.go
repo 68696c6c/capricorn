@@ -9,8 +9,8 @@ var structTemplate = `type {{ .Name }} struct {
 }`
 
 type Struct struct {
-	Name   string  `yaml:"name"`
-	Fields []Field `yaml:"fields"`
+	Name   string  `yaml:"name,omitempty"`
+	Fields []Field `yaml:"fields,omitempty"`
 }
 
 func (m Struct) MustParse() string {

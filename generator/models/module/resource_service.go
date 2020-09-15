@@ -12,7 +12,7 @@ const ResourceActionUpdate = "update"
 const ResourceActionDelete = "delete"
 
 type ResourceService struct {
-	Name    data.Name `yaml:"name"`
+	Name    data.Name `yaml:"name,omitempty"`
 	Actions []string  `yaml:"actions"`
 }
 
