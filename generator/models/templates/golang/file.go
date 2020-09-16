@@ -8,6 +8,10 @@ import (
 	"strings"
 )
 
+type SourceFile interface {
+	MustGetFile() File
+}
+
 type File struct {
 	Name    data.FileData    `yaml:"name,omitempty"`
 	Path    data.PathData    `yaml:"path,omitempty"`

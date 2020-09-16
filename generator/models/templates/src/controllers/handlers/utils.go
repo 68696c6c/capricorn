@@ -5,7 +5,15 @@ import (
 	"github.com/68696c6c/capricorn/generator/models/templates/golang"
 )
 
-type MethodMeta struct {
+type Handler interface {
+	GetRepoReference() string
+	GetErrorsReference() string
+	MustGetFunction() golang.Function
+	GetImports() golang.Imports
+	MustParse() string
+}
+
+type Meta struct {
 	CreateRequestType string
 	UpdateRequestType string
 	ViewResponseType  string

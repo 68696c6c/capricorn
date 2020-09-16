@@ -90,3 +90,23 @@ func TestImports_MustParse_NoVendor(t *testing.T) {
 
 	assert.Equal(t, expected, result)
 }
+
+func Test_MergeImports(t *testing.T) {
+	stack := Imports{
+		Standard: []string{"one"},
+		App:      []string{"one", "two"},
+		Vendor:   []string{"one", "two", "three"},
+	}
+
+	additional := Imports{
+		Standard: []string{},
+		App:      []string{},
+		Vendor:   []string{"one", "two", "three", "four"},
+	}
+
+	stack = MergeImports(stack, additional)
+
+	assert.Len(t, stack.Standard, 1)
+	assert.Len(t, stack.App, 2)
+	assert.Len(t, stack.Vendor, 4)
+}

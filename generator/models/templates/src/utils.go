@@ -21,17 +21,6 @@ type Method interface {
 	GetReturns() []golang.Value
 }
 
-type SourceFile interface {
-	MustGetFile() golang.File
-	GetImports() golang.Imports
-	GetInit() golang.Function
-	GetConsts() []golang.Const
-	GetVars() []golang.Var
-	GetInterfaces() []golang.Interface
-	GetStructs() []golang.Struct
-	MustGetFunctions() []golang.Function
-}
-
 type SourceFunction interface {
 	MustGetFunction() golang.Function
 }

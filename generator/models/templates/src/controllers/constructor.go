@@ -1,4 +1,4 @@
-package handlers
+package controllers
 
 import (
 	"github.com/68696c6c/capricorn/generator/models/data"
@@ -21,11 +21,13 @@ type Constructor struct {
 	ErrorsFieldName string
 }
 
-func NewConstructor(name, errorsFieldName, repoFieldName, repoType string) Constructor {
+// Non-DDD apps don't export controllers, DDD apps do.  Therefore, the name of the constructor will depend on what kind
+// of app we are generating and that decision happens before this function is called.
+func NewConstructor(name, controllerType, errorsFieldName, repoFieldName, repoType string) Constructor {
 	return Constructor{
-		name:            "New" + name,
+		name:            name,
 		repoType:        repoType,
-		StructName:      name,
+		StructName:      controllerType,
 		RepoFieldName:   repoFieldName,
 		ErrorsFieldName: errorsFieldName,
 	}

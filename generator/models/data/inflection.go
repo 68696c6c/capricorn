@@ -3,8 +3,8 @@ package data
 import "github.com/jinzhu/inflection"
 
 type Inflection struct {
-	Single Name
-	Plural Name
+	Single Name `yaml:"single,omitempty"`
+	Plural Name `yaml:"plural,omitempty"`
 }
 
 // input can be either plural or singular

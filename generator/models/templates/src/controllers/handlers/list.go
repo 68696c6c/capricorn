@@ -32,7 +32,7 @@ type List struct {
 	ResponseType string
 }
 
-func NewList(meta MethodMeta) List {
+func NewList(meta Meta) List {
 	return List{
 		receiver:     meta.Receiver,
 		repo:         meta.RepoField,
@@ -53,17 +53,13 @@ func (m List) GetErrorsReference() string {
 
 func (m List) MustGetFunction() golang.Function {
 	return golang.Function{
-		Name:         m.GetName(),
+		Name:         "List",
 		Imports:      m.GetImports(),
-		Receiver:     m.GetReceiver(),
-		Arguments:    m.GetArgs(),
-		ReturnValues: m.GetReturns(),
+		Receiver:     m.receiver,
+		Arguments:    []golang.Value{m.Context},
+		ReturnValues: []golang.Value{},
 		Body:         m.MustParse(),
 	}
-}
-
-func (m List) GetName() string {
-	return "List"
 }
 
 func (m List) GetImports() golang.Imports {
@@ -72,18 +68,6 @@ func (m List) GetImports() golang.Imports {
 		App:      nil,
 		Vendor:   []string{data.ImportGoat, data.ImportQuery, data.ImportGin},
 	}
-}
-
-func (m List) GetReceiver() golang.Value {
-	return m.receiver
-}
-
-func (m List) GetArgs() []golang.Value {
-	return []golang.Value{m.Context}
-}
-
-func (m List) GetReturns() []golang.Value {
-	return []golang.Value{}
 }
 
 func (m List) MustParse() string {

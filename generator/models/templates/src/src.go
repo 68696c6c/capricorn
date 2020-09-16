@@ -4,6 +4,8 @@ import (
 	"github.com/68696c6c/capricorn/generator/models/data"
 	"github.com/68696c6c/capricorn/generator/models/module"
 	"github.com/68696c6c/capricorn/generator/models/templates/golang"
+	"github.com/68696c6c/capricorn/generator/models/templates/src/controllers"
+	"github.com/68696c6c/capricorn/generator/models/templates/src/utils"
 	"gopkg.in/yaml.v2"
 )
 
@@ -120,6 +122,24 @@ func mergeImports(target, additional golang.Imports) golang.Imports {
 	}
 }
 
+// type Meta struct {
+// 	ControllerName       data.Name
+//
+// 	RepoName             data.Name
+// 	RepoType             string
+//
+// 	ModelName            data.Name
+// 	ModelType            string
+//
+// 	ValidatorName        data.Name
+//
+// 	CreateRequestName    data.Name
+// 	UpdateRequestName    data.Name
+// 	ResourceResponseName data.Name
+// 	ListResponseName     data.Name
+// 	ExportController     bool
+// }
+
 func makeDomain(r module.Resource, baseDomainPath string) Domain {
 
 	// If this function is ever called, we are definitely generating a DDD app so name things accordingly.
@@ -158,18 +178,20 @@ func makeDomain(r module.Resource, baseDomainPath string) Domain {
 		name:         rName,
 	})
 
-	controller := newControllerFromMeta(serviceMeta{
-		receiverName: "c",
-		fileName:     cName.Snake,
-		resource:     r,
-		packageData:  pkgData,
-		name:         cName,
-	}, controllerMeta{
-		createRequestName: createRequestName.Exported,
-		updateRequestName: updateRequestName.Exported,
-		viewResponseName:  viewResponseName.Exported,
-		listResponseName:  listResponseName.Exported,
-		repoType:          repo.GetInterface().Name,
+	controller := controllers.NewControllerFromMeta(utils.ServiceMeta{
+		ReceiverName: "c",
+		FileName:     cName.Snake,
+		Resource:     r,
+		PackageData:  pkgData,
+		Name:         cName,
+	}, controllers.ControllerMeta{
+		CreateRequestType:    createRequestName.Exported,
+		UpdateRequestType:    updateRequestName.Exported,
+		ResourceResponseType: viewResponseName.Exported,
+		ListResponseType:     listResponseName.Exported,
+		RepoType:             repo.GetInterface().Name,     // In a non-DDD app, this would include the package reference.
+		ModelType:            r.Inflection.Single.Exported, // In a non-DDD app, this would include the package reference.
+		Exported:             true,
 	})
 
 	return Domain{

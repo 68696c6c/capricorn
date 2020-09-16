@@ -111,13 +111,6 @@ ops:
     debug: "1"
 packages:
   src:
-    reference: ""
-    name:
-      space: ""
-      snake: ""
-      kebob: ""
-      exported: ""
-      unexported: ""
     path:
       base: github.com/68696c6c/test-example
       full: github.com/68696c6c/test-example
@@ -282,19 +275,7 @@ resources:
   - key:
       resource: organization
       field: name
-    relation:
-      single:
-        space: ""
-        snake: ""
-        kebob: ""
-        exported: ""
-        unexported: ""
-      plural:
-        space: ""
-        snake: ""
-        kebob: ""
-        exported: ""
-        unexported: ""
+    relation: {}
     name:
       space: name
       snake: name
@@ -345,19 +326,7 @@ resources:
     - key:
         resource: organization
         field: id
-      relation:
-        single:
-          space: ""
-          snake: ""
-          kebob: ""
-          exported: ""
-          unexported: ""
-        plural:
-          space: ""
-          snake: ""
-          kebob: ""
-          exported: ""
-          unexported: ""
+      relation: {}
       name:
         space: id
         snake: id
@@ -372,19 +341,7 @@ resources:
     - key:
         resource: organization
         field: created_at
-      relation:
-        single:
-          space: ""
-          snake: ""
-          kebob: ""
-          exported: ""
-          unexported: ""
-        plural:
-          space: ""
-          snake: ""
-          kebob: ""
-          exported: ""
-          unexported: ""
+      relation: {}
       name:
         space: created at
         snake: created_at
@@ -399,19 +356,7 @@ resources:
     - key:
         resource: organization
         field: updated_at
-      relation:
-        single:
-          space: ""
-          snake: ""
-          kebob: ""
-          exported: ""
-          unexported: ""
-        plural:
-          space: ""
-          snake: ""
-          kebob: ""
-          exported: ""
-          unexported: ""
+      relation: {}
       name:
         space: updated at
         snake: updated_at
@@ -426,19 +371,7 @@ resources:
     - key:
         resource: organization
         field: deleted_at
-      relation:
-        single:
-          space: ""
-          snake: ""
-          kebob: ""
-          exported: ""
-          unexported: ""
-        plural:
-          space: ""
-          snake: ""
-          kebob: ""
-          exported: ""
-          unexported: ""
+      relation: {}
       name:
         space: deleted at
         snake: deleted_at
@@ -453,19 +386,7 @@ resources:
     - key:
         resource: organization
         field: name
-      relation:
-        single:
-          space: ""
-          snake: ""
-          kebob: ""
-          exported: ""
-          unexported: ""
-        plural:
-          space: ""
-          snake: ""
-          kebob: ""
-          exported: ""
-          unexported: ""
+      relation: {}
       name:
         space: name
         snake: name
@@ -481,19 +402,7 @@ resources:
     - key:
         resource: organization
         field: name
-      relation:
-        single:
-          space: ""
-          snake: ""
-          kebob: ""
-          exported: ""
-          unexported: ""
-        plural:
-          space: ""
-          snake: ""
-          kebob: ""
-          exported: ""
-          unexported: ""
+      relation: {}
       name:
         space: name
         snake: name
@@ -553,19 +462,7 @@ resources:
   - key:
       resource: user
       field: organization_id
-    relation:
-      single:
-        space: ""
-        snake: ""
-        kebob: ""
-        exported: ""
-        unexported: ""
-      plural:
-        space: ""
-        snake: ""
-        kebob: ""
-        exported: ""
-        unexported: ""
+    relation: {}
     name:
       space: organization id
       snake: organization_id
@@ -580,19 +477,7 @@ resources:
   - key:
       resource: user
       field: name
-    relation:
-      single:
-        space: ""
-        snake: ""
-        kebob: ""
-        exported: ""
-        unexported: ""
-      plural:
-        space: ""
-        snake: ""
-        kebob: ""
-        exported: ""
-        unexported: ""
+    relation: {}
     name:
       space: name
       snake: name
@@ -607,19 +492,7 @@ resources:
   - key:
       resource: user
       field: email
-    relation:
-      single:
-        space: ""
-        snake: ""
-        kebob: ""
-        exported: ""
-        unexported: ""
-      plural:
-        space: ""
-        snake: ""
-        kebob: ""
-        exported: ""
-        unexported: ""
+    relation: {}
     name:
       space: email
       snake: email
@@ -670,19 +543,7 @@ resources:
     - key:
         resource: user
         field: id
-      relation:
-        single:
-          space: ""
-          snake: ""
-          kebob: ""
-          exported: ""
-          unexported: ""
-        plural:
-          space: ""
-          snake: ""
-          kebob: ""
-          exported: ""
-          unexported: ""
+      relation: {}
       name:
         space: id
         snake: id
@@ -697,19 +558,7 @@ resources:
     - key:
         resource: user
         field: created_at
-      relation:
-        single:
-          space: ""
-          snake: ""
-          kebob: ""
-          exported: ""
-          unexported: ""
-        plural:
-          space: ""
-          snake: ""
-          kebob: ""
-          exported: ""
-          unexported: ""
+      relation: {}
       name:
         space: created at
         snake: created_at
@@ -724,19 +573,7 @@ resources:
     - key:
         resource: user
         field: updated_at
-      relation:
-        single:
-          space: ""
-          snake: ""
-          kebob: ""
-          exported: ""
-          unexported: ""
-        plural:
-          space: ""
-          snake: ""
-          kebob: ""
-          exported: ""
-          unexported: ""
+      relation: {}
       name:
         space: updated at
         snake: updated_at
@@ -751,19 +588,7 @@ resources:
     - key:
         resource: user
         field: deleted_at
-      relation:
-        single:
-          space: ""
-          snake: ""
-          kebob: ""
-          exported: ""
-          unexported: ""
-        plural:
-          space: ""
-          snake: ""
-          kebob: ""
-          exported: ""
-          unexported: ""
+      relation: {}
       name:
         space: deleted at
         snake: deleted_at
@@ -778,19 +603,7 @@ resources:
     - key:
         resource: user
         field: organization_id
-      relation:
-        single:
-          space: ""
-          snake: ""
-          kebob: ""
-          exported: ""
-          unexported: ""
-        plural:
-          space: ""
-          snake: ""
-          kebob: ""
-          exported: ""
-          unexported: ""
+      relation: {}
       name:
         space: organization id
         snake: organization_id
@@ -805,19 +618,7 @@ resources:
     - key:
         resource: user
         field: name
-      relation:
-        single:
-          space: ""
-          snake: ""
-          kebob: ""
-          exported: ""
-          unexported: ""
-        plural:
-          space: ""
-          snake: ""
-          kebob: ""
-          exported: ""
-          unexported: ""
+      relation: {}
       name:
         space: name
         snake: name
@@ -832,19 +633,7 @@ resources:
     - key:
         resource: user
         field: email
-      relation:
-        single:
-          space: ""
-          snake: ""
-          kebob: ""
-          exported: ""
-          unexported: ""
-        plural:
-          space: ""
-          snake: ""
-          kebob: ""
-          exported: ""
-          unexported: ""
+      relation: {}
       name:
         space: email
         snake: email
@@ -860,19 +649,7 @@ resources:
     - key:
         resource: user
         field: organization_id
-      relation:
-        single:
-          space: ""
-          snake: ""
-          kebob: ""
-          exported: ""
-          unexported: ""
-        plural:
-          space: ""
-          snake: ""
-          kebob: ""
-          exported: ""
-          unexported: ""
+      relation: {}
       name:
         space: organization id
         snake: organization_id
@@ -887,19 +664,7 @@ resources:
     - key:
         resource: user
         field: name
-      relation:
-        single:
-          space: ""
-          snake: ""
-          kebob: ""
-          exported: ""
-          unexported: ""
-        plural:
-          space: ""
-          snake: ""
-          kebob: ""
-          exported: ""
-          unexported: ""
+      relation: {}
       name:
         space: name
         snake: name
@@ -914,19 +679,7 @@ resources:
     - key:
         resource: user
         field: email
-      relation:
-        single:
-          space: ""
-          snake: ""
-          kebob: ""
-          exported: ""
-          unexported: ""
-        plural:
-          space: ""
-          snake: ""
-          kebob: ""
-          exported: ""
-          unexported: ""
+      relation: {}
       name:
         space: email
         snake: email
@@ -942,19 +695,7 @@ resources:
     - key:
         resource: user
         field: organization
-      relation:
-        single:
-          space: ""
-          snake: ""
-          kebob: ""
-          exported: ""
-          unexported: ""
-        plural:
-          space: ""
-          snake: ""
-          kebob: ""
-          exported: ""
-          unexported: ""
+      relation: {}
       name:
         space: organization
         snake: organization
@@ -998,19 +739,7 @@ resources:
     - key:
         resource: user
         field: email
-      relation:
-        single:
-          space: ""
-          snake: ""
-          kebob: ""
-          exported: ""
-          unexported: ""
-        plural:
-          space: ""
-          snake: ""
-          kebob: ""
-          exported: ""
-          unexported: ""
+      relation: {}
       name:
         space: email
         snake: email
@@ -1042,19 +771,7 @@ resources:
   - key:
       resource: token
       field: user_id
-    relation:
-      single:
-        space: ""
-        snake: ""
-        kebob: ""
-        exported: ""
-        unexported: ""
-      plural:
-        space: ""
-        snake: ""
-        kebob: ""
-        exported: ""
-        unexported: ""
+    relation: {}
     name:
       space: user id
       snake: user_id
@@ -1069,19 +786,7 @@ resources:
   - key:
       resource: token
       field: key
-    relation:
-      single:
-        space: ""
-        snake: ""
-        kebob: ""
-        exported: ""
-        unexported: ""
-      plural:
-        space: ""
-        snake: ""
-        kebob: ""
-        exported: ""
-        unexported: ""
+    relation: {}
     name:
       space: key
       snake: key
@@ -1096,19 +801,7 @@ resources:
   - key:
       resource: token
       field: expires
-    relation:
-      single:
-        space: ""
-        snake: ""
-        kebob: ""
-        exported: ""
-        unexported: ""
-      plural:
-        space: ""
-        snake: ""
-        kebob: ""
-        exported: ""
-        unexported: ""
+    relation: {}
     name:
       space: expires
       snake: expires
@@ -1154,19 +847,7 @@ resources:
     - key:
         resource: token
         field: id
-      relation:
-        single:
-          space: ""
-          snake: ""
-          kebob: ""
-          exported: ""
-          unexported: ""
-        plural:
-          space: ""
-          snake: ""
-          kebob: ""
-          exported: ""
-          unexported: ""
+      relation: {}
       name:
         space: id
         snake: id
@@ -1181,19 +862,7 @@ resources:
     - key:
         resource: token
         field: created_at
-      relation:
-        single:
-          space: ""
-          snake: ""
-          kebob: ""
-          exported: ""
-          unexported: ""
-        plural:
-          space: ""
-          snake: ""
-          kebob: ""
-          exported: ""
-          unexported: ""
+      relation: {}
       name:
         space: created at
         snake: created_at
@@ -1208,19 +877,7 @@ resources:
     - key:
         resource: token
         field: updated_at
-      relation:
-        single:
-          space: ""
-          snake: ""
-          kebob: ""
-          exported: ""
-          unexported: ""
-        plural:
-          space: ""
-          snake: ""
-          kebob: ""
-          exported: ""
-          unexported: ""
+      relation: {}
       name:
         space: updated at
         snake: updated_at
@@ -1235,19 +892,7 @@ resources:
     - key:
         resource: token
         field: deleted_at
-      relation:
-        single:
-          space: ""
-          snake: ""
-          kebob: ""
-          exported: ""
-          unexported: ""
-        plural:
-          space: ""
-          snake: ""
-          kebob: ""
-          exported: ""
-          unexported: ""
+      relation: {}
       name:
         space: deleted at
         snake: deleted_at
@@ -1262,19 +907,7 @@ resources:
     - key:
         resource: token
         field: user_id
-      relation:
-        single:
-          space: ""
-          snake: ""
-          kebob: ""
-          exported: ""
-          unexported: ""
-        plural:
-          space: ""
-          snake: ""
-          kebob: ""
-          exported: ""
-          unexported: ""
+      relation: {}
       name:
         space: user id
         snake: user_id
@@ -1289,19 +922,7 @@ resources:
     - key:
         resource: token
         field: key
-      relation:
-        single:
-          space: ""
-          snake: ""
-          kebob: ""
-          exported: ""
-          unexported: ""
-        plural:
-          space: ""
-          snake: ""
-          kebob: ""
-          exported: ""
-          unexported: ""
+      relation: {}
       name:
         space: key
         snake: key
@@ -1316,19 +937,7 @@ resources:
     - key:
         resource: token
         field: expires
-      relation:
-        single:
-          space: ""
-          snake: ""
-          kebob: ""
-          exported: ""
-          unexported: ""
-        plural:
-          space: ""
-          snake: ""
-          kebob: ""
-          exported: ""
-          unexported: ""
+      relation: {}
       name:
         space: expires
         snake: expires
@@ -1344,19 +953,7 @@ resources:
     - key:
         resource: token
         field: user_id
-      relation:
-        single:
-          space: ""
-          snake: ""
-          kebob: ""
-          exported: ""
-          unexported: ""
-        plural:
-          space: ""
-          snake: ""
-          kebob: ""
-          exported: ""
-          unexported: ""
+      relation: {}
       name:
         space: user id
         snake: user_id
@@ -1371,19 +968,7 @@ resources:
     - key:
         resource: token
         field: key
-      relation:
-        single:
-          space: ""
-          snake: ""
-          kebob: ""
-          exported: ""
-          unexported: ""
-        plural:
-          space: ""
-          snake: ""
-          kebob: ""
-          exported: ""
-          unexported: ""
+      relation: {}
       name:
         space: key
         snake: key
@@ -1398,19 +983,7 @@ resources:
     - key:
         resource: token
         field: expires
-      relation:
-        single:
-          space: ""
-          snake: ""
-          kebob: ""
-          exported: ""
-          unexported: ""
-        plural:
-          space: ""
-          snake: ""
-          kebob: ""
-          exported: ""
-          unexported: ""
+      relation: {}
       name:
         space: expires
         snake: expires
@@ -1426,19 +999,7 @@ resources:
     - key:
         resource: token
         field: user
-      relation:
-        single:
-          space: ""
-          snake: ""
-          kebob: ""
-          exported: ""
-          unexported: ""
-        plural:
-          space: ""
-          snake: ""
-          kebob: ""
-          exported: ""
-          unexported: ""
+      relation: {}
       name:
         space: user
         snake: user
@@ -1454,19 +1015,7 @@ resources:
     - key:
         resource: token
         field: key
-      relation:
-        single:
-          space: ""
-          snake: ""
-          kebob: ""
-          exported: ""
-          unexported: ""
-        plural:
-          space: ""
-          snake: ""
-          kebob: ""
-          exported: ""
-          unexported: ""
+      relation: {}
       name:
         space: key
         snake: key

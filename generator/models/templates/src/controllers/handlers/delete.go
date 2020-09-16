@@ -46,7 +46,7 @@ type Delete struct {
 	Single   data.Name
 }
 
-func NewDelete(meta MethodMeta) Delete {
+func NewDelete(meta Meta) Delete {
 	return Delete{
 		receiver: meta.Receiver,
 		repo:     meta.RepoField,
@@ -66,17 +66,13 @@ func (m Delete) GetErrorsReference() string {
 
 func (m Delete) MustGetFunction() golang.Function {
 	return golang.Function{
-		Name:         m.GetName(),
+		Name:         "Delete",
 		Imports:      m.GetImports(),
-		Receiver:     m.GetReceiver(),
-		Arguments:    m.GetArgs(),
-		ReturnValues: m.GetReturns(),
+		Receiver:     m.receiver,
+		Arguments:    []golang.Value{m.Context},
+		ReturnValues: []golang.Value{},
 		Body:         m.MustParse(),
 	}
-}
-
-func (m Delete) GetName() string {
-	return "Delete"
 }
 
 func (m Delete) GetImports() golang.Imports {
@@ -85,18 +81,6 @@ func (m Delete) GetImports() golang.Imports {
 		App:      nil,
 		Vendor:   []string{data.ImportGoat, data.ImportGin},
 	}
-}
-
-func (m Delete) GetReceiver() golang.Value {
-	return m.receiver
-}
-
-func (m Delete) GetArgs() []golang.Value {
-	return []golang.Value{m.Context}
-}
-
-func (m Delete) GetReturns() []golang.Value {
-	return []golang.Value{}
 }
 
 func (m Delete) MustParse() string {

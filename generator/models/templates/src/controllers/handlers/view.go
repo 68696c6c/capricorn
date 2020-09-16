@@ -39,7 +39,7 @@ type View struct {
 	ResponseType string
 }
 
-func NewView(meta MethodMeta) View {
+func NewView(meta Meta) View {
 	return View{
 		receiver:     meta.Receiver,
 		repo:         meta.RepoField,
@@ -60,17 +60,13 @@ func (m View) GetErrorsReference() string {
 
 func (m View) MustGetFunction() golang.Function {
 	return golang.Function{
-		Name:         m.GetName(),
+		Name:         "View",
 		Imports:      m.GetImports(),
-		Receiver:     m.GetReceiver(),
-		Arguments:    m.GetArgs(),
-		ReturnValues: m.GetReturns(),
+		Receiver:     m.receiver,
+		Arguments:    []golang.Value{m.Context},
+		ReturnValues: []golang.Value{},
 		Body:         m.MustParse(),
 	}
-}
-
-func (m View) GetName() string {
-	return "View"
 }
 
 func (m View) GetImports() golang.Imports {
@@ -79,18 +75,6 @@ func (m View) GetImports() golang.Imports {
 		App:      nil,
 		Vendor:   []string{data.ImportGoat, data.ImportGin},
 	}
-}
-
-func (m View) GetReceiver() golang.Value {
-	return m.receiver
-}
-
-func (m View) GetArgs() []golang.Value {
-	return []golang.Value{m.Context}
-}
-
-func (m View) GetReturns() []golang.Value {
-	return []golang.Value{}
 }
 
 func (m View) MustParse() string {

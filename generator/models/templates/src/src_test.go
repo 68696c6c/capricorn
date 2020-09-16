@@ -5,7 +5,6 @@ import (
 
 	"github.com/68696c6c/capricorn/generator/models/module"
 	"github.com/68696c6c/capricorn/generator/models/spec"
-	"github.com/68696c6c/capricorn/generator/models/templates/golang"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -16,39 +15,12 @@ func TestSRC_NewSRCDDD(t *testing.T) {
 
 	result := NewSRCDDD(m, "/base/path/test-example")
 	resultYAML := result.String()
-	// println(resultYAML)
+	println(resultYAML)
 
 	assert.Equal(t, FixtureSRCYAML, resultYAML)
 }
 
-func Test_mergeImports(t *testing.T) {
-	stack := golang.Imports{
-		Standard: []string{"one"},
-		App:      []string{"one", "two"},
-		Vendor:   []string{"one", "two", "three"},
-	}
-
-	additional := golang.Imports{
-		Standard: []string{},
-		App:      []string{},
-		Vendor:   []string{"one", "two", "three", "four"},
-	}
-
-	stack = mergeImports(stack, additional)
-
-	assert.Len(t, stack.Standard, 1)
-	assert.Len(t, stack.App, 2)
-	assert.Len(t, stack.Vendor, 4)
-}
-
 const FixtureSRCYAML = `package:
-  reference: ""
-  name:
-    space: ""
-    snake: ""
-    kebob: ""
-    exported: ""
-    unexported: ""
   path:
     base: github.com/68696c6c/test-example
     full: github.com/68696c6c/test-example
@@ -82,7 +54,7 @@ app:
         - github.com/68696c6c/goat/query
         - github.com/gin-gonic/gin
       structs:
-      - name: Organizations
+      - name: Controller
         fields:
         - name: repo
           type: Repo
@@ -598,7 +570,7 @@ app:
         - github.com/68696c6c/goat/query
         - github.com/gin-gonic/gin
       structs:
-      - name: Users
+      - name: Controller
         fields:
         - name: repo
           type: Repo
@@ -1111,7 +1083,7 @@ app:
         - github.com/68696c6c/goat
         - github.com/gin-gonic/gin
       structs:
-      - name: Tokens
+      - name: Controller
         fields:
         - name: repo
           type: Repo

@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"fmt"
+
 	"github.com/68696c6c/capricorn/generator/models/data"
 	"github.com/68696c6c/capricorn/generator/models/templates/golang"
 	"github.com/68696c6c/capricorn/generator/utils"
@@ -36,7 +37,7 @@ type Create struct {
 	ResponseType string
 }
 
-func NewCreate(meta MethodMeta) Create {
+func NewCreate(meta Meta) Create {
 	return Create{
 		receiver:     meta.Receiver,
 		repo:         meta.RepoField,
@@ -58,17 +59,13 @@ func (m Create) GetErrorsReference() string {
 
 func (m Create) MustGetFunction() golang.Function {
 	return golang.Function{
-		Name:         m.GetName(),
+		Name:         "Create",
 		Imports:      m.GetImports(),
-		Receiver:     m.GetReceiver(),
-		Arguments:    m.GetArgs(),
-		ReturnValues: m.GetReturns(),
+		Receiver:     m.receiver,
+		Arguments:    []golang.Value{m.Context},
+		ReturnValues: []golang.Value{},
 		Body:         m.MustParse(),
 	}
-}
-
-func (m Create) GetName() string {
-	return "Create"
 }
 
 func (m Create) GetImports() golang.Imports {
@@ -77,18 +74,6 @@ func (m Create) GetImports() golang.Imports {
 		App:      nil,
 		Vendor:   []string{data.ImportGoat, data.ImportGin},
 	}
-}
-
-func (m Create) GetReceiver() golang.Value {
-	return m.receiver
-}
-
-func (m Create) GetArgs() []golang.Value {
-	return []golang.Value{m.Context}
-}
-
-func (m Create) GetReturns() []golang.Value {
-	return []golang.Value{}
 }
 
 func (m Create) MustParse() string {

@@ -3,6 +3,8 @@ package golang
 import (
 	"fmt"
 	"strings"
+
+	"github.com/68696c6c/capricorn/generator/utils"
 )
 
 type Imports struct {
@@ -44,4 +46,15 @@ func (m Imports) MustParse() string {
 	result = append(result, ")")
 
 	return strings.Join(result, "\n")
+}
+
+func MergeImports(target, additional Imports) Imports {
+	target.Standard = append(target.Standard, additional.Standard...)
+	target.App = append(target.App, additional.App...)
+	target.Vendor = append(target.Vendor, additional.Vendor...)
+	return Imports{
+		Standard: utils.RemoveDuplicateStrings(target.Standard),
+		App:      utils.RemoveDuplicateStrings(target.App),
+		Vendor:   utils.RemoveDuplicateStrings(target.Vendor),
+	}
 }

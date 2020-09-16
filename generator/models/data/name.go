@@ -7,11 +7,11 @@ import (
 )
 
 type Name struct {
-	Space      string
-	Snake      string
-	Kebob      string
-	Exported   string
-	Unexported string
+	Space      string `yaml:"space,omitempty"`
+	Snake      string `yaml:"snake,omitempty"`
+	Kebob      string `yaml:"kebob,omitempty"`
+	Exported   string `yaml:"exported,omitempty"`
+	Unexported string `yaml:"unexported,omitempty"`
 }
 
 func MakeName(base string) Name {

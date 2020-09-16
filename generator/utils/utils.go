@@ -162,3 +162,15 @@ func SeparatedToSnake(input string) string {
 func SeparatedToKebob(input string) string {
 	return separatedToSeparated(input, '-')
 }
+
+func RemoveDuplicateStrings(items []string) []string {
+	keys := make(map[string]bool)
+	var result []string
+	for _, i := range items {
+		if _, ok := keys[i]; !ok {
+			keys[i] = true
+			result = append(result, i)
+		}
+	}
+	return result
+}

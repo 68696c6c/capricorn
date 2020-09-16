@@ -54,7 +54,7 @@ type Update struct {
 	ResponseType string
 }
 
-func NewUpdate(meta MethodMeta) Update {
+func NewUpdate(meta Meta) Update {
 	return Update{
 		receiver:     meta.Receiver,
 		repo:         meta.RepoField,
@@ -75,17 +75,13 @@ func (m Update) GetErrorsReference() string {
 
 func (m Update) MustGetFunction() golang.Function {
 	return golang.Function{
-		Name:         m.GetName(),
+		Name:         "Update",
 		Imports:      m.GetImports(),
-		Receiver:     m.GetReceiver(),
-		Arguments:    m.GetArgs(),
-		ReturnValues: m.GetReturns(),
+		Receiver:     m.receiver,
+		Arguments:    []golang.Value{m.Context},
+		ReturnValues: []golang.Value{},
 		Body:         m.MustParse(),
 	}
-}
-
-func (m Update) GetName() string {
-	return "Update"
 }
 
 func (m Update) GetImports() golang.Imports {
@@ -94,18 +90,6 @@ func (m Update) GetImports() golang.Imports {
 		App:      nil,
 		Vendor:   []string{data.ImportGoat, data.ImportGin},
 	}
-}
-
-func (m Update) GetReceiver() golang.Value {
-	return m.receiver
-}
-
-func (m Update) GetArgs() []golang.Value {
-	return []golang.Value{m.Context}
-}
-
-func (m Update) GetReturns() []golang.Value {
-	return []golang.Value{}
 }
 
 func (m Update) MustParse() string {
