@@ -25,8 +25,8 @@ type SubTemplate interface {
 // e.g. base: example
 // e.g. full: example.go
 type FileData struct {
-	Base string `yaml:"base"`
-	Full string `yaml:"full"`
+	Base string `yaml:"base,omitempty"`
+	Full string `yaml:"full,omitempty"`
 }
 
 // e.g. base: src/app/domain/
@@ -37,9 +37,9 @@ type PathData FileData
 // e.g. base: github.com/user/example/src
 // e.g. full: github.com/user/example/src/pkgname
 type PackageData struct {
-	Reference string   `yaml:"reference"`
-	Name      Name     `yaml:"name"`
-	Path      PathData `yaml:"path"`
+	Reference string   `yaml:"reference,omitempty"`
+	Name      Name     `yaml:"name,omitempty"`
+	Path      PathData `yaml:"path,omitempty"`
 }
 
 func (m PackageData) GetImport() string {
