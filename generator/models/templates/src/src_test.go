@@ -226,7 +226,7 @@ app:
             type: '*gorm.DB'
           return_values:
           - type: Repo
-          body: "\n\treturn {\n\t\tdb: d,\n\t}\n"
+          body: "\n\treturn RepoGorm{\n\t\tdb: d,\n\t}\n"
         - name: getBaseQuery
           imports:
             vendor:
@@ -373,7 +373,7 @@ app:
           type: '*gorm.DB'
         return_values:
         - type: Repo
-        body: "\n\treturn {\n\t\tdb: d,\n\t}\n"
+        body: "\n\treturn RepoGorm{\n\t\tdb: d,\n\t}\n"
       - name: getBaseQuery
         imports:
           vendor:
@@ -740,7 +740,7 @@ app:
             type: '*gorm.DB'
           return_values:
           - type: Repo
-          body: "\n\treturn {\n\t\tdb: d,\n\t}\n"
+          body: "\n\treturn RepoGorm{\n\t\tdb: d,\n\t}\n"
         - name: getBaseQuery
           imports:
             vendor:
@@ -887,7 +887,7 @@ app:
           type: '*gorm.DB'
         return_values:
         - type: Repo
-        body: "\n\treturn {\n\t\tdb: d,\n\t}\n"
+        body: "\n\treturn RepoGorm{\n\t\tdb: d,\n\t}\n"
       - name: getBaseQuery
         imports:
           vendor:
@@ -1181,7 +1181,7 @@ app:
             type: '*gorm.DB'
           return_values:
           - type: Repo
-          body: "\n\treturn {\n\t\tdb: d,\n\t}\n"
+          body: "\n\treturn RepoGorm{\n\t\tdb: d,\n\t}\n"
         - name: getBaseQuery
           imports:
             vendor:
@@ -1273,7 +1273,7 @@ app:
           type: '*gorm.DB'
         return_values:
         - type: Repo
-        body: "\n\treturn {\n\t\tdb: d,\n\t}\n"
+        body: "\n\treturn RepoGorm{\n\t\tdb: d,\n\t}\n"
       - name: getBaseQuery
         imports:
           vendor:

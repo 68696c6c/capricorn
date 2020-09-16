@@ -24,43 +24,35 @@ type ControllerMeta struct {
 }
 
 type Controller struct {
-	fileData    data.FileData
-	pathData    data.PathData
-	packageData data.PackageData
-	name        data.Name
-	resource    module.Resource
-	receiver    golang.Value
-
-	built      bool
-	exported   bool
-	methodMeta handlers.Meta
-	structs    []golang.Struct
-	functions  []golang.Function
-	imports    golang.Imports
-	modelType  string
+	base            utils.Service
+	controllerType  string
+	constructorName string
+	modelType       string
+	methodMeta      handlers.Meta
 }
 
 func NewControllerFromMeta(meta utils.ServiceMeta, cMeta ControllerMeta) *Controller {
-	fileData, pathData := data.MakeGoFileData(meta.PackageData.GetImport(), meta.FileName)
-	receiver := golang.Value{
-		Name: meta.ReceiverName,
-		Type: meta.Name.Exported,
+	// Non-DDD apps don't export controllers, DDD apps do.
+	controllerType := meta.Name.Unexported
+	constructorName := "new" + meta.Name.Exported
+	if cMeta.Exported {
+		controllerType = meta.Name.Exported
+		constructorName = "New" + meta.Name.Exported
 	}
+
+	base := utils.NewService(meta, controllerType)
 	return &Controller{
-		fileData:    fileData,
-		pathData:    pathData,
-		packageData: meta.PackageData,
-		name:        meta.Name,
-		resource:    meta.Resource,
-		modelType:   cMeta.ModelType,
-		exported:    cMeta.Exported,
+		base:            base,
+		controllerType:  controllerType,
+		constructorName: constructorName,
+		modelType:       meta.ModelType,
 		methodMeta: handlers.Meta{
 			CreateRequestType: cMeta.CreateRequestType,
 			UpdateRequestType: cMeta.UpdateRequestType,
 			ViewResponseType:  cMeta.ResourceResponseType,
 			ListResponseType:  cMeta.ListResponseType,
 			Resource:          meta.Resource,
-			Receiver:          receiver,
+			Receiver:          base.Receiver,
 			RepoField: golang.Value{
 				Name: "repo",
 				Type: cMeta.RepoType,
@@ -77,40 +69,36 @@ func NewControllerFromMeta(meta utils.ServiceMeta, cMeta ControllerMeta) *Contro
 	}
 }
 
+func (m *Controller) GetType() data.TypeData {
+	return data.MakeTypeData(m.base.PackageData.Reference, m.controllerType)
+}
+
 func (m *Controller) MustGetFile() golang.File {
-	if !m.built {
+	if !m.base.Built {
 		m.build()
 	}
 	return golang.File{
-		Name:         m.fileData,
-		Path:         m.pathData,
-		Package:      m.packageData,
-		Imports:      m.imports,
+		Name:         m.base.FileData,
+		Path:         m.base.PathData,
+		Package:      m.base.PackageData,
+		Imports:      m.base.Imports,
 		InitFunction: golang.Function{},
 		Consts:       []golang.Const{},
 		Vars:         []golang.Var{},
-		Interfaces:   []golang.Interface{},
-		Structs:      m.structs,
-		Functions:    m.functions,
+		Interfaces:   m.base.Interfaces,
+		Structs:      m.base.Structs,
+		Functions:    m.base.Functions,
 	}
 }
 
 func (m *Controller) build() {
 	var imports golang.Imports
-	var methods []golang.Function
-
-	// Non-DDD apps don't export controllers, DDD apps do.
-	controllerType := m.name.Unexported
-	constructorName := "new" + m.name.Exported
-	if m.exported {
-		controllerType = m.name.Exported
-		constructorName = "New" + m.name.Exported
-	}
+	var functions []golang.Function
 
 	// We always need a controller struct.
 	structs := []golang.Struct{
 		{
-			Name: controllerType,
+			Name: m.controllerType,
 			Fields: []golang.Field{
 				{
 					Name: m.methodMeta.RepoField.Name,
@@ -124,52 +112,52 @@ func (m *Controller) build() {
 		},
 	}
 
-	// Default methods.
+	// Default functions.
 	constructor := NewConstructor(
-		constructorName,
-		controllerType,
+		m.constructorName,
+		m.controllerType,
 		m.methodMeta.ErrorsField.Name,
 		m.methodMeta.RepoField.Name,
 		m.methodMeta.RepoField.Type,
 	)
-	methods = append(methods, constructor.MustGetFunction())
+	functions = append(functions, constructor.MustGetFunction())
 	imports = golang.MergeImports(imports, constructor.GetImports())
 
-	// CRUD methods.
+	// CRUD functions.
 	var needsViewResponse bool
 	var needsListResponse bool
-	for _, a := range m.resource.Controller.Actions {
+	for _, a := range m.base.Resource.Controller.Actions {
 		switch a {
 
 		case module.ResourceActionList:
 			method := handlers.NewList(m.methodMeta)
-			methods = append(methods, method.MustGetFunction())
+			functions = append(functions, method.MustGetFunction())
 			imports = golang.MergeImports(imports, method.GetImports())
 			needsListResponse = true
 
 		case module.ResourceActionView:
 			method := handlers.NewView(m.methodMeta)
-			methods = append(methods, method.MustGetFunction())
+			functions = append(functions, method.MustGetFunction())
 			imports = golang.MergeImports(imports, method.GetImports())
 			needsViewResponse = true
 
 		case module.ResourceActionCreate:
 			method := handlers.NewCreate(m.methodMeta)
-			methods = append(methods, method.MustGetFunction())
+			functions = append(functions, method.MustGetFunction())
 			imports = golang.MergeImports(imports, method.GetImports())
 			structs = append(structs, NewRequestStruct(m.methodMeta.CreateRequestType, m.modelType))
 			needsViewResponse = true
 
 		case module.ResourceActionUpdate:
 			method := handlers.NewUpdate(m.methodMeta)
-			methods = append(methods, method.MustGetFunction())
+			functions = append(functions, method.MustGetFunction())
 			imports = golang.MergeImports(imports, method.GetImports())
 			structs = append(structs, NewRequestStruct(m.methodMeta.UpdateRequestType, m.modelType))
 			needsViewResponse = true
 
 		case module.ResourceActionDelete:
 			method := handlers.NewDelete(m.methodMeta)
-			methods = append(methods, method.MustGetFunction())
+			functions = append(functions, method.MustGetFunction())
 			imports = golang.MergeImports(imports, method.GetImports())
 			needsViewResponse = true
 
@@ -184,8 +172,8 @@ func (m *Controller) build() {
 		structs = append(structs, NewListResponse(m.methodMeta.ListResponseType, m.modelType))
 	}
 
-	m.structs = structs
-	m.functions = methods
-	m.imports = imports
-	m.built = true
+	m.base.Imports = imports
+	m.base.Structs = structs
+	m.base.Functions = functions
+	m.base.Built = true
 }

@@ -5,6 +5,7 @@ import (
 	"github.com/68696c6c/capricorn/generator/models/module"
 	"github.com/68696c6c/capricorn/generator/models/templates/golang"
 	"github.com/68696c6c/capricorn/generator/models/templates/src/controllers"
+	"github.com/68696c6c/capricorn/generator/models/templates/src/repos"
 	"github.com/68696c6c/capricorn/generator/models/templates/src/utils"
 	"gopkg.in/yaml.v2"
 )
@@ -161,6 +162,8 @@ func makeDomain(r module.Resource, baseDomainPath string) Domain {
 		packageData:  pkgData,
 		name:         r.Inflection.Single,
 	})
+	// In a non-DDD app, we would use .Reference
+	modelType := model.GetType().Type
 
 	validator := newValidatorFromMeta(validatorMeta{
 		receiverName: "r",
@@ -170,13 +173,16 @@ func makeDomain(r module.Resource, baseDomainPath string) Domain {
 		fields:       model.GetValidationFields(),
 	})
 
-	repo := newRepoFromMeta(serviceMeta{
-		receiverName: "r",
-		fileName:     rName.Snake,
-		resource:     r,
-		packageData:  pkgData,
-		name:         rName,
+	repo := repos.NewRepoFromMeta(utils.ServiceMeta{
+		ReceiverName: "r",
+		FileName:     rName.Snake,
+		Resource:     r,
+		PackageData:  pkgData,
+		Name:         rName,
+		ModelType:    modelType,
 	})
+	// In a non-DDD app, we would use .Reference
+	repoType := repo.GetType().Type
 
 	controller := controllers.NewControllerFromMeta(utils.ServiceMeta{
 		ReceiverName: "c",
@@ -184,13 +190,13 @@ func makeDomain(r module.Resource, baseDomainPath string) Domain {
 		Resource:     r,
 		PackageData:  pkgData,
 		Name:         cName,
+		ModelType:    modelType,
 	}, controllers.ControllerMeta{
 		CreateRequestType:    createRequestName.Exported,
 		UpdateRequestType:    updateRequestName.Exported,
 		ResourceResponseType: viewResponseName.Exported,
 		ListResponseType:     listResponseName.Exported,
-		RepoType:             repo.GetInterface().Name,     // In a non-DDD app, this would include the package reference.
-		ModelType:            r.Inflection.Single.Exported, // In a non-DDD app, this would include the package reference.
+		RepoType:             repoType,
 		Exported:             true,
 	})
 

@@ -15,7 +15,10 @@ var constructorBodyTemplate = `
 
 type Constructor struct {
 	name            string
-	repoType        string
+	receiver        golang.Value
+	imports         golang.Imports
+	args            []golang.Value
+	returns         []golang.Value
 	StructName      string
 	RepoFieldName   string
 	ErrorsFieldName string
@@ -25,8 +28,28 @@ type Constructor struct {
 // of app we are generating and that decision happens before this function is called.
 func NewConstructor(name, controllerType, errorsFieldName, repoFieldName, repoType string) Constructor {
 	return Constructor{
-		name:            name,
-		repoType:        repoType,
+		name:     name,
+		receiver: golang.Value{},
+		imports: golang.Imports{
+			Standard: nil,
+			App:      nil,
+			Vendor:   []string{data.ImportGorm},
+		},
+		args: []golang.Value{
+			{
+				Name: repoFieldName,
+				Type: repoType,
+			},
+			{
+				Name: errorsFieldName,
+				Type: "goat.ErrorHandler",
+			},
+		},
+		returns: []golang.Value{
+			{
+				Type: controllerType,
+			},
+		},
 		StructName:      controllerType,
 		RepoFieldName:   repoFieldName,
 		ErrorsFieldName: errorsFieldName,
@@ -35,50 +58,17 @@ func NewConstructor(name, controllerType, errorsFieldName, repoFieldName, repoTy
 
 func (m Constructor) MustGetFunction() golang.Function {
 	return golang.Function{
-		Name:         m.GetName(),
-		Imports:      m.GetImports(),
-		Receiver:     m.GetReceiver(),
-		Arguments:    m.GetArgs(),
-		ReturnValues: m.GetReturns(),
+		Name:         m.name,
+		Imports:      m.imports,
+		Receiver:     m.receiver,
+		Arguments:    m.args,
+		ReturnValues: m.returns,
 		Body:         m.MustParse(),
 	}
 }
 
-func (m Constructor) GetName() string {
-	return m.name
-}
-
 func (m Constructor) GetImports() golang.Imports {
-	return golang.Imports{
-		Standard: nil,
-		App:      nil,
-		Vendor:   []string{data.ImportGorm},
-	}
-}
-
-func (m Constructor) GetReceiver() golang.Value {
-	return golang.Value{}
-}
-
-func (m Constructor) GetArgs() []golang.Value {
-	return []golang.Value{
-		{
-			Name: m.RepoFieldName,
-			Type: m.repoType,
-		},
-		{
-			Name: m.ErrorsFieldName,
-			Type: "goat.ErrorHandler",
-		},
-	}
-}
-
-func (m Constructor) GetReturns() []golang.Value {
-	return []golang.Value{
-		{
-			Type: m.StructName,
-		},
-	}
+	return m.imports
 }
 
 func (m Constructor) MustParse() string {

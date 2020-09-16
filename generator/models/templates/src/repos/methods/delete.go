@@ -1,4 +1,4 @@
-package repo_methods
+package methods
 
 import (
 	"fmt"
@@ -17,16 +17,37 @@ var deleteBodyTemplate = `
 `
 
 type Delete struct {
+	name        string
 	dbFieldName string
 	receiver    golang.Value
+	imports     golang.Imports
+	args        []golang.Value
+	returns     []golang.Value
 	Single      data.Name
 }
 
-func NewDelete(meta MethodMeta) Delete {
+func NewDelete(meta Meta) Method {
 	return Delete{
+		name:        "Delete",
 		dbFieldName: meta.DBFieldName,
 		receiver:    meta.Receiver,
-		Single:      meta.Resource.Inflection.Single,
+		imports: golang.Imports{
+			Standard: nil,
+			App:      nil,
+			Vendor:   []string{data.ImportGoat},
+		},
+		args: []golang.Value{
+			{
+				Name: "m",
+				Type: "*" + meta.ModelType,
+			},
+		},
+		returns: []golang.Value{
+			{
+				Type: "error",
+			},
+		},
+		Single: meta.Resource.Inflection.Single,
 	}
 }
 
@@ -36,46 +57,17 @@ func (m Delete) GetDbReference() string {
 
 func (m Delete) MustGetFunction() golang.Function {
 	return golang.Function{
-		Name:         m.GetName(),
-		Imports:      m.GetImports(),
-		Receiver:     m.GetReceiver(),
-		Arguments:    m.GetArgs(),
-		ReturnValues: m.GetReturns(),
+		Name:         m.name,
+		Imports:      m.imports,
+		Receiver:     m.receiver,
+		Arguments:    m.args,
+		ReturnValues: m.returns,
 		Body:         m.MustParse(),
 	}
 }
 
-func (m Delete) GetName() string {
-	return "Delete"
-}
-
 func (m Delete) GetImports() golang.Imports {
-	return golang.Imports{
-		Standard: nil,
-		App:      nil,
-		Vendor:   []string{data.ImportGoat},
-	}
-}
-
-func (m Delete) GetReceiver() golang.Value {
-	return m.receiver
-}
-
-func (m Delete) GetArgs() []golang.Value {
-	return []golang.Value{
-		{
-			Name: "m",
-			Type: "*" + m.Single.Exported,
-		},
-	}
-}
-
-func (m Delete) GetReturns() []golang.Value {
-	return []golang.Value{
-		{
-			Type: "error",
-		},
-	}
+	return m.imports
 }
 
 func (m Delete) MustParse() string {

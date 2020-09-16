@@ -20,14 +20,14 @@ type Model struct {
 	validationFields []module.ResourceField
 }
 
-func newModelFromMeta(meta serviceMeta) Model {
+func newModelFromMeta(meta serviceMeta) *Model {
 	fileData, pathData := data.MakeGoFileData(meta.packageData.GetImport(), meta.fileName)
 	name := meta.resource.Inflection.Single
 	receiver := golang.Value{
 		Name: meta.receiverName,
 		Type: "*" + name.Exported,
 	}
-	return Model{
+	return &Model{
 		fileData:    fileData,
 		pathData:    pathData,
 		packageData: meta.packageData,
@@ -37,14 +37,21 @@ func newModelFromMeta(meta serviceMeta) Model {
 	}
 }
 
-func (m Model) GetValidationFields() []module.ResourceField {
+func (m *Model) GetType() data.TypeData {
+	return data.MakeTypeData(m.packageData.Reference, m.name.Exported)
+}
+
+func (m *Model) GetValidationFields() []module.ResourceField {
 	if !m.built {
 		m.build()
 	}
 	return m.validationFields
 }
 
-func (m Model) MustGetFile() golang.File {
+func (m *Model) MustGetFile() golang.File {
+	if !m.built {
+		m.build()
+	}
 	return golang.File{
 		Name:         m.fileData,
 		Path:         m.pathData,

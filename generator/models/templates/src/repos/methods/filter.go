@@ -1,6 +1,8 @@
-package repo_methods
+package methods
 
 import (
+	"fmt"
+
 	"github.com/68696c6c/capricorn/generator/models/data"
 	"github.com/68696c6c/capricorn/generator/models/templates/golang"
 	"github.com/68696c6c/capricorn/generator/utils"
@@ -26,66 +28,64 @@ var filterBodyTemplate = `
 `
 
 type Filter struct {
+	name         string
+	dbFieldName  string
 	receiver     golang.Value
+	imports      golang.Imports
+	args         []golang.Value
+	returns      []golang.Value
 	ReceiverName string
 	Single       data.Name
 }
 
-func NewFilter(meta MethodMeta) Filter {
+func NewFilter(meta Meta) Method {
 	return Filter{
-		receiver:     meta.Receiver,
+		name:        "Filter",
+		dbFieldName: meta.DBFieldName,
+		receiver:    meta.Receiver,
+		imports: golang.Imports{
+			Standard: nil,
+			App:      nil,
+			Vendor:   []string{data.ImportGoat, data.ImportErrors, data.ImportQuery, data.ImportGorm},
+		},
+		args: []golang.Value{
+			{
+				Name: "id",
+				Type: "goat.ID",
+			},
+		},
+		returns: []golang.Value{
+			{
+				Name: "result",
+				Type: "[]*" + meta.ModelType,
+			},
+			{
+				Name: "err",
+				Type: "error",
+			},
+		},
 		ReceiverName: meta.Receiver.Name,
 		Single:       meta.Resource.Inflection.Single,
 	}
 }
 
+func (m Filter) GetDbReference() string {
+	return fmt.Sprintf("%s.%s", m.receiver.Name, m.dbFieldName)
+}
+
 func (m Filter) MustGetFunction() golang.Function {
 	return golang.Function{
-		Name:         m.GetName(),
-		Imports:      m.GetImports(),
-		Receiver:     m.GetReceiver(),
-		Arguments:    m.GetArgs(),
-		ReturnValues: m.GetReturns(),
+		Name:         m.name,
+		Imports:      m.imports,
+		Receiver:     m.receiver,
+		Arguments:    m.args,
+		ReturnValues: m.returns,
 		Body:         m.MustParse(),
 	}
 }
 
-func (m Filter) GetName() string {
-	return "Filter"
-}
-
 func (m Filter) GetImports() golang.Imports {
-	return golang.Imports{
-		Standard: nil,
-		App:      nil,
-		Vendor:   []string{data.ImportGoat, data.ImportErrors, data.ImportQuery, data.ImportGorm},
-	}
-}
-
-func (m Filter) GetReceiver() golang.Value {
-	return m.receiver
-}
-
-func (m Filter) GetArgs() []golang.Value {
-	return []golang.Value{
-		{
-			Name: "id",
-			Type: "goat.ID",
-		},
-	}
-}
-
-func (m Filter) GetReturns() []golang.Value {
-	return []golang.Value{
-		{
-			Name: "result",
-			Type: "[]*" + m.Single.Exported,
-		},
-		{
-			Name: "err",
-			Type: "error",
-		},
-	}
+	return m.imports
 }
 
 func (m Filter) MustParse() string {

@@ -1,4 +1,4 @@
-package repo_methods
+package methods
 
 import (
 	"fmt"
@@ -22,16 +22,40 @@ var getByIdBodyTemplate = `
 `
 
 type GetByID struct {
+	name        string
 	dbFieldName string
 	receiver    golang.Value
+	imports     golang.Imports
+	args        []golang.Value
+	returns     []golang.Value
 	Single      data.Name
 }
 
-func NewGetByID(meta MethodMeta) GetByID {
+func NewGetByID(meta Meta) Method {
 	return GetByID{
+		name:        "GetByID",
 		dbFieldName: meta.DBFieldName,
 		receiver:    meta.Receiver,
-		Single:      meta.Resource.Inflection.Single,
+		imports: golang.Imports{
+			Standard: nil,
+			App:      nil,
+			Vendor:   []string{data.ImportGoat},
+		},
+		args: []golang.Value{
+			{
+				Name: "id",
+				Type: "goat.ID",
+			},
+		},
+		returns: []golang.Value{
+			{
+				Type: meta.ModelType,
+			},
+			{
+				Type: "error",
+			},
+		},
+		Single: meta.Resource.Inflection.Single,
 	}
 }
 
@@ -41,49 +65,17 @@ func (m GetByID) GetDbReference() string {
 
 func (m GetByID) MustGetFunction() golang.Function {
 	return golang.Function{
-		Name:         m.GetName(),
-		Imports:      m.GetImports(),
-		Receiver:     m.GetReceiver(),
-		Arguments:    m.GetArgs(),
-		ReturnValues: m.GetReturns(),
+		Name:         m.name,
+		Imports:      m.imports,
+		Receiver:     m.receiver,
+		Arguments:    m.args,
+		ReturnValues: m.returns,
 		Body:         m.MustParse(),
 	}
 }
 
-func (m GetByID) GetName() string {
-	return "GetByID"
-}
-
 func (m GetByID) GetImports() golang.Imports {
-	return golang.Imports{
-		Standard: nil,
-		App:      nil,
-		Vendor:   []string{data.ImportGoat},
-	}
-}
-
-func (m GetByID) GetReceiver() golang.Value {
-	return m.receiver
-}
-
-func (m GetByID) GetArgs() []golang.Value {
-	return []golang.Value{
-		{
-			Name: "id",
-			Type: "goat.ID",
-		},
-	}
-}
-
-func (m GetByID) GetReturns() []golang.Value {
-	return []golang.Value{
-		{
-			Type: m.Single.Exported,
-		},
-		{
-			Type: "error",
-		},
-	}
+	return m.imports
 }
 
 func (m GetByID) MustParse() string {
