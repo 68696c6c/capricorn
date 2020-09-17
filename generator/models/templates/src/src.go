@@ -8,6 +8,7 @@ import (
 	"github.com/68696c6c/capricorn/generator/models/templates/src/models"
 	"github.com/68696c6c/capricorn/generator/models/templates/src/repos"
 	"github.com/68696c6c/capricorn/generator/models/templates/src/utils"
+	"github.com/68696c6c/capricorn/generator/models/templates/src/validators"
 	"gopkg.in/yaml.v2"
 )
 
@@ -150,6 +151,7 @@ func makeDomain(r module.Resource, baseDomainPath string) Domain {
 	mName := data.MakeName("model")
 	// sName := data.MakeName("service")
 	vName := data.MakeName("validator")
+	validationReceiver := "r"
 	createRequestName := data.MakeName("create_request")
 	updateRequestName := data.MakeName("update_request")
 	viewResponseName := data.MakeName("response")
@@ -162,11 +164,11 @@ func makeDomain(r module.Resource, baseDomainPath string) Domain {
 		Resource:     r,
 		PackageData:  pkgData,
 		Name:         r.Inflection.Single,
-	})
+	}, validationReceiver)
 	// In a non-DDD app, we would use .Reference
 	modelType := model.GetType().Type
 
-	validator := models.NewValidatorFromMeta(utils.ServiceMeta{
+	validator := validators.NewValidatorFromMeta(utils.ServiceMeta{
 		ReceiverName: "r",
 		FileName:     vName.Snake,
 		Resource:     r,

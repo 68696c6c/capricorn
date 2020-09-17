@@ -1,13 +1,13 @@
-package models
+package validators
 
 import (
 	"strings"
 
 	"github.com/68696c6c/capricorn/generator/models/data"
 	"github.com/68696c6c/capricorn/generator/models/module"
-	"github.com/68696c6c/capricorn/generator/models/templates/src/models/validation_rules"
-	"github.com/68696c6c/capricorn/generator/models/templates/src/models/validation_rules/required"
-	"github.com/68696c6c/capricorn/generator/models/templates/src/models/validation_rules/unique"
+	"github.com/68696c6c/capricorn/generator/models/templates/src/validators/rules"
+	"github.com/68696c6c/capricorn/generator/models/templates/src/validators/rules/required"
+	"github.com/68696c6c/capricorn/generator/models/templates/src/validators/rules/unique"
 	"github.com/68696c6c/capricorn/generator/utils"
 )
 
@@ -17,7 +17,7 @@ validation.Field(&{{ .ReceiverName }}.{{ .Field.Name.Exported }}, {{ .RenderRule
 type ValidationField struct {
 	dbFieldName  string
 	single       data.Name
-	rules        []validation_rules.Rule
+	rules        []rules.Rule
 	ReceiverName string
 	Field        module.ResourceField
 
@@ -28,7 +28,7 @@ func NewValidationField(meta ValidationMeta, field module.ResourceField) *Valida
 	return &ValidationField{
 		dbFieldName:  meta.DBFieldName,
 		single:       meta.ModelName,
-		ReceiverName: meta.Receiver.Name,
+		ReceiverName: meta.ReceiverName,
 		Field:        field,
 	}
 }
@@ -37,14 +37,14 @@ func (m *ValidationField) RenderRules() string {
 	if !m.built {
 		m.build()
 	}
-	var rules []string
+	var fieldRules []string
 	for _, r := range m.rules {
-		rules = append(rules, r.GetUsage())
+		fieldRules = append(fieldRules, r.GetUsage())
 	}
-	return strings.Join(rules, ", ")
+	return strings.Join(fieldRules, ", ")
 }
 
-func (m *ValidationField) GetRules() []validation_rules.Rule {
+func (m *ValidationField) GetRules() []rules.Rule {
 	if !m.built {
 		m.build()
 	}
@@ -56,18 +56,18 @@ func (m *ValidationField) build() {
 		return
 	}
 
-	var rules []validation_rules.Rule
+	var fieldRules []rules.Rule
 
 	if m.Field.IsRequired {
-		rules = append(rules, required.NewRule())
+		fieldRules = append(fieldRules, required.NewRule())
 	}
 
 	if m.Field.IsUnique {
 		rule := unique.NewRule(m.dbFieldName, m.ReceiverName, m.single, m.Field)
-		rules = append(rules, rule)
+		fieldRules = append(fieldRules, rule)
 	}
 
-	m.rules = rules
+	m.rules = fieldRules
 	m.built = true
 }
 

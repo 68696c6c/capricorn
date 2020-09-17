@@ -4,28 +4,24 @@ import (
 	"github.com/68696c6c/capricorn/generator/models/data"
 	"github.com/68696c6c/capricorn/generator/models/templates/golang"
 	"github.com/68696c6c/capricorn/generator/models/templates/src/utils"
+	"github.com/68696c6c/capricorn/generator/models/templates/src/validators"
 )
-
-type ValidationMeta struct {
-	DBFieldName string
-	Receiver    golang.Value
-	ModelName   data.Name
-}
 
 type Model struct {
 	base             utils.Service
-	validationMeta   ValidationMeta
-	validationFields []*ValidationField
+	validationMeta   validators.ValidationMeta
+	validationFields []*validators.ValidationField
 }
 
-func NewModelFromMeta(meta utils.ServiceMeta) *Model {
+func NewModelFromMeta(meta utils.ServiceMeta, validationReceiver string) *Model {
 	base := utils.NewService(meta, "*"+meta.Name.Exported)
 	return &Model{
 		base: base,
-		validationMeta: ValidationMeta{
-			DBFieldName: "d",
-			Receiver:    base.Receiver,
-			ModelName:   base.Name,
+		validationMeta: validators.ValidationMeta{
+			DBFieldName:   "d",
+			ReceiverName:  validationReceiver,
+			ModelName:     base.Name,
+			ModelReceiver: base.Receiver,
 		},
 	}
 }
@@ -34,7 +30,7 @@ func (m *Model) GetType() data.TypeData {
 	return data.MakeTypeData(m.base.PackageData.Reference, m.base.Name.Exported)
 }
 
-func (m *Model) GetValidationFields() []*ValidationField {
+func (m *Model) GetValidationFields() []*validators.ValidationField {
 	if !m.base.Built {
 		m.build()
 	}
@@ -67,7 +63,7 @@ func (m *Model) build() {
 	// @TODO include a model factory for use in tests, seeders, etc.
 	var functions []golang.Function
 	var imports golang.Imports
-	var validationFields []*ValidationField
+	var validationFields []*validators.ValidationField
 
 	// @TODO support different base models for soft and hard deletes, uuid or integer ids, different timestamp configurations, etc.
 	fields := []golang.Field{
@@ -96,7 +92,7 @@ func (m *Model) build() {
 		fields = append(fields, field)
 
 		if f.IsRequired || f.IsUnique {
-			v := NewValidationField(m.validationMeta, f)
+			v := validators.NewValidationField(m.validationMeta, f)
 			validationFields = append(validationFields, v)
 		}
 	}

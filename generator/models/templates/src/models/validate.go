@@ -3,6 +3,7 @@ package models
 import (
 	"github.com/68696c6c/capricorn/generator/models/data"
 	"github.com/68696c6c/capricorn/generator/models/templates/golang"
+	"github.com/68696c6c/capricorn/generator/models/templates/src/validators"
 	"github.com/68696c6c/capricorn/generator/utils"
 )
 
@@ -18,15 +19,15 @@ type Validate struct {
 	imports      golang.Imports
 	args         []golang.Value
 	returns      []golang.Value
-	fields       []*ValidationField
+	fields       []*validators.ValidationField
 	ReceiverName string
 }
 
-func NewValidate(meta ValidationMeta, fields []*ValidationField) Validate {
+func NewValidate(meta validators.ValidationMeta, fields []*validators.ValidationField) Validate {
 	return Validate{
 		name:        "Validate",
 		dbFieldName: meta.DBFieldName,
-		receiver:    meta.Receiver,
+		receiver:    meta.ModelReceiver,
 		imports: golang.Imports{
 			Standard: nil,
 			App:      nil,
@@ -44,7 +45,7 @@ func NewValidate(meta ValidationMeta, fields []*ValidationField) Validate {
 			},
 		},
 		fields:       fields,
-		ReceiverName: meta.Receiver.Name,
+		ReceiverName: meta.ReceiverName,
 	}
 }
 

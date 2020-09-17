@@ -2,12 +2,12 @@ package required
 
 import (
 	"github.com/68696c6c/capricorn/generator/models/templates/golang"
-	"github.com/68696c6c/capricorn/generator/models/templates/src/models/validation_rules"
+	"github.com/68696c6c/capricorn/generator/models/templates/src/validators/rules"
 )
 
 type Required struct{}
 
-func NewRule() validation_rules.Rule {
+func NewRule() rules.Rule {
 	return Required{}
 }
 

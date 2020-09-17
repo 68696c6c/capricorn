@@ -562,7 +562,7 @@ app:
         receiver:
           name: m
           type: '*Organization'
-        body: "\n\treturn validation.ValidateStruct(m,\nvalidation.Field(&m.Name,
+        body: "\n\treturn validation.ValidateStruct(r,\nvalidation.Field(&r.Name,
           validation.Required),\n\t)\n"
     validator:
       name:
@@ -1135,8 +1135,8 @@ app:
         receiver:
           name: m
           type: '*User'
-        body: "\n\treturn validation.ValidateStruct(m,\nvalidation.Field(&m.Name,
-          validation.Required),\nvalidation.Field(&m.Email, validation.Required, newUserEmailUniqueRule(d)),\n\t)\n"
+        body: "\n\treturn validation.ValidateStruct(r,\nvalidation.Field(&r.Name,
+          validation.Required),\nvalidation.Field(&r.Email, validation.Required, newUserEmailUniqueRule(d)),\n\t)\n"
     validator:
       name:
         base: validator
@@ -1160,7 +1160,7 @@ app:
         fields:
         - name: message
           type: string
-        - name: d
+        - name: db
           type: '*gorm.DB'
       functions:
       - name: newUserEmailUniqueRule
@@ -1171,7 +1171,7 @@ app:
         - name: d
           type: '*gorm.DB'
         return_values:
-        - type: error
+        - type: '*userEmailUniqueRule'
         body: "\n\treturn &userEmailUniqueRule{\n\t\tmessage: \"user email must be
           unique\",\n\t\tdb:      d,\n\t}\n"
       - name: Validate
@@ -1185,9 +1185,10 @@ app:
         return_values:
         - type: error
         receiver:
-          name: m
+          name: r
+          type: '*userEmailUniqueRule'
         body: "\n\temail, ok := value.(string)\n\tif !ok {\n\t\treturn errors.New(\"invalid
-          user email\")\n\t}\n\n\tquery := m{ .DB }}.First(&User{\n\t\tEmail: email,\n\t})\n\tif
+          user email\")\n\t}\n\n\tquery := r.db.First(&User{\n\t\tEmail: email,\n\t})\n\tif
           !query.RecordNotFound() {\n\t\treturn errors.New(\"user email already exists\")\n\t}\n\n\treturn
           nil\n"
   - controller:
@@ -1553,8 +1554,8 @@ app:
         receiver:
           name: m
           type: '*Token'
-        body: "\n\treturn validation.ValidateStruct(m,\nvalidation.Field(&m.Key, validation.Required,
-          newTokenKeyUniqueRule(d)),\nvalidation.Field(&m.Expires, validation.Required),\n\t)\n"
+        body: "\n\treturn validation.ValidateStruct(r,\nvalidation.Field(&r.Key, validation.Required,
+          newTokenKeyUniqueRule(d)),\nvalidation.Field(&r.Expires, validation.Required),\n\t)\n"
     validator:
       name:
         base: validator
@@ -1578,7 +1579,7 @@ app:
         fields:
         - name: message
           type: string
-        - name: d
+        - name: db
           type: '*gorm.DB'
       functions:
       - name: newTokenKeyUniqueRule
@@ -1589,7 +1590,7 @@ app:
         - name: d
           type: '*gorm.DB'
         return_values:
-        - type: error
+        - type: '*tokenKeyUniqueRule'
         body: "\n\treturn &tokenKeyUniqueRule{\n\t\tmessage: \"token key must be unique\",\n\t\tdb:
           \     d,\n\t}\n"
       - name: Validate
@@ -1603,9 +1604,10 @@ app:
         return_values:
         - type: error
         receiver:
-          name: m
+          name: r
+          type: '*tokenKeyUniqueRule'
         body: "\n\tkey, ok := value.(string)\n\tif !ok {\n\t\treturn errors.New(\"invalid
-          token key\")\n\t}\n\n\tquery := m{ .DB }}.First(&Token{\n\t\tKey: key,\n\t})\n\tif
+          token key\")\n\t}\n\n\tquery := r.db.First(&Token{\n\t\tKey: key,\n\t})\n\tif
           !query.RecordNotFound() {\n\t\treturn errors.New(\"token key already exists\")\n\t}\n\n\treturn
           nil\n"
 main:

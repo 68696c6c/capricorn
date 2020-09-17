@@ -5,6 +5,7 @@ import (
 
 	"github.com/68696c6c/capricorn/generator/models/data"
 	"github.com/68696c6c/capricorn/generator/models/module"
+	"github.com/68696c6c/capricorn/generator/models/templates/src/validators/rules"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -18,14 +19,15 @@ func TestConstructor_MustParse(t *testing.T) {
 	field.IsRequired = true
 	field.IsUnique = true
 
-	input := constructor{
-		RuleName: "ruleName",
-		Name:     "NewRule",
-		DB:       "db",
-		Field:    field,
-		Single:   recName,
-	}
-	result := input.MustParse()
+	c := newConstructor(rules.RuleMeta{
+		RuleName:        "ruleName",
+		ConstructorName: "newRuleName",
+		DBArgName:       "d",
+		DBFieldName:     "db",
+		Single:          recName,
+		Field:           field,
+	})
+	result := c.MustParse()
 
 	assert.Equal(t, fixtureConstructor, result)
 }
@@ -33,6 +35,6 @@ func TestConstructor_MustParse(t *testing.T) {
 const fixtureConstructor = `
 	return &ruleName{
 		message: "example resource example field must be unique",
-		db:      db,
+		db:      d,
 	}
 `
