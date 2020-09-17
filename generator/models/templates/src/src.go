@@ -5,6 +5,7 @@ import (
 	"github.com/68696c6c/capricorn/generator/models/module"
 	"github.com/68696c6c/capricorn/generator/models/templates/golang"
 	"github.com/68696c6c/capricorn/generator/models/templates/src/controllers"
+	"github.com/68696c6c/capricorn/generator/models/templates/src/models"
 	"github.com/68696c6c/capricorn/generator/models/templates/src/repos"
 	"github.com/68696c6c/capricorn/generator/models/templates/src/utils"
 	"gopkg.in/yaml.v2"
@@ -155,23 +156,22 @@ func makeDomain(r module.Resource, baseDomainPath string) Domain {
 	listResponseName := data.MakeName("list_response")
 	pkgData := data.MakePackageData(baseDomainPath, r.Inflection.Plural.Snake)
 
-	model := newModelFromMeta(serviceMeta{
-		receiverName: "m",
-		fileName:     mName.Snake,
-		resource:     r,
-		packageData:  pkgData,
-		name:         r.Inflection.Single,
+	model := models.NewModelFromMeta(utils.ServiceMeta{
+		ReceiverName: "m",
+		FileName:     mName.Snake,
+		Resource:     r,
+		PackageData:  pkgData,
+		Name:         r.Inflection.Single,
 	})
 	// In a non-DDD app, we would use .Reference
 	modelType := model.GetType().Type
 
-	validator := newValidatorFromMeta(validatorMeta{
-		receiverName: "r",
-		fileName:     vName.Snake,
-		resource:     r,
-		packageData:  pkgData,
-		fields:       model.GetValidationFields(),
-	})
+	validator := models.NewValidatorFromMeta(utils.ServiceMeta{
+		ReceiverName: "r",
+		FileName:     vName.Snake,
+		Resource:     r,
+		PackageData:  pkgData,
+	}, model.GetValidationFields())
 
 	repo := repos.NewRepoFromMeta(utils.ServiceMeta{
 		ReceiverName: "r",

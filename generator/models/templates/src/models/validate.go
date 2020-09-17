@@ -2,85 +2,71 @@ package models
 
 import (
 	"github.com/68696c6c/capricorn/generator/models/data"
-	"github.com/68696c6c/capricorn/generator/models/module"
 	"github.com/68696c6c/capricorn/generator/models/templates/golang"
 	"github.com/68696c6c/capricorn/generator/utils"
 )
 
 var validateBodyTemplate = `
-	return validation.ValidateStruct({{ .ReceiverName }},{{ .MustGetFields }}
+	return validation.ValidateStruct({{ .ReceiverName }},{{ .MustParseFields }}
 	)
 `
 
 type Validate struct {
+	name         string
+	dbFieldName  string
 	receiver     golang.Value
+	imports      golang.Imports
+	args         []golang.Value
+	returns      []golang.Value
+	fields       []*ValidationField
 	ReceiverName string
-	DB           string
-	Single       data.Name
-	Fields       []module.ResourceField
 }
 
-func NewValidate(receiver golang.Value, singleName data.Name, fields []module.ResourceField) Validate {
+func NewValidate(meta ValidationMeta, fields []*ValidationField) Validate {
 	return Validate{
-		receiver:     receiver,
-		ReceiverName: receiver.Name,
-		Single:       singleName,
-		Fields:       fields,
+		name:        "Validate",
+		dbFieldName: meta.DBFieldName,
+		receiver:    meta.Receiver,
+		imports: golang.Imports{
+			Standard: nil,
+			App:      nil,
+			Vendor:   []string{data.ImportGoat, data.ImportValidation},
+		},
+		args: []golang.Value{
+			{
+				Name: "d",
+				Type: "*gorm.DB",
+			},
+		},
+		returns: []golang.Value{
+			{
+				Type: "error",
+			},
+		},
+		fields:       fields,
+		ReceiverName: meta.Receiver.Name,
 	}
 }
 
 func (m Validate) MustGetFunction() golang.Function {
 	return golang.Function{
-		Name:         m.GetName(),
-		Imports:      m.GetImports(),
-		Arguments:    m.GetArgs(),
-		ReturnValues: m.GetReturns(),
+		Name:         m.name,
+		Imports:      m.imports,
+		Receiver:     m.receiver,
+		Arguments:    m.args,
+		ReturnValues: m.returns,
 		Body:         m.MustParse(),
 	}
 }
 
-func (m Validate) GetName() string {
-	return "Validate"
-}
-
 func (m Validate) GetImports() golang.Imports {
-	return golang.Imports{
-		Standard: nil,
-		App:      nil,
-		Vendor:   []string{data.ImportGoat},
-	}
+	return m.imports
 }
 
-func (m Validate) GetReceiver() golang.Value {
-	return m.receiver
-}
-
-func (m Validate) GetArgs() []golang.Value {
-	return []golang.Value{
-		{
-			Name: "db",
-			Type: "*gorm.DB",
-		},
-	}
-}
-
-func (m Validate) GetReturns() []golang.Value {
-	return []golang.Value{
-		{
-			Type: "error",
-		},
-	}
-}
-
-func (m Validate) MustGetFields() string {
+func (m Validate) MustParseFields() string {
 	var result string
-	for _, f := range m.Fields {
-		field := ValidationField{
-			Receiver: m.ReceiverName,
-			Single:   m.Single,
-			Field:    f,
-		}
-		result += field.MustParse()
+	for _, f := range m.fields {
+		result += f.MustParse()
 	}
 	return result
 }

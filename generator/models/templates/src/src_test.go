@@ -359,7 +359,7 @@ app:
           body: "\n\terrs :=  r.db.Delete(m).GetErrors()\n\tif len(errs) > 0 {\n\t\treturn
             goat.ErrorsToError(errs)\n\t}\n\treturn nil\n"
       structs:
-      - name: Organization
+      - name: RepoGorm
         fields:
         - name: db
           type: '*gorm.DB'
@@ -523,10 +523,47 @@ app:
         path:
           base: github.com/68696c6c/test-example/app
           full: github.com/68696c6c/test-example/app/organizations
+      imports:
+        vendor:
+        - github.com/68696c6c/goat
+        - github.com/go-ozzo/ozzo-validation
       structs:
       - name: Organization
+        fields:
+        - type: goat.Model
+        - name: Name
+          type: string
+          tags:
+          - key: json
+            values:
+            - name
+          - key: binding
+            values:
+            - required
+        - {}
+        - name: Users
+          type: '[]*users.User'
+          tags:
+          - key: json
+            values:
+            - users
+            - omitempty
       functions:
-      - {}
+      - name: Validate
+        imports:
+          vendor:
+          - github.com/68696c6c/goat
+          - github.com/go-ozzo/ozzo-validation
+        arguments:
+        - name: d
+          type: '*gorm.DB'
+        return_values:
+        - type: error
+        receiver:
+          name: m
+          type: '*Organization'
+        body: "\n\treturn validation.ValidateStruct(m,\nvalidation.Field(&m.Name,
+          validation.Required),\n\t)\n"
     validator:
       name:
         base: validator
@@ -873,7 +910,7 @@ app:
           body: "\n\terrs :=  r.db.Delete(m).GetErrors()\n\tif len(errs) > 0 {\n\t\treturn
             goat.ErrorsToError(errs)\n\t}\n\treturn nil\n"
       structs:
-      - name: User
+      - name: RepoGorm
         fields:
         - name: db
           type: '*gorm.DB'
@@ -1037,10 +1074,69 @@ app:
         path:
           base: github.com/68696c6c/test-example/app
           full: github.com/68696c6c/test-example/app/users
+      imports:
+        vendor:
+        - github.com/68696c6c/goat
+        - github.com/go-ozzo/ozzo-validation
       structs:
       - name: User
+        fields:
+        - type: goat.Model
+        - name: OrganizationId
+          type: goat.ID
+          tags:
+          - key: json
+            values:
+            - organization_id
+        - name: Name
+          type: string
+          tags:
+          - key: json
+            values:
+            - name
+          - key: binding
+            values:
+            - required
+        - name: Email
+          type: string
+          tags:
+          - key: json
+            values:
+            - email
+          - key: binding
+            values:
+            - required
+        - {}
+        - name: Organization
+          type: '*organizations.Organization'
+          tags:
+          - key: json
+            values:
+            - organization
+            - omitempty
+        - name: Tokens
+          type: '[]*tokens.Token'
+          tags:
+          - key: json
+            values:
+            - tokens
+            - omitempty
       functions:
-      - {}
+      - name: Validate
+        imports:
+          vendor:
+          - github.com/68696c6c/goat
+          - github.com/go-ozzo/ozzo-validation
+        arguments:
+        - name: d
+          type: '*gorm.DB'
+        return_values:
+        - type: error
+        receiver:
+          name: m
+          type: '*User'
+        body: "\n\treturn validation.ValidateStruct(m,\nvalidation.Field(&m.Name,
+          validation.Required),\nvalidation.Field(&m.Email, validation.Required, newUserEmailUniqueRule(d)),\n\t)\n"
     validator:
       name:
         base: validator
@@ -1059,6 +1155,41 @@ app:
         path:
           base: github.com/68696c6c/test-example/app
           full: github.com/68696c6c/test-example/app/users
+      structs:
+      - name: userEmailUniqueRule
+        fields:
+        - name: message
+          type: string
+        - name: d
+          type: '*gorm.DB'
+      functions:
+      - name: newUserEmailUniqueRule
+        imports:
+          vendor:
+          - github.com/jinzhu/gorm
+        arguments:
+        - name: d
+          type: '*gorm.DB'
+        return_values:
+        - type: error
+        body: "\n\treturn &userEmailUniqueRule{\n\t\tmessage: \"user email must be
+          unique\",\n\t\tdb:      d,\n\t}\n"
+      - name: Validate
+        imports:
+          vendor:
+          - github.com/pkg/errors
+          - github.com/jinzhu/gorm
+        arguments:
+        - name: d
+          type: '*gorm.DB'
+        return_values:
+        - type: error
+        receiver:
+          name: m
+        body: "\n\temail, ok := value.(string)\n\tif !ok {\n\t\treturn errors.New(\"invalid
+          user email\")\n\t}\n\n\tquery := m{ .DB }}.First(&User{\n\t\tEmail: email,\n\t})\n\tif
+          !query.RecordNotFound() {\n\t\treturn errors.New(\"user email already exists\")\n\t}\n\n\treturn
+          nil\n"
   - controller:
       name:
         base: controller
@@ -1259,7 +1390,7 @@ app:
           body: "\n\terrs :=  r.db.Delete(m).GetErrors()\n\tif len(errs) > 0 {\n\t\treturn
             goat.ErrorsToError(errs)\n\t}\n\treturn nil\n"
       structs:
-      - name: Token
+      - name: RepoGorm
         fields:
         - name: db
           type: '*gorm.DB'
@@ -1368,10 +1499,62 @@ app:
         path:
           base: github.com/68696c6c/test-example/app
           full: github.com/68696c6c/test-example/app/tokens
+      imports:
+        vendor:
+        - github.com/68696c6c/goat
+        - github.com/go-ozzo/ozzo-validation
       structs:
       - name: Token
+        fields:
+        - type: goat.Model
+        - name: UserId
+          type: goat.ID
+          tags:
+          - key: json
+            values:
+            - user_id
+        - name: Key
+          type: string
+          tags:
+          - key: json
+            values:
+            - key
+          - key: binding
+            values:
+            - required
+        - name: Expires
+          type: time.Time
+          tags:
+          - key: json
+            values:
+            - expires
+          - key: binding
+            values:
+            - required
+        - {}
+        - name: User
+          type: '*users.User'
+          tags:
+          - key: json
+            values:
+            - user
+            - omitempty
       functions:
-      - {}
+      - name: Validate
+        imports:
+          vendor:
+          - github.com/68696c6c/goat
+          - github.com/go-ozzo/ozzo-validation
+        arguments:
+        - name: d
+          type: '*gorm.DB'
+        return_values:
+        - type: error
+        receiver:
+          name: m
+          type: '*Token'
+        body: "\n\treturn validation.ValidateStruct(m,\nvalidation.Field(&m.Key, validation.Required,
+          newTokenKeyUniqueRule(d)),\nvalidation.Field(&m.Expires, validation.Required),\n\t)\n"
     validator:
       name:
         base: validator
@@ -1390,6 +1573,41 @@ app:
         path:
           base: github.com/68696c6c/test-example/app
           full: github.com/68696c6c/test-example/app/tokens
+      structs:
+      - name: tokenKeyUniqueRule
+        fields:
+        - name: message
+          type: string
+        - name: d
+          type: '*gorm.DB'
+      functions:
+      - name: newTokenKeyUniqueRule
+        imports:
+          vendor:
+          - github.com/jinzhu/gorm
+        arguments:
+        - name: d
+          type: '*gorm.DB'
+        return_values:
+        - type: error
+        body: "\n\treturn &tokenKeyUniqueRule{\n\t\tmessage: \"token key must be unique\",\n\t\tdb:
+          \     d,\n\t}\n"
+      - name: Validate
+        imports:
+          vendor:
+          - github.com/pkg/errors
+          - github.com/jinzhu/gorm
+        arguments:
+        - name: d
+          type: '*gorm.DB'
+        return_values:
+        - type: error
+        receiver:
+          name: m
+        body: "\n\tkey, ok := value.(string)\n\tif !ok {\n\t\treturn errors.New(\"invalid
+          token key\")\n\t}\n\n\tquery := m{ .DB }}.First(&Token{\n\t\tKey: key,\n\t})\n\tif
+          !query.RecordNotFound() {\n\t\treturn errors.New(\"token key already exists\")\n\t}\n\n\treturn
+          nil\n"
 main:
   name:
     base: main

@@ -92,6 +92,10 @@ func (m *Controller) MustGetFile() golang.File {
 }
 
 func (m *Controller) build() {
+	if m.base.Built {
+		return
+	}
+
 	var imports golang.Imports
 	var functions []golang.Function
 

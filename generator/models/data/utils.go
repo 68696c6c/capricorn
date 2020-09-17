@@ -11,6 +11,7 @@ const ImportQuery = "github.com/68696c6c/goat/query"
 const ImportGin = "github.com/gin-gonic/gin"
 const ImportErrors = "github.com/pkg/errors"
 const ImportGorm = "github.com/jinzhu/gorm"
+const ImportValidation = "github.com/go-ozzo/ozzo-validation"
 
 type Template interface {
 	Generate() error

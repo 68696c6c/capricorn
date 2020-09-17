@@ -9,17 +9,19 @@ import (
 )
 
 type Repo struct {
-	base          utils.Service
-	interfaceName string
-	methodMeta    methods.Meta
+	base               utils.Service
+	implementationName string
+	interfaceName      string
+	methodMeta         methods.Meta
 }
 
 func NewRepoFromMeta(meta utils.ServiceMeta) *Repo {
 	receiverType := meta.Name.Exported + "Gorm"
 	base := utils.NewService(meta, receiverType)
 	return &Repo{
-		base:          base,
-		interfaceName: meta.Name.Exported,
+		base:               base,
+		implementationName: receiverType,
+		interfaceName:      meta.Name.Exported,
 		methodMeta: methods.Meta{
 			DBFieldName: "db",
 			Resource:    meta.Resource,
@@ -52,11 +54,15 @@ func (m *Repo) MustGetFile() golang.File {
 }
 
 func (m *Repo) build() {
+	if m.base.Built {
+		return
+	}
+
 	var imports golang.Imports
 	var functions []golang.Function
 
 	// Default functions.
-	constructor := NewConstructor(m.base.Name.Exported, m.base.Receiver.Type, m.methodMeta.DBFieldName)
+	constructor := NewConstructor(m.interfaceName, m.implementationName, m.methodMeta.DBFieldName)
 	functions = append(functions, constructor.MustGetFunction())
 	imports = golang.MergeImports(imports, constructor.GetImports())
 
@@ -111,7 +117,7 @@ func (m *Repo) build() {
 	}
 	m.base.Structs = []golang.Struct{
 		{
-			Name: m.base.Resource.Inflection.Single.Exported,
+			Name: m.implementationName,
 			Fields: []golang.Field{
 				{
 					Name: m.methodMeta.DBFieldName,

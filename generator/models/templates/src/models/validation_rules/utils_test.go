@@ -1,4 +1,4 @@
-package utils
+package validation_rules
 
 import (
 	"testing"
@@ -15,8 +15,8 @@ func TestMakeRuleName(t *testing.T) {
 	recName := data.MakeName(recNameKebob)
 	field := module.GetFixtureResourceField(recNameKebob, fNameKebob)
 
-	ruleResult, constResult := MakeRuleName(recName, field)
+	ruleResult, constResult := MakeRuleName(recName, field, "unique")
 
-	assert.Equal(t, "exampleResourceExampleFieldRule", ruleResult)
-	assert.Equal(t, "newExampleResourceExampleFieldRule", constResult)
+	assert.Equal(t, "exampleResourceExampleFieldUniqueRule", ruleResult)
+	assert.Equal(t, "newExampleResourceExampleFieldUniqueRule", constResult)
 }

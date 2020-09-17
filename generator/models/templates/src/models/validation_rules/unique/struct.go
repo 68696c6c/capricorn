@@ -2,11 +2,11 @@ package unique
 
 import (
 	"fmt"
+	"github.com/68696c6c/capricorn/generator/models/templates/src/models/validation_rules"
 
 	"github.com/68696c6c/capricorn/generator/models/data"
 	"github.com/68696c6c/capricorn/generator/models/module"
 	"github.com/68696c6c/capricorn/generator/models/templates/golang"
-	"github.com/68696c6c/capricorn/generator/models/templates/src/validation_rules/utils"
 )
 
 type Unique struct {
@@ -19,7 +19,7 @@ type Unique struct {
 }
 
 func NewRule(dbArg, receiverName string, resourceSingleName data.Name, field module.ResourceField) Unique {
-	ruleName, constName := utils.MakeRuleName(resourceSingleName, field)
+	ruleName, constName := validation_rules.MakeRuleName(resourceSingleName, field, "unique")
 	return Unique{
 		RuleName:        ruleName,
 		ConstructorName: constName,
@@ -30,7 +30,7 @@ func NewRule(dbArg, receiverName string, resourceSingleName data.Name, field mod
 	}
 }
 
-func (m Unique) GetConstructorCall() string {
+func (m Unique) GetUsage() string {
 	return fmt.Sprintf("%s(%s)", m.ConstructorName, m.DB)
 }
 
