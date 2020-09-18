@@ -11,7 +11,7 @@ import (
 // If generating a non-DDD app, response names are things like "userResponse" and do not need to be exported.
 // For DDD apps, a response would be named something like "Response".
 // This is because DDD responses are defined in their domain, but used by the router in the app http package as "users.Response".
-// Model and Repo types are provided for the same reason.  In a non-DDD app, these will be models.ResourceName and
+// Model and Repo enums are provided for the same reason.  In a non-DDD app, these will be models.ResourceName and
 // repos.ResourceNameRepo instead of ResourceName and Repo.
 type ControllerMeta struct {
 	CreateRequestType    string

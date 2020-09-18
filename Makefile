@@ -33,7 +33,7 @@ test:
 	go test ./... -cover
 
 test-file:
-	go test ./generator/models/templates/golang -run TestFile_MustParse
+	go test ./generator/models/spec -run TestNewSpec
 
 new: build
 	capricorn new $(SPEC_PATH)

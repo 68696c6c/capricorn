@@ -32,14 +32,14 @@ func TestValue_getJoinedValueString_Multiple(t *testing.T) {
 	input := []Value{
 		{
 			Name: "arg1",
-			Type: "*types.Type",
+			Type: "*enums.Type",
 		},
 		{
 			Name: "arg2",
 			Type: "string",
 		},
 	}
-	expected := "arg1 *types.Type, arg2 string"
+	expected := "arg1 *enums.Type, arg2 string"
 	result := getJoinedValueString(input)
 	assert.Equal(t, expected, result)
 }

@@ -2,83 +2,83 @@ package spec
 
 func GetFixtureSpec() Spec {
 	return Spec{
-		Name:    "Test Example",
-		Module:  "github.com/68696c6c/test-example",
-		License: "none",
-		Author: Author{
-			Name:         "Aaron Hill",
-			Email:        "68696c6c@gmail.com",
-			Organization: "GOAT",
-		},
-		Commands: []Command{
-			{
-				Name: "cmd",
-				Args: []string{},
-				Use:  "This is an example command",
-			},
-			{
-				Name: "cmd:one-arg",
-				Args: []string{"id"},
-				Use:  "This is an example command",
-			},
-			{
-				Name: "cmd:two-args",
-				Args: []string{"id", "name"},
-				Use:  "This is an example command",
-			},
-		},
-		Resources: []Resource{
-			{
-				Name:    "organization",
-				HasMany: []string{"users"},
-				Fields: []ResourceField{
-					{
-						Name:     "name",
-						Type:     "string",
-						Required: true,
-					},
-				},
-			},
-			{
-				Name:      "user",
-				BelongsTo: []string{"organization"},
-				HasMany:   []string{"tokens"},
-				Fields: []ResourceField{
-					{
-						Name:     "name",
-						Type:     "string",
-						Required: true,
-						Unique:   false,
-					},
-					{
-						Name:     "email",
-						Type:     "string",
-						Required: true,
-						Unique:   true,
-					},
-				},
-			},
-			{
-				Name:      "token",
-				BelongsTo: []string{"user"},
-				Fields: []ResourceField{
-					{
-						Name:     "key",
-						Type:     "string",
-						Required: true,
-						Unique:   true,
-					},
-					{
-						Name:     "expires",
-						Type:     "time.Time",
-						Required: true,
-						Unique:   false,
-					},
-				},
-				Actions: []string{"create", "delete"},
-				Custom:  []string{"refresh"},
-			},
-		},
+		// Name:    "Test Example",
+		// Module:  "github.com/68696c6c/test-example",
+		// License: "none",
+		// Author: Author{
+		// 	Name:         "Aaron Hill",
+		// 	Email:        "68696c6c@gmail.com",
+		// 	Organization: "GOAT",
+		// },
+		// Commands: []Command{
+		// 	{
+		// 		Name: "cmd",
+		// 		Args: []string{},
+		// 		Use:  "This is an example command",
+		// 	},
+		// 	{
+		// 		Name: "cmd:one-arg",
+		// 		Args: []string{"id"},
+		// 		Use:  "This is an example command",
+		// 	},
+		// 	{
+		// 		Name: "cmd:two-args",
+		// 		Args: []string{"id", "name"},
+		// 		Use:  "This is an example command",
+		// 	},
+		// },
+		// Resources: []Resource{
+		// 	{
+		// 		Name:    "organization",
+		// 		HasMany: []string{"users"},
+		// 		Fields: []ResourceFieldYAML{
+		// 			{
+		// 				Name:     "name",
+		// 				Type:     FieldTypeString("string"),
+		// 				Required: true,
+		// 			},
+		// 		},
+		// 	},
+		// 	{
+		// 		Name:      "user",
+		// 		BelongsTo: []string{"organization"},
+		// 		HasMany:   []string{"tokens"},
+		// 		Fields: []ResourceFieldYAML{
+		// 			{
+		// 				Name:     "name",
+		// 				Type:     FieldTypeString("string"),
+		// 				Required: true,
+		// 				Unique:   false,
+		// 			},
+		// 			{
+		// 				Name:     "email",
+		// 				Type:     FieldTypeString("string"),
+		// 				Required: true,
+		// 				Unique:   true,
+		// 			},
+		// 		},
+		// 	},
+		// 	{
+		// 		Name:      "token",
+		// 		BelongsTo: []string{"user"},
+		// 		Fields: []ResourceFieldYAML{
+		// 			{
+		// 				Name:     "key",
+		// 				Type:     FieldTypeString("string"),
+		// 				Required: true,
+		// 				Unique:   true,
+		// 			},
+		// 			{
+		// 				Name:     "expires",
+		// 				Type:     FieldTypeString("time.Time"),
+		// 				Required: true,
+		// 				Unique:   false,
+		// 			},
+		// 		},
+		// 		Actions: []string{"create", "delete"},
+		// 		Custom:  []string{"refresh"},
+		// 	},
+		// },
 	}
 }
 

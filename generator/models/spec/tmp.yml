@@ -1,0 +1,25 @@
+name: "temp example"
+module: "github.com/68696c6c/temp"
+
+license: "none"
+author:
+  name: Aaron Hill
+  email: 68696c6c@gmail.com
+
+enums:
+  - build_status: &build_status
+      description: Describes the state of a site build.
+      type: string
+      values:
+        - started
+        - failed
+        - succeeded
+
+resources:
+
+  - name: build
+    fields:
+      - name: branch
+        type: string
+      - name: status
+        type: *build_status
