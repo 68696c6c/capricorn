@@ -131,22 +131,5 @@ func NewSpec(filePath string) (Spec, error) {
 		return Spec{}, errors.Wrap(err, "failed to unmarshal spec")
 	}
 
-	enumMap := map[string]Enum{}
-	for _, e := range result.Enums {
-		enumMap[e.Name] = e
-	}
-
-	for _, r := range result.Resources {
-		for _, f := range r.Fields {
-			if f.Type == f.Enum {
-				e, ok := enumMap[f.Enum]
-				if !ok {
-					return Spec{}, errors.New("failed to map enum field")
-				}
-				f.Type = e.Type
-			}
-		}
-	}
-
 	return result, nil
 }
