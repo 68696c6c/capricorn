@@ -15,7 +15,7 @@ func GetFixtureResourceField(recNameKebob, fieldNameKebob string) ResourceField 
 		Key:      makeResourceKey(recNameKebob, fieldNameKebob),
 		Relation: data.MakeInflection("relation"),
 		Name:     data.MakeName(fieldNameKebob),
-		Type:     "string",
+		TypeData: data.MakeTypeDataString(),
 	}
 }
 

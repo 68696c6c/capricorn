@@ -1,5 +1,76 @@
 package spec
 
+func GetFixtureInput() []byte {
+	input := `name: Test Example
+module: github.com/68696c6c/test-example
+license: none
+author:
+  name: Aaron Hill
+  email: 68696c6c@gmail.com
+  organization: GOAT
+commands:
+- name: cmd
+  use: This is an example command
+- name: cmd:one-arg
+  args:
+  - id
+  use: This is an example command
+- name: cmd:two-args
+  args:
+  - id
+  - name
+  use: This is an example command
+enums:
+- name: user_type
+  type: string
+  values:
+  - user
+  - admin
+  - super
+resources:
+- name: organization
+  has_many:
+  - users
+  fields:
+  - name: name
+    type: string
+    required: true
+- name: user
+  belongs_to:
+  - organization
+  has_many:
+  - tokens
+  fields:
+  - name: type
+    enum: user_type
+    required: true
+  - name: name
+    type: string
+    required: true
+  - name: email
+    type: string
+    required: true
+    unique: true
+- name: token
+  belongs_to:
+  - user
+  fields:
+  - name: key
+    type: string
+    required: true
+    unique: true
+  - name: expires
+    type: time.Time
+    required: true
+  actions:
+  - create
+  - delete
+  custom:
+  - refresh
+`
+	return []byte(input)
+}
+
 func GetFixtureSpec() Spec {
 	return Spec{
 		Name:    "Test Example",
@@ -27,11 +98,22 @@ func GetFixtureSpec() Spec {
 				Use:  "This is an example command",
 			},
 		},
+		Enums: []Enum{
+			{
+				Name: "user_type",
+				Type: "string",
+				Values: []string{
+					"user",
+					"admin",
+					"super",
+				},
+			},
+		},
 		Resources: []Resource{
 			{
 				Name:    "organization",
 				HasMany: []string{"users"},
-				Fields: []ResourceField{
+				Fields: []*ResourceField{
 					{
 						Name:     "name",
 						Type:     "string",
@@ -43,7 +125,14 @@ func GetFixtureSpec() Spec {
 				Name:      "user",
 				BelongsTo: []string{"organization"},
 				HasMany:   []string{"tokens"},
-				Fields: []ResourceField{
+				Fields: []*ResourceField{
+					{
+						Name:     "type",
+						Type:     "user_type",
+						Enum:     "user_type",
+						Required: true,
+						Unique:   false,
+					},
 					{
 						Name:     "name",
 						Type:     "string",
@@ -61,7 +150,7 @@ func GetFixtureSpec() Spec {
 			{
 				Name:      "token",
 				BelongsTo: []string{"user"},
-				Fields: []ResourceField{
+				Fields: []*ResourceField{
 					{
 						Name:     "key",
 						Type:     "string",
@@ -235,6 +324,17 @@ packages:
     path:
       base: github.com/68696c6c/test-example
       full: github.com/68696c6c/test-example/app
+  enums:
+    reference: enum
+    name:
+      space: enum
+      snake: enum
+      kebob: enum
+      exported: Enum
+      unexported: enum
+    path:
+      base: github.com/68696c6c/test-example/app
+      full: github.com/68696c6c/test-example/app/enum
 commands:
 - name:
     space: cmd
@@ -254,10 +354,33 @@ commands:
     kebob: cmd:two-args
     exported: Cmd:twoArgs
     unexported: cmd:twoArgs
+enums:
+  user_type:
+    inflection:
+      single:
+        space: user type
+        snake: user_type
+        kebob: user-type
+        exported: UserType
+        unexported: userType
+      plural:
+        space: user types
+        snake: user_types
+        kebob: user-types
+        exported: UserTypes
+        unexported: userTypes
+    type_data:
+      reference: enum.UserType
+      package: enum
+      name: UserType
+      data_type: string
+    values:
+    - user
+    - admin
+    - super
 resources:
 - key:
     resource: organization
-    field: ""
   inflection:
     single:
       space: organization
@@ -275,18 +398,16 @@ resources:
   - key:
       resource: organization
       field: name
-    relation: {}
     name:
       space: name
       snake: name
       kebob: name
       exported: Name
       unexported: name
-    type: string
+    type_data:
+      reference: string
+      name: string
     is_required: true
-    is_unique: false
-    is_indexed: false
-    is_primary: false
   controller:
     name:
       space: organizations
@@ -326,94 +447,89 @@ resources:
     - key:
         resource: organization
         field: id
-      relation: {}
       name:
         space: id
         snake: id
         kebob: id
         exported: Id
         unexported: id
-      type: goat.ID
-      is_required: false
-      is_unique: false
-      is_indexed: false
+      type_data:
+        reference: goat.ID
+        package: goat
+        name: ID
+        data_type: BINARY(16) NOT NULL
       is_primary: true
     - key:
         resource: organization
         field: created_at
-      relation: {}
       name:
         space: created at
         snake: created_at
         kebob: created-at
         exported: CreatedAt
         unexported: createdAt
-      type: time.Time
-      is_required: false
-      is_unique: false
-      is_indexed: false
-      is_primary: false
+      type_data:
+        reference: time.Time
+        package: time
+        name: Time
+        data_type: NOT NULL DEFAULT CURRENT_TIMESTAMP
     - key:
         resource: organization
         field: updated_at
-      relation: {}
       name:
         space: updated at
         snake: updated_at
         kebob: updated-at
         exported: UpdatedAt
         unexported: updatedAt
-      type: '*time.Time'
-      is_required: false
-      is_unique: false
-      is_indexed: false
-      is_primary: false
+      type_data:
+        reference: time.Time
+        package: time
+        name: Time
+        data_type: NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP
+        is_pointer: true
     - key:
         resource: organization
         field: deleted_at
-      relation: {}
       name:
         space: deleted at
         snake: deleted_at
         kebob: deleted-at
         exported: DeletedAt
         unexported: deletedAt
-      type: '*time.Time'
-      is_required: false
-      is_unique: false
-      is_indexed: false
-      is_primary: false
+      type_data:
+        reference: time.Time
+        package: time
+        name: Time
+        data_type: NULL DEFAULT NULL
+        is_pointer: true
     - key:
         resource: organization
         field: name
-      relation: {}
       name:
         space: name
         snake: name
         kebob: name
         exported: Name
         unexported: name
-      type: string
+      type_data:
+        reference: string
+        name: string
       is_required: true
-      is_unique: false
-      is_indexed: false
-      is_primary: false
     model:
     - key:
         resource: organization
         field: name
-      relation: {}
       name:
         space: name
         snake: name
         kebob: name
         exported: Name
         unexported: name
-      type: string
+      type_data:
+        reference: string
+        name: string
       is_required: true
-      is_unique: false
-      is_indexed: false
-      is_primary: false
     has_many:
     - key:
         resource: organization
@@ -437,14 +553,14 @@ resources:
         kebob: users
         exported: Users
         unexported: users
-      type: '[]*users.User'
-      is_required: false
-      is_unique: false
-      is_indexed: false
-      is_primary: false
+      type_data:
+        reference: users.User
+        package: users
+        name: User
+        is_pointer: true
+        is_slice: true
 - key:
     resource: user
-    field: ""
   inflection:
     single:
       space: user
@@ -462,48 +578,59 @@ resources:
   - key:
       resource: user
       field: organization_id
-    relation: {}
     name:
       space: organization id
       snake: organization_id
       kebob: organization-id
       exported: OrganizationId
       unexported: organizationId
-    type: goat.ID
-    is_required: false
-    is_unique: false
-    is_indexed: false
-    is_primary: false
+    type_data:
+      reference: goat.ID
+      package: goat
+      name: ID
+      data_type: BINARY(16) NOT NULL
+  - key:
+      resource: user
+      field: type
+    name:
+      space: type
+      snake: type
+      kebob: type
+      exported: Type
+      unexported: type
+    type_data:
+      reference: enum.UserType
+      package: enum
+      name: UserType
+      data_type: string
+    is_required: true
   - key:
       resource: user
       field: name
-    relation: {}
     name:
       space: name
       snake: name
       kebob: name
       exported: Name
       unexported: name
-    type: string
+    type_data:
+      reference: string
+      name: string
     is_required: true
-    is_unique: false
-    is_indexed: false
-    is_primary: false
   - key:
       resource: user
       field: email
-    relation: {}
     name:
       space: email
       snake: email
       kebob: email
       exported: Email
       unexported: email
-    type: string
+    type_data:
+      reference: string
+      name: string
     is_required: true
     is_unique: true
-    is_indexed: false
-    is_primary: false
   controller:
     name:
       space: users
@@ -543,170 +670,190 @@ resources:
     - key:
         resource: user
         field: id
-      relation: {}
       name:
         space: id
         snake: id
         kebob: id
         exported: Id
         unexported: id
-      type: goat.ID
-      is_required: false
-      is_unique: false
-      is_indexed: false
+      type_data:
+        reference: goat.ID
+        package: goat
+        name: ID
+        data_type: BINARY(16) NOT NULL
       is_primary: true
     - key:
         resource: user
         field: created_at
-      relation: {}
       name:
         space: created at
         snake: created_at
         kebob: created-at
         exported: CreatedAt
         unexported: createdAt
-      type: time.Time
-      is_required: false
-      is_unique: false
-      is_indexed: false
-      is_primary: false
+      type_data:
+        reference: time.Time
+        package: time
+        name: Time
+        data_type: NOT NULL DEFAULT CURRENT_TIMESTAMP
     - key:
         resource: user
         field: updated_at
-      relation: {}
       name:
         space: updated at
         snake: updated_at
         kebob: updated-at
         exported: UpdatedAt
         unexported: updatedAt
-      type: '*time.Time'
-      is_required: false
-      is_unique: false
-      is_indexed: false
-      is_primary: false
+      type_data:
+        reference: time.Time
+        package: time
+        name: Time
+        data_type: NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP
+        is_pointer: true
     - key:
         resource: user
         field: deleted_at
-      relation: {}
       name:
         space: deleted at
         snake: deleted_at
         kebob: deleted-at
         exported: DeletedAt
         unexported: deletedAt
-      type: '*time.Time'
-      is_required: false
-      is_unique: false
-      is_indexed: false
-      is_primary: false
+      type_data:
+        reference: time.Time
+        package: time
+        name: Time
+        data_type: NULL DEFAULT NULL
+        is_pointer: true
     - key:
         resource: user
         field: organization_id
-      relation: {}
       name:
         space: organization id
         snake: organization_id
         kebob: organization-id
         exported: OrganizationId
         unexported: organizationId
-      type: goat.ID
-      is_required: false
-      is_unique: false
-      is_indexed: false
-      is_primary: false
+      type_data:
+        reference: goat.ID
+        package: goat
+        name: ID
+        data_type: BINARY(16) NOT NULL
+    - key:
+        resource: user
+        field: type
+      name:
+        space: type
+        snake: type
+        kebob: type
+        exported: Type
+        unexported: type
+      type_data:
+        reference: enum.UserType
+        package: enum
+        name: UserType
+        data_type: string
+      is_required: true
     - key:
         resource: user
         field: name
-      relation: {}
       name:
         space: name
         snake: name
         kebob: name
         exported: Name
         unexported: name
-      type: string
+      type_data:
+        reference: string
+        name: string
       is_required: true
-      is_unique: false
-      is_indexed: false
-      is_primary: false
     - key:
         resource: user
         field: email
-      relation: {}
       name:
         space: email
         snake: email
         kebob: email
         exported: Email
         unexported: email
-      type: string
+      type_data:
+        reference: string
+        name: string
       is_required: true
       is_unique: true
-      is_indexed: false
-      is_primary: false
     model:
     - key:
         resource: user
         field: organization_id
-      relation: {}
       name:
         space: organization id
         snake: organization_id
         kebob: organization-id
         exported: OrganizationId
         unexported: organizationId
-      type: goat.ID
-      is_required: false
-      is_unique: false
-      is_indexed: false
-      is_primary: false
+      type_data:
+        reference: goat.ID
+        package: goat
+        name: ID
+        data_type: BINARY(16) NOT NULL
+    - key:
+        resource: user
+        field: type
+      name:
+        space: type
+        snake: type
+        kebob: type
+        exported: Type
+        unexported: type
+      type_data:
+        reference: enum.UserType
+        package: enum
+        name: UserType
+        data_type: string
+      is_required: true
     - key:
         resource: user
         field: name
-      relation: {}
       name:
         space: name
         snake: name
         kebob: name
         exported: Name
         unexported: name
-      type: string
+      type_data:
+        reference: string
+        name: string
       is_required: true
-      is_unique: false
-      is_indexed: false
-      is_primary: false
     - key:
         resource: user
         field: email
-      relation: {}
       name:
         space: email
         snake: email
         kebob: email
         exported: Email
         unexported: email
-      type: string
+      type_data:
+        reference: string
+        name: string
       is_required: true
       is_unique: true
-      is_indexed: false
-      is_primary: false
     belongs_to:
     - key:
         resource: user
         field: organization
-      relation: {}
       name:
         space: organization
         snake: organization
         kebob: organization
         exported: Organization
         unexported: organization
-      type: '*organizations.Organization'
-      is_required: false
-      is_unique: false
-      is_indexed: false
-      is_primary: false
+      type_data:
+        reference: organizations.Organization
+        package: organizations
+        name: Organization
+        is_pointer: true
     has_many:
     - key:
         resource: user
@@ -730,30 +877,29 @@ resources:
         kebob: tokens
         exported: Tokens
         unexported: tokens
-      type: '[]*tokens.Token'
-      is_required: false
-      is_unique: false
-      is_indexed: false
-      is_primary: false
+      type_data:
+        reference: tokens.Token
+        package: tokens
+        name: Token
+        is_pointer: true
+        is_slice: true
     unique:
     - key:
         resource: user
         field: email
-      relation: {}
       name:
         space: email
         snake: email
         kebob: email
         exported: Email
         unexported: email
-      type: string
+      type_data:
+        reference: string
+        name: string
       is_required: true
       is_unique: true
-      is_indexed: false
-      is_primary: false
 - key:
     resource: token
-    field: ""
   inflection:
     single:
       space: token
@@ -771,48 +917,45 @@ resources:
   - key:
       resource: token
       field: user_id
-    relation: {}
     name:
       space: user id
       snake: user_id
       kebob: user-id
       exported: UserId
       unexported: userId
-    type: goat.ID
-    is_required: false
-    is_unique: false
-    is_indexed: false
-    is_primary: false
+    type_data:
+      reference: goat.ID
+      package: goat
+      name: ID
+      data_type: BINARY(16) NOT NULL
   - key:
       resource: token
       field: key
-    relation: {}
     name:
       space: key
       snake: key
       kebob: key
       exported: Key
       unexported: key
-    type: string
+    type_data:
+      reference: string
+      name: string
     is_required: true
     is_unique: true
-    is_indexed: false
-    is_primary: false
   - key:
       resource: token
       field: expires
-    relation: {}
     name:
       space: expires
       snake: expires
       kebob: expires
       exported: Expires
       unexported: expires
-    type: time.Time
+    type_data:
+      reference: time.Time
+      package: time
+      name: Time
     is_required: true
-    is_unique: false
-    is_indexed: false
-    is_primary: false
   controller:
     name:
       space: tokens
@@ -847,184 +990,175 @@ resources:
     - key:
         resource: token
         field: id
-      relation: {}
       name:
         space: id
         snake: id
         kebob: id
         exported: Id
         unexported: id
-      type: goat.ID
-      is_required: false
-      is_unique: false
-      is_indexed: false
+      type_data:
+        reference: goat.ID
+        package: goat
+        name: ID
+        data_type: BINARY(16) NOT NULL
       is_primary: true
     - key:
         resource: token
         field: created_at
-      relation: {}
       name:
         space: created at
         snake: created_at
         kebob: created-at
         exported: CreatedAt
         unexported: createdAt
-      type: time.Time
-      is_required: false
-      is_unique: false
-      is_indexed: false
-      is_primary: false
+      type_data:
+        reference: time.Time
+        package: time
+        name: Time
+        data_type: NOT NULL DEFAULT CURRENT_TIMESTAMP
     - key:
         resource: token
         field: updated_at
-      relation: {}
       name:
         space: updated at
         snake: updated_at
         kebob: updated-at
         exported: UpdatedAt
         unexported: updatedAt
-      type: '*time.Time'
-      is_required: false
-      is_unique: false
-      is_indexed: false
-      is_primary: false
+      type_data:
+        reference: time.Time
+        package: time
+        name: Time
+        data_type: NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP
+        is_pointer: true
     - key:
         resource: token
         field: deleted_at
-      relation: {}
       name:
         space: deleted at
         snake: deleted_at
         kebob: deleted-at
         exported: DeletedAt
         unexported: deletedAt
-      type: '*time.Time'
-      is_required: false
-      is_unique: false
-      is_indexed: false
-      is_primary: false
+      type_data:
+        reference: time.Time
+        package: time
+        name: Time
+        data_type: NULL DEFAULT NULL
+        is_pointer: true
     - key:
         resource: token
         field: user_id
-      relation: {}
       name:
         space: user id
         snake: user_id
         kebob: user-id
         exported: UserId
         unexported: userId
-      type: goat.ID
-      is_required: false
-      is_unique: false
-      is_indexed: false
-      is_primary: false
+      type_data:
+        reference: goat.ID
+        package: goat
+        name: ID
+        data_type: BINARY(16) NOT NULL
     - key:
         resource: token
         field: key
-      relation: {}
       name:
         space: key
         snake: key
         kebob: key
         exported: Key
         unexported: key
-      type: string
+      type_data:
+        reference: string
+        name: string
       is_required: true
       is_unique: true
-      is_indexed: false
-      is_primary: false
     - key:
         resource: token
         field: expires
-      relation: {}
       name:
         space: expires
         snake: expires
         kebob: expires
         exported: Expires
         unexported: expires
-      type: time.Time
+      type_data:
+        reference: time.Time
+        package: time
+        name: Time
       is_required: true
-      is_unique: false
-      is_indexed: false
-      is_primary: false
     model:
     - key:
         resource: token
         field: user_id
-      relation: {}
       name:
         space: user id
         snake: user_id
         kebob: user-id
         exported: UserId
         unexported: userId
-      type: goat.ID
-      is_required: false
-      is_unique: false
-      is_indexed: false
-      is_primary: false
+      type_data:
+        reference: goat.ID
+        package: goat
+        name: ID
+        data_type: BINARY(16) NOT NULL
     - key:
         resource: token
         field: key
-      relation: {}
       name:
         space: key
         snake: key
         kebob: key
         exported: Key
         unexported: key
-      type: string
+      type_data:
+        reference: string
+        name: string
       is_required: true
       is_unique: true
-      is_indexed: false
-      is_primary: false
     - key:
         resource: token
         field: expires
-      relation: {}
       name:
         space: expires
         snake: expires
         kebob: expires
         exported: Expires
         unexported: expires
-      type: time.Time
+      type_data:
+        reference: time.Time
+        package: time
+        name: Time
       is_required: true
-      is_unique: false
-      is_indexed: false
-      is_primary: false
     belongs_to:
     - key:
         resource: token
         field: user
-      relation: {}
       name:
         space: user
         snake: user
         kebob: user
         exported: User
         unexported: user
-      type: '*users.User'
-      is_required: false
-      is_unique: false
-      is_indexed: false
-      is_primary: false
+      type_data:
+        reference: users.User
+        package: users
+        name: User
+        is_pointer: true
     unique:
     - key:
         resource: token
         field: key
-      relation: {}
       name:
         space: key
         snake: key
         kebob: key
         exported: Key
         unexported: key
-      type: string
+      type_data:
+        reference: string
+        name: string
       is_required: true
       is_unique: true
-      is_indexed: false
-      is_primary: false
 `

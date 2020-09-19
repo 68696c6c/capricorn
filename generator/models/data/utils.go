@@ -51,15 +51,6 @@ func (m PackageData) GetReference() string {
 	return m.Reference
 }
 
-// e.g. reference: pkgname.Type
-// e.g. package: pkgname
-// e.g. type: Type
-type TypeData struct {
-	Reference string `yaml:"reference,omitempty"`
-	Package   string `yaml:"package,omitempty"`
-	Type      string `yaml:"type,omitempty"`
-}
-
 func MakePathData(basePath, name string) PathData {
 	fullPath := basePath
 	if name != "" {
@@ -86,13 +77,5 @@ func MakePackageData(pkgBase, pkgName string) PackageData {
 		Name:      name,
 		Reference: name.Snake,
 		Path:      MakePathData(pkgBase, pkgName),
-	}
-}
-
-func MakeTypeData(pkgName, typeName string) TypeData {
-	return TypeData{
-		Reference: fmt.Sprintf("%s.%s", pkgName, typeName),
-		Package:   pkgName,
-		Type:      typeName,
 	}
 }

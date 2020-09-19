@@ -25,7 +25,7 @@ import (
 type {{ .Name }} struct {
 	goat.Model
 	{{- range $key, $value := .Fields }}
-	{{ $value.Name }} {{ $value.Type }} {{ $tick }}{{ $value.Tag }}{{ $tick }}
+	{{ $value.Name }} {{ $value.TypeData }} {{ $tick }}{{ $value.Tag }}{{ $tick }}
 	{{- end }}
 }
 `

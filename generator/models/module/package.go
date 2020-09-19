@@ -14,6 +14,7 @@ const (
 	pkgModels     = "models"
 	pkgMigrations = "migrations"
 	pkgSeeders    = "seeders"
+	pkgEnums      = "enum"
 )
 
 type Packages struct {
@@ -29,16 +30,23 @@ type Packages struct {
 	Migrations data.PackageData `yaml:"migrations,omitempty"`
 	Seeders    data.PackageData `yaml:"seeders,omitempty"`
 	Domains    data.PackageData `yaml:"domains,omitempty"`
+	Enums      data.PackageData `yaml:"enums,omitempty"`
 }
 
-func makePackages(root string) Packages {
+func makePackages(root string, ddd bool) Packages {
 	pSRC := data.MakePackageData(root, pkgSRC)
 	srcPath := pSRC.Path.Full
 
 	pApp := data.MakePackageData(srcPath, pkgApp)
+	appPath := pApp.Path.Full
 
 	pDB := data.MakePackageData(srcPath, pkgDB)
 	dbPath := pDB.Path.Full
+
+	enumBasePath := srcPath
+	if ddd {
+		enumBasePath = appPath
+	}
 
 	result := Packages{
 		Docker:     data.MakePackageData(root, pkgDocker),
@@ -53,6 +61,7 @@ func makePackages(root string) Packages {
 		Migrations: data.MakePackageData(dbPath, pkgMigrations),
 		Seeders:    data.MakePackageData(dbPath, pkgSeeders),
 		Domains:    pApp,
+		Enums:      data.MakePackageData(enumBasePath, pkgEnums),
 	}
 
 	return result

@@ -75,7 +75,7 @@ func (m *Model) build() {
 	for _, f := range m.base.Resource.Fields {
 		field := golang.Field{
 			Name: f.Name.Exported,
-			Type: f.Type,
+			Type: f.TypeData,
 			Tags: []golang.Tag{
 				{
 					Key:    "json",
@@ -106,7 +106,7 @@ func (m *Model) build() {
 	for _, f := range m.base.Resource.FieldsMeta.BelongsTo {
 		field := golang.Field{
 			Name: f.Name.Exported,
-			Type: f.Type,
+			Type: f.TypeData,
 			Tags: []golang.Tag{
 				{
 					Key:    "json",
@@ -120,7 +120,7 @@ func (m *Model) build() {
 	for _, f := range m.base.Resource.FieldsMeta.HasMany {
 		field := golang.Field{
 			Name: f.Name.Exported,
-			Type: f.Type,
+			Type: f.TypeData,
 			Tags: []golang.Tag{
 				{
 					Key:    "json",

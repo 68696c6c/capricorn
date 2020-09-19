@@ -6,7 +6,7 @@ import (
 	"github.com/68696c6c/capricorn/generator/utils"
 )
 
-var valueTemplate = `{{ .Name }} {{ .Type }}`
+var valueTemplate = `{{ .Name }} {{ .TypeData }}`
 
 // Represents an argument or return value.
 type Value struct {

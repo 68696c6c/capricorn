@@ -11,7 +11,7 @@ import (
 )
 
 var ruleValidateBodyTemplate = `
-	{{ .Field.Name.Unexported }}, ok := value.({{ .Field.Type }})
+	{{ .Field.Name.Unexported }}, ok := value.({{ .Field.TypeData }})
 	if !ok {
 		return errors.New("invalid {{ .Single.Space }} {{ .Field.Name.Space }}")
 	}

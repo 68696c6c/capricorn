@@ -7,7 +7,7 @@ import (
 	"github.com/68696c6c/capricorn/generator/utils"
 )
 
-var structFieldTemplate = `{{ .Name }} {{ .Type }}{{ .GetTags }}`
+var structFieldTemplate = `{{ .Name }} {{ .TypeData }}{{ .GetTags }}`
 
 type Field struct {
 	Name string `yaml:"name,omitempty"`

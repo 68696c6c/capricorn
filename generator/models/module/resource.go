@@ -9,23 +9,23 @@ import (
 
 type Resource struct {
 	_spec      spec.Resource
-	Key        resourceKey     `yaml:"key,omitempty"`
-	Inflection data.Inflection `yaml:"inflection,omitempty"`
-	Fields     []ResourceField `yaml:"fields,omitempty"`
-	Controller ResourceService `yaml:"controller,omitempty"`
-	Repo       ResourceService `yaml:"repo,omitempty"`
-	Service    ResourceService `yaml:"service,omitempty"`
-	FieldsMeta ResourceFields  `yaml:"fields_meta,omitempty"`
-	Indexes    Indexes         `yaml:"indexes,omitempty"`
+	Key        resourceKey      `yaml:"key,omitempty"`
+	Inflection data.Inflection  `yaml:"inflection,omitempty"`
+	Fields     []*ResourceField `yaml:"fields,omitempty"`
+	Controller ResourceService  `yaml:"controller,omitempty"`
+	Repo       ResourceService  `yaml:"repo,omitempty"`
+	Service    ResourceService  `yaml:"service,omitempty"`
+	FieldsMeta ResourceFields   `yaml:"fields_meta,omitempty"`
+	Indexes    Indexes          `yaml:"indexes,omitempty"`
 }
 
-func (m Resource) GetPrimaryField() (ResourceField, bool) {
-	for _, f := range m.Fields {
+func (m Resource) GetPrimaryField() (*ResourceField, bool) {
+	for _, f := range m.FieldsMeta.Model {
 		if f.Name.Snake == "id" {
 			return f, true
 		}
 	}
-	return ResourceField{}, false
+	return &ResourceField{}, false
 }
 
 type Indexes struct {
@@ -42,7 +42,7 @@ type Index struct {
 	ResourceFieldName data.Name `yaml:"resource_field_name,omitempty"`
 }
 
-func makeResources(specResources []spec.Resource, ddd bool) []Resource {
+func makeResources(specResources []spec.Resource, enumMap map[string]Enum, ddd bool) []Resource {
 	// Need to know every model and how it relates to the other models.
 	// This will let us know how to write table indexes in migrations, scaffold out dependency injection, etc.
 	var result []Resource
@@ -90,6 +90,18 @@ func makeResources(specResources []spec.Resource, ddd bool) []Resource {
 				Key:       fmt.Sprintf("%s_%s_index", rec.Inflection.Plural.Snake, f.Name.Snake),
 				FieldName: f.Name,
 			})
+		}
+
+		// Build complex data types.
+		for _, f := range rec.FieldsMeta.Model {
+			// It's an enum field.
+			if f.TypeData == nil {
+				enum, ok := enumMap[f._spec.Enum]
+				if !ok {
+					panic("missing enum type " + f._spec.Enum)
+				}
+				f.TypeData = enum.TypeData
+			}
 		}
 
 	}
