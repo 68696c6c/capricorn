@@ -1,10 +1,12 @@
 package spec
 
 import (
+	"io/ioutil"
+
 	"github.com/68696c6c/capricorn/generator/models/data"
+
 	"github.com/pkg/errors"
 	"gopkg.in/yaml.v2"
-	"io/ioutil"
 )
 
 type Spec struct {
@@ -61,14 +63,6 @@ func (m *ResourceField) GetTypeData() *data.TypeData {
 	return data.NewTypeDataFromReference(m.Type)
 }
 
-func (m Spec) String() string {
-	out, err := yaml.Marshal(&m)
-	if err != nil {
-		return "failed to marshal spec to yaml"
-	}
-	return string(out)
-}
-
 func (m *ResourceField) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	result := map[string]string{}
 	err := unmarshal(result)
@@ -117,6 +111,14 @@ func (m *ResourceField) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	}
 
 	return nil
+}
+
+func (m Spec) String() string {
+	out, err := yaml.Marshal(&m)
+	if err != nil {
+		return "failed to marshal spec to yaml"
+	}
+	return string(out)
 }
 
 func NewSpec(filePath string) (Spec, error) {
