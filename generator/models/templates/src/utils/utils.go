@@ -19,9 +19,9 @@ type Service struct {
 	FileData    data.FileData
 	PathData    data.PathData
 	PackageData data.PackageData
+	TypeData    data.TypeData
 	Name        data.Name
 	Resource    module.Resource
-	Receiver    golang.Value
 
 	Built      bool
 	Imports    golang.Imports
@@ -31,13 +31,15 @@ type Service struct {
 }
 
 func NewService(meta ServiceMeta, receiverType string) Service {
-	fileData, pathData := data.MakeGoFileData(meta.PackageData.GetImport(), meta.FileName)
+	pkgData := meta.PackageData
+	fileData, pathData := data.MakeGoFileData(pkgData.GetImport(), meta.FileName)
 	return Service{
 		FileData:    fileData,
 		PathData:    pathData,
 		PackageData: meta.PackageData,
 		Name:        meta.Name,
 		Resource:    meta.Resource,
+		TypeData:    data.MakeTypeDataService(pkgData.Reference, meta.Name.Exported, receiverType, false),
 		Receiver: golang.Value{
 			Name: meta.ReceiverName,
 			Type: receiverType,

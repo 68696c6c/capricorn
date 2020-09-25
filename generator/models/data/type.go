@@ -10,12 +10,13 @@ import (
 // e.g. name: TypeName
 // e.g. data_type: string
 type TypeData struct {
-	Reference string `yaml:"reference,omitempty"`
-	Package   string `yaml:"package,omitempty"`
-	Name      string `yaml:"name,omitempty"`
-	DataType  string `yaml:"data_type,omitempty"`
-	IsPointer bool   `yaml:"is_pointer,omitempty"`
-	IsSlice   bool   `yaml:"is_slice,omitempty"`
+	Reference    string `yaml:"reference,omitempty"`
+	Package      string `yaml:"package,omitempty"`
+	Name         string `yaml:"name,omitempty"`
+	ReceiverName string `yaml:"receiver_name,omitempty"`
+	DataType     string `yaml:"data_type,omitempty"`
+	IsPointer    bool   `yaml:"is_pointer,omitempty"`
+	IsSlice      bool   `yaml:"is_slice,omitempty"`
 }
 
 func NewTypeDataFromReference(reference string) *TypeData {
@@ -41,18 +42,35 @@ func NewTypeDataFromReference(reference string) *TypeData {
 	return MakeTypeData(pkgName, typeName, "", isPointer, isSlice)
 }
 
-func MakeTypeData(pkgName, typeName, dataType string, isPointer, isSlice bool) *TypeData {
+func makeReferenceName(pkgName, typeName string) string {
 	ref := typeName
 	if pkgName != "" {
 		ref = fmt.Sprintf("%s.%s", pkgName, typeName)
 	}
+	return ref
+}
+
+func MakeTypeData(pkgName, typeName, dataType string, isPointer, isSlice bool) *TypeData {
 	return &TypeData{
-		Reference: ref,
-		Package:   pkgName,
-		Name:      typeName,
-		DataType:  dataType,
-		IsPointer: isPointer,
-		IsSlice:   isSlice,
+		Reference:    makeReferenceName(pkgName, typeName),
+		Package:      pkgName,
+		Name:         typeName,
+		ReceiverName: typeName,
+		DataType:     dataType,
+		IsPointer:    isPointer,
+		IsSlice:      isSlice,
+	}
+}
+
+func MakeTypeDataService(pkgName, typeName, receiverName string, isPointer bool) TypeData {
+	return TypeData{
+		Reference:    makeReferenceName(pkgName, typeName),
+		Package:      pkgName,
+		Name:         typeName,
+		ReceiverName: receiverName,
+		DataType:     "",
+		IsPointer:    isPointer,
+		IsSlice:      false,
 	}
 }
 
