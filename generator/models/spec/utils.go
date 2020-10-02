@@ -325,16 +325,16 @@ packages:
       base: github.com/68696c6c/test-example
       full: github.com/68696c6c/test-example/app
   enums:
-    reference: enum
+    reference: enums
     name:
-      space: enum
-      snake: enum
-      kebob: enum
-      exported: Enum
-      unexported: enum
+      space: enums
+      snake: enums
+      kebob: enums
+      exported: Enums
+      unexported: enums
     path:
       base: github.com/68696c6c/test-example/app
-      full: github.com/68696c6c/test-example/app/enum
+      full: github.com/68696c6c/test-example/app/enums
 commands:
 - name:
     space: cmd
@@ -356,6 +356,7 @@ commands:
     unexported: cmd:twoArgs
 enums:
   user_type:
+    enum_type: string
     inflection:
       single:
         space: user type
@@ -370,8 +371,8 @@ enums:
         exported: UserTypes
         unexported: userTypes
     type_data:
-      reference: enum.UserType
-      package: enum
+      reference: enums.UserType
+      package: enums
       name: UserType
       receiver_name: u
       data_type: string
@@ -609,8 +610,8 @@ resources:
       exported: Type
       unexported: type
     type_data:
-      reference: enum.UserType
-      package: enum
+      reference: enums.UserType
+      package: enums
       name: UserType
       receiver_name: u
       data_type: string
@@ -768,8 +769,8 @@ resources:
         exported: Type
         unexported: type
       type_data:
-        reference: enum.UserType
-        package: enum
+        reference: enums.UserType
+        package: enums
         name: UserType
         receiver_name: u
         data_type: string
@@ -829,8 +830,8 @@ resources:
         exported: Type
         unexported: type
       type_data:
-        reference: enum.UserType
-        package: enum
+        reference: enums.UserType
+        package: enums
         name: UserType
         receiver_name: u
         data_type: string

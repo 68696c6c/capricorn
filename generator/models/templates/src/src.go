@@ -5,6 +5,8 @@ import (
 	"github.com/68696c6c/capricorn/generator/models/module"
 	"github.com/68696c6c/capricorn/generator/models/templates/golang"
 	"github.com/68696c6c/capricorn/generator/models/templates/src/controllers"
+	enumMeta "github.com/68696c6c/capricorn/generator/models/templates/src/enums/meta"
+	enumString "github.com/68696c6c/capricorn/generator/models/templates/src/enums/string"
 	"github.com/68696c6c/capricorn/generator/models/templates/src/models"
 	"github.com/68696c6c/capricorn/generator/models/templates/src/repos"
 	"github.com/68696c6c/capricorn/generator/models/templates/src/utils"
@@ -36,8 +38,9 @@ func (m SRC) String() string {
 }
 
 type App struct {
-	Container golang.File `yaml:"container,omitempty"`
-	Domains   []Domain    `yaml:"domains,omitempty"`
+	Container golang.File   `yaml:"container,omitempty"`
+	Enums     []golang.File `yaml:"enums,omitempty"`
+	Domains   []Domain      `yaml:"domains,omitempty"`
 }
 
 type CMD struct {
@@ -77,11 +80,37 @@ func NewSRCDDD(m module.Module, rootPath string) SRC {
 		Path:     data.MakePathData(rootPath, m.Packages.SRC.Reference),
 		Package:  m.Packages.SRC,
 		App: App{
+			Enums: makeEnums(m),
 			// Container: makeContainer(c),
 			Domains: makeDomains(m),
 		},
 		Main: NewMainGo(rootPath, m.Packages.SRC.GetImport(), m.Packages.CMD.GetImport()),
 	}
+}
+
+func makeEnums(m module.Module) []golang.File {
+	var result []golang.File
+	for _, e := range m.Enums {
+		typeName := e.Inflection.Single
+		pkgData := m.Packages.Enums
+
+		switch e.EnumType {
+		case "string":
+			fileData, pathData := data.MakeGoFileData(pkgData.GetImport(), e.Inflection.Single.Snake)
+			enumFile := enumString.NewEnumFromMeta(enumMeta.Meta{
+				FileData:         fileData,
+				PathData:         pathData,
+				PackageData:      pkgData,
+				TypeName:         typeName.Exported,
+				TypeNameReadable: typeName.Space,
+				ReceiverName:     "e",
+				Values:           e.Values,
+			})
+			result = append(result, enumFile.MustGetFile())
+		}
+	}
+
+	return result
 }
 
 func makeDomains(m module.Module) []Domain {

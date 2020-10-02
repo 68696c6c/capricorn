@@ -14,7 +14,7 @@ const (
 	pkgModels     = "models"
 	pkgMigrations = "migrations"
 	pkgSeeders    = "seeders"
-	pkgEnums      = "enum"
+	pkgEnums      = "enums"
 )
 
 type Packages struct {

@@ -2,10 +2,9 @@ package golang
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/68696c6c/capricorn/generator/models/data"
-
-	"strings"
 )
 
 type SourceFile interface {
@@ -22,6 +21,7 @@ type File struct {
 	Consts       []Const     `yaml:"consts,omitempty"`
 	Vars         []Var       `yaml:"vars,omitempty"`
 	Interfaces   []Interface `yaml:"interfaces,omitempty"`
+	TypeAliases  []Value     `yaml:"type_aliases,omitempty"`
 	Structs      []Struct    `yaml:"structs,omitempty"`
 	Functions    []Function  `yaml:"functions,omitempty"`
 }
@@ -46,6 +46,14 @@ func (m File) MustParseInterfaces() string {
 	var result []string
 	for _, v := range m.Interfaces {
 		result = append(result, v.MustParse())
+	}
+	return strings.Join(result, "\n\n")
+}
+
+func (m File) MustParseTypeAliases() string {
+	var result []string
+	for _, v := range m.TypeAliases {
+		result = append(result, "type "+v.MustParse())
 	}
 	return strings.Join(result, "\n\n")
 }
@@ -84,6 +92,9 @@ func (m File) MustParse() string {
 	}
 	if len(m.Interfaces) > 0 {
 		sections = append(sections, m.MustParseInterfaces())
+	}
+	if len(m.TypeAliases) > 0 {
+		sections = append(sections, m.MustParseTypeAliases())
 	}
 	if len(m.Structs) > 0 {
 		sections = append(sections, m.MustParseStructs())

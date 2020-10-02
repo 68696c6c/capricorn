@@ -7,6 +7,7 @@ import (
 
 type Enum struct {
 	_spec       spec.Enum
+	EnumType    string          `yaml:"enum_type,omitempty"`
 	Inflection  data.Inflection `yaml:"inflection,omitempty"`
 	TypeData    *data.TypeData  `yaml:"type_data,omitempty"`
 	Description string          `yaml:"description,omitempty"`
@@ -20,6 +21,7 @@ func makeEnums(specEnums []spec.Enum, enumPkgData data.PackageData) map[string]E
 		inflection := data.MakeInflection(e.Name)
 		result[inflection.Single.Snake] = Enum{
 			_spec:       e,
+			EnumType:    e.Type,
 			Inflection:  inflection,
 			TypeData:    data.MakeTypeData(pkgName, inflection.Single.Exported, e.Type, false, false),
 			Description: e.Description,

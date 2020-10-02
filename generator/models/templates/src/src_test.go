@@ -28,6 +28,63 @@ path:
   base: /base/path/test-example
   full: /base/path/test-example
 app:
+  enums:
+  - imports:
+      standard:
+      - fmt
+      - database/sql/driver
+      vendor:
+      - github.com/pkg/errors
+    type_aliases:
+    - name: UserType
+      type: string
+    functions:
+    - name: UserTypeFromString
+      imports:
+        vendor:
+        - github.com/pkg/errors
+      arguments:
+      - name: s
+        type: string
+      return_values:
+      - type: UserType
+      - type: error
+      body: "\n\tvalues := []UserType{\n\t\t\"user\",\n\t\t\"admin\",\n\t\t\"super\",\n\t}\n\tfor
+        _, v := range values {\n\t\tif string(v) == s {\n\t\t\treturn UserType(s),
+        nil\n\t\t}\n\t}\n\treturn \"\", errors.Errorf(\"'%s' is not a valid user type\",
+        s)\n"
+    - name: String
+      return_values:
+      - type: string
+      receiver:
+        name: e
+        type: UserType
+      body: return string(t)
+    - name: Scan
+      imports:
+        standard:
+        - fmt
+      arguments:
+      - name: value
+        type: interface{}
+      return_values:
+      - type: error
+      receiver:
+        name: e
+        type: '*UserType'
+      body: "\n\tstringValue := fmt.Sprintf(\"%v\", value)\n\tresult, err := UserTypeFromString(stringValue)\n\tif
+        err != nil {\n\t\treturn err\n\t}\n\t*t = result\n\treturn nil\n"
+    - name: Value
+      imports:
+        standard:
+        - database/sql/driver
+      return_values:
+      - type: driver.Value
+      - type: error
+      receiver:
+        name: e
+        type: UserType
+      body: return string(t), nil
   domains:
   - controller:
       name:
@@ -1089,7 +1146,7 @@ app:
             values:
             - organization_id
         - name: Type
-          type: enum.UserType
+          type: enums.UserType
           tags:
           - key: json
             values:
