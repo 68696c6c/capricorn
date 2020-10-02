@@ -1088,6 +1088,15 @@ app:
           - key: json
             values:
             - organization_id
+        - name: Type
+          type: enum.UserType
+          tags:
+          - key: json
+            values:
+            - type
+          - key: binding
+            values:
+            - required
         - name: Name
           type: string
           tags:
@@ -1135,8 +1144,9 @@ app:
         receiver:
           name: m
           type: '*User'
-        body: "\n\treturn validation.ValidateStruct(r,\nvalidation.Field(&r.Name,
-          validation.Required),\nvalidation.Field(&r.Email, validation.Required, newUserEmailUniqueRule(d)),\n\t)\n"
+        body: "\n\treturn validation.ValidateStruct(r,\nvalidation.Field(&r.Type,
+          validation.Required),\nvalidation.Field(&r.Name, validation.Required),\nvalidation.Field(&r.Email,
+          validation.Required, newUserEmailUniqueRule(d)),\n\t)\n"
     validator:
       name:
         base: validator
@@ -1187,9 +1197,10 @@ app:
         receiver:
           name: r
           type: '*userEmailUniqueRule'
-        body: "\n\temail, ok := value.(string)\n\tif !ok {\n\t\treturn errors.New(\"invalid
-          user email\")\n\t}\n\n\tquery := r.db.First(&User{\n\t\tEmail: email,\n\t})\n\tif
-          !query.RecordNotFound() {\n\t\treturn errors.New(\"user email already exists\")\n\t}\n\n\treturn
+        body: "\n\temail, ok := value.({string  string  VARCHAR false false})\n\tif
+          !ok {\n\t\treturn errors.New(\"invalid user email\")\n\t}\n\n\tquery :=
+          r.db.First(&User{\n\t\tEmail: email,\n\t})\n\tif !query.RecordNotFound()
+          {\n\t\treturn errors.New(\"user email already exists\")\n\t}\n\n\treturn
           nil\n"
   - controller:
       name:
@@ -1606,10 +1617,10 @@ app:
         receiver:
           name: r
           type: '*tokenKeyUniqueRule'
-        body: "\n\tkey, ok := value.(string)\n\tif !ok {\n\t\treturn errors.New(\"invalid
-          token key\")\n\t}\n\n\tquery := r.db.First(&Token{\n\t\tKey: key,\n\t})\n\tif
-          !query.RecordNotFound() {\n\t\treturn errors.New(\"token key already exists\")\n\t}\n\n\treturn
-          nil\n"
+        body: "\n\tkey, ok := value.({string  string  VARCHAR false false})\n\tif
+          !ok {\n\t\treturn errors.New(\"invalid token key\")\n\t}\n\n\tquery := r.db.First(&Token{\n\t\tKey:
+          key,\n\t})\n\tif !query.RecordNotFound() {\n\t\treturn errors.New(\"token
+          key already exists\")\n\t}\n\n\treturn nil\n"
 main:
   name:
     base: main

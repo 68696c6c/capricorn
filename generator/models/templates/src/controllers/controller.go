@@ -18,7 +18,7 @@ type ControllerMeta struct {
 	UpdateRequestType    string
 	ResourceResponseType string
 	ListResponseType     string
-	RepoType             string
+	RepoType             data.TypeData
 	ModelType            string
 	Exported             bool
 }
@@ -55,7 +55,7 @@ func NewControllerFromMeta(meta utils.ServiceMeta, cMeta ControllerMeta) *Contro
 			Receiver:          base.Receiver,
 			RepoField: golang.Value{
 				Name: "repo",
-				Type: cMeta.RepoType,
+				Type: cMeta.RepoType.Name,
 			},
 			ErrorsField: golang.Value{
 				Name: "errors",
@@ -67,10 +67,6 @@ func NewControllerFromMeta(meta utils.ServiceMeta, cMeta ControllerMeta) *Contro
 			},
 		},
 	}
-}
-
-func (m *Controller) GetType() data.TypeData {
-	return data.MakeTypeData(m.base.PackageData.Reference, m.controllerType)
 }
 
 func (m *Controller) MustGetFile() golang.File {

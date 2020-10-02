@@ -1,7 +1,6 @@
 package models
 
 import (
-	"github.com/68696c6c/capricorn/generator/models/data"
 	"github.com/68696c6c/capricorn/generator/models/templates/golang"
 	"github.com/68696c6c/capricorn/generator/models/templates/src/utils"
 	"github.com/68696c6c/capricorn/generator/models/templates/src/validators"
@@ -26,8 +25,8 @@ func NewModelFromMeta(meta utils.ServiceMeta, validationReceiver string) *Model 
 	}
 }
 
-func (m *Model) GetType() data.TypeData {
-	return data.MakeTypeData(m.base.PackageData.Reference, m.base.Name.Exported)
+func (m *Model) GetTypeName() string {
+	return m.base.Name.Exported
 }
 
 func (m *Model) GetValidationFields() []*validators.ValidationField {
@@ -75,7 +74,7 @@ func (m *Model) build() {
 	for _, f := range m.base.Resource.Fields {
 		field := golang.Field{
 			Name: f.Name.Exported,
-			Type: f.TypeData,
+			Type: f.TypeData.Reference,
 			Tags: []golang.Tag{
 				{
 					Key:    "json",
@@ -92,7 +91,7 @@ func (m *Model) build() {
 		fields = append(fields, field)
 
 		if f.IsRequired || f.IsUnique {
-			v := validators.NewValidationField(m.validationMeta, f)
+			v := validators.NewValidationField(m.validationMeta, *f)
 			validationFields = append(validationFields, v)
 		}
 	}
@@ -106,7 +105,7 @@ func (m *Model) build() {
 	for _, f := range m.base.Resource.FieldsMeta.BelongsTo {
 		field := golang.Field{
 			Name: f.Name.Exported,
-			Type: f.TypeData,
+			Type: "*" + f.TypeData.Reference,
 			Tags: []golang.Tag{
 				{
 					Key:    "json",
@@ -120,7 +119,7 @@ func (m *Model) build() {
 	for _, f := range m.base.Resource.FieldsMeta.HasMany {
 		field := golang.Field{
 			Name: f.Name.Exported,
-			Type: f.TypeData,
+			Type: "[]*" + f.TypeData.Reference,
 			Tags: []golang.Tag{
 				{
 					Key:    "json",

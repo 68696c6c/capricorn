@@ -19,5 +19,5 @@ func TestModule_ModuleFromSpec(t *testing.T) {
 	resultYAML := result.String()
 	println(resultYAML)
 
-	assert.Equal(t, spec.FixtureSpecYAML, resultYAML)
+	assert.Equal(t, spec.FixtureSpecYAML, resultYAML, "module does not match snapshot")
 }

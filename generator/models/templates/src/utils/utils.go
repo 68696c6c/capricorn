@@ -22,6 +22,7 @@ type Service struct {
 	TypeData    data.TypeData
 	Name        data.Name
 	Resource    module.Resource
+	Receiver    golang.Value
 
 	Built      bool
 	Imports    golang.Imports
@@ -39,7 +40,7 @@ func NewService(meta ServiceMeta, receiverType string) Service {
 		PackageData: meta.PackageData,
 		Name:        meta.Name,
 		Resource:    meta.Resource,
-		TypeData:    data.MakeTypeDataService(pkgData.Reference, meta.Name.Exported, receiverType, false),
+		TypeData:    data.MakeTypeDataService(pkgData.Reference, meta.Name.Exported, meta.ReceiverName, false),
 		Receiver: golang.Value{
 			Name: meta.ReceiverName,
 			Type: receiverType,

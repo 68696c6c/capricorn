@@ -31,8 +31,8 @@ func NewRepoFromMeta(meta utils.ServiceMeta) *Repo {
 	}
 }
 
-func (m *Repo) GetType() data.TypeData {
-	return data.MakeTypeData(m.base.PackageData.Reference, m.interfaceName)
+func (m *Repo) GetInterfaceType() data.TypeData {
+	return data.MakeTypeDataService(m.base.PackageData.Reference, m.interfaceName, m.base.Receiver.Name, false)
 }
 
 func (m *Repo) MustGetFile() golang.File {

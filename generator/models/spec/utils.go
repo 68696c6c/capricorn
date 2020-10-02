@@ -373,6 +373,7 @@ enums:
       reference: enum.UserType
       package: enum
       name: UserType
+      receiver_name: u
       data_type: string
     values:
     - user
@@ -407,6 +408,7 @@ resources:
     type_data:
       reference: string
       name: string
+      data_type: VARCHAR
     is_required: true
   controller:
     name:
@@ -457,6 +459,7 @@ resources:
         reference: goat.ID
         package: goat
         name: ID
+        receiver_name: i
         data_type: BINARY(16) NOT NULL
       is_primary: true
     - key:
@@ -472,6 +475,7 @@ resources:
         reference: time.Time
         package: time
         name: Time
+        receiver_name: t
         data_type: NOT NULL DEFAULT CURRENT_TIMESTAMP
     - key:
         resource: organization
@@ -486,6 +490,7 @@ resources:
         reference: time.Time
         package: time
         name: Time
+        receiver_name: t
         data_type: NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP
         is_pointer: true
     - key:
@@ -501,6 +506,7 @@ resources:
         reference: time.Time
         package: time
         name: Time
+        receiver_name: t
         data_type: NULL DEFAULT NULL
         is_pointer: true
     - key:
@@ -515,6 +521,7 @@ resources:
       type_data:
         reference: string
         name: string
+        data_type: VARCHAR
       is_required: true
     model:
     - key:
@@ -529,6 +536,7 @@ resources:
       type_data:
         reference: string
         name: string
+        data_type: VARCHAR
       is_required: true
     has_many:
     - key:
@@ -557,6 +565,7 @@ resources:
         reference: users.User
         package: users
         name: User
+        receiver_name: u
         is_pointer: true
         is_slice: true
 - key:
@@ -588,6 +597,7 @@ resources:
       reference: goat.ID
       package: goat
       name: ID
+      receiver_name: i
       data_type: BINARY(16) NOT NULL
   - key:
       resource: user
@@ -602,6 +612,7 @@ resources:
       reference: enum.UserType
       package: enum
       name: UserType
+      receiver_name: u
       data_type: string
     is_required: true
   - key:
@@ -616,6 +627,7 @@ resources:
     type_data:
       reference: string
       name: string
+      data_type: VARCHAR
     is_required: true
   - key:
       resource: user
@@ -629,6 +641,7 @@ resources:
     type_data:
       reference: string
       name: string
+      data_type: VARCHAR
     is_required: true
     is_unique: true
   controller:
@@ -680,6 +693,7 @@ resources:
         reference: goat.ID
         package: goat
         name: ID
+        receiver_name: i
         data_type: BINARY(16) NOT NULL
       is_primary: true
     - key:
@@ -695,6 +709,7 @@ resources:
         reference: time.Time
         package: time
         name: Time
+        receiver_name: t
         data_type: NOT NULL DEFAULT CURRENT_TIMESTAMP
     - key:
         resource: user
@@ -709,6 +724,7 @@ resources:
         reference: time.Time
         package: time
         name: Time
+        receiver_name: t
         data_type: NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP
         is_pointer: true
     - key:
@@ -724,6 +740,7 @@ resources:
         reference: time.Time
         package: time
         name: Time
+        receiver_name: t
         data_type: NULL DEFAULT NULL
         is_pointer: true
     - key:
@@ -739,6 +756,7 @@ resources:
         reference: goat.ID
         package: goat
         name: ID
+        receiver_name: i
         data_type: BINARY(16) NOT NULL
     - key:
         resource: user
@@ -753,6 +771,7 @@ resources:
         reference: enum.UserType
         package: enum
         name: UserType
+        receiver_name: u
         data_type: string
       is_required: true
     - key:
@@ -767,6 +786,7 @@ resources:
       type_data:
         reference: string
         name: string
+        data_type: VARCHAR
       is_required: true
     - key:
         resource: user
@@ -780,6 +800,7 @@ resources:
       type_data:
         reference: string
         name: string
+        data_type: VARCHAR
       is_required: true
       is_unique: true
     model:
@@ -796,6 +817,7 @@ resources:
         reference: goat.ID
         package: goat
         name: ID
+        receiver_name: i
         data_type: BINARY(16) NOT NULL
     - key:
         resource: user
@@ -810,6 +832,7 @@ resources:
         reference: enum.UserType
         package: enum
         name: UserType
+        receiver_name: u
         data_type: string
       is_required: true
     - key:
@@ -824,6 +847,7 @@ resources:
       type_data:
         reference: string
         name: string
+        data_type: VARCHAR
       is_required: true
     - key:
         resource: user
@@ -837,6 +861,7 @@ resources:
       type_data:
         reference: string
         name: string
+        data_type: VARCHAR
       is_required: true
       is_unique: true
     belongs_to:
@@ -853,6 +878,7 @@ resources:
         reference: organizations.Organization
         package: organizations
         name: Organization
+        receiver_name: o
         is_pointer: true
     has_many:
     - key:
@@ -881,6 +907,7 @@ resources:
         reference: tokens.Token
         package: tokens
         name: Token
+        receiver_name: t
         is_pointer: true
         is_slice: true
     unique:
@@ -896,6 +923,7 @@ resources:
       type_data:
         reference: string
         name: string
+        data_type: VARCHAR
       is_required: true
       is_unique: true
 - key:
@@ -927,6 +955,7 @@ resources:
       reference: goat.ID
       package: goat
       name: ID
+      receiver_name: i
       data_type: BINARY(16) NOT NULL
   - key:
       resource: token
@@ -940,6 +969,7 @@ resources:
     type_data:
       reference: string
       name: string
+      data_type: VARCHAR
     is_required: true
     is_unique: true
   - key:
@@ -1000,6 +1030,7 @@ resources:
         reference: goat.ID
         package: goat
         name: ID
+        receiver_name: i
         data_type: BINARY(16) NOT NULL
       is_primary: true
     - key:
@@ -1015,6 +1046,7 @@ resources:
         reference: time.Time
         package: time
         name: Time
+        receiver_name: t
         data_type: NOT NULL DEFAULT CURRENT_TIMESTAMP
     - key:
         resource: token
@@ -1029,6 +1061,7 @@ resources:
         reference: time.Time
         package: time
         name: Time
+        receiver_name: t
         data_type: NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP
         is_pointer: true
     - key:
@@ -1044,6 +1077,7 @@ resources:
         reference: time.Time
         package: time
         name: Time
+        receiver_name: t
         data_type: NULL DEFAULT NULL
         is_pointer: true
     - key:
@@ -1059,6 +1093,7 @@ resources:
         reference: goat.ID
         package: goat
         name: ID
+        receiver_name: i
         data_type: BINARY(16) NOT NULL
     - key:
         resource: token
@@ -1072,6 +1107,7 @@ resources:
       type_data:
         reference: string
         name: string
+        data_type: VARCHAR
       is_required: true
       is_unique: true
     - key:
@@ -1102,6 +1138,7 @@ resources:
         reference: goat.ID
         package: goat
         name: ID
+        receiver_name: i
         data_type: BINARY(16) NOT NULL
     - key:
         resource: token
@@ -1115,6 +1152,7 @@ resources:
       type_data:
         reference: string
         name: string
+        data_type: VARCHAR
       is_required: true
       is_unique: true
     - key:
@@ -1145,6 +1183,7 @@ resources:
         reference: users.User
         package: users
         name: User
+        receiver_name: u
         is_pointer: true
     unique:
     - key:
@@ -1159,6 +1198,7 @@ resources:
       type_data:
         reference: string
         name: string
+        data_type: VARCHAR
       is_required: true
       is_unique: true
 `

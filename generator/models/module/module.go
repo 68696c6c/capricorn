@@ -10,6 +10,9 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
+// A Module describes all of a project's resources that need to generated and their relationships to each other.
+// Since the relation of Go packages is affected by the file structure, the Module model is also the decision point
+// for DDD or MVC pattern.
 type Module struct {
 	_spec spec.Spec
 

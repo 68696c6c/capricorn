@@ -32,6 +32,9 @@ build:
 test:
 	go test ./... -cover
 
+test-data:
+	go test ./generator/models/data -cover
+
 test-spec:
 	go test ./generator/models/spec -run TestSpec
 

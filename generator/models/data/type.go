@@ -5,6 +5,32 @@ import (
 	"strings"
 )
 
+// @TODO decimal.Decimal = DECIMAL(18, 4)
+
+var builtinToDataTypeMap = map[string]string{
+	"bool":       "BOOLEAN",
+	"byte":       "VARCHAR(1)",
+	"complex128": "BIGINT",
+	"complex64":  "BIGINT",
+	"error":      "VARCHAR",
+	"float32":    "DOUBLE",
+	"float64":    "DOUBLE",
+	"int":        "INT",
+	"int8":       "INT",
+	"int16":      "INT",
+	"int32":      "INT",
+	"int64":      "INT",
+	"rune":       "VARCHAR(1)",
+	"string":     "VARCHAR",
+	"uint":       "INT",
+	"uint8":      "INT",
+	"uint16":     "INT",
+	"uint32":     "INT",
+	"uint64":     "INT",
+	"uintptr":    "BIGINT",
+}
+
+// TypeData holds all the information needed to describe a Go type in any context.
 // e.g. reference: pkgname.TypeName
 // e.g. package: pkgname
 // e.g. name: TypeName
@@ -20,34 +46,27 @@ type TypeData struct {
 }
 
 func NewTypeDataFromReference(reference string) *TypeData {
-	var pkgName string
-	var typeName string
-	var isPointer bool
-	var isSlice bool
-	if strings.HasPrefix(reference, "[]") {
-		isSlice = true
-		reference = strings.TrimPrefix(reference, "[]")
-	}
-	if strings.HasPrefix(reference, "*") {
-		isPointer = true
-		reference = strings.TrimPrefix(reference, "*")
-	}
-	if strings.Contains(reference, ".") {
-		parts := strings.Split(reference, ".")
-		pkgName = parts[0]
-		typeName = parts[1]
-	} else {
-		typeName = reference
-	}
-	return MakeTypeData(pkgName, typeName, "", isPointer, isSlice)
-}
+	var receiverName string
+	var dataType string
 
-func makeReferenceName(pkgName, typeName string) string {
-	ref := typeName
-	if pkgName != "" {
-		ref = fmt.Sprintf("%s.%s", pkgName, typeName)
+	trimmed, isSlice, isPointer := isReferenceSliceOrPointerAndTrim(reference)
+	pkgName, typeName := getPkgAndTypeFromReference(trimmed)
+
+	// Any slice or pointer syntax has been stripped from the reference now so we can check if it's a builtin.
+	if dt, ok := isBuiltIn(typeName); ok {
+		dataType = dt
+		receiverName = ""
 	}
-	return ref
+
+	return &TypeData{
+		Reference:    reference,
+		Package:      pkgName,
+		Name:         typeName,
+		ReceiverName: receiverName,
+		DataType:     dataType,
+		IsPointer:    isPointer,
+		IsSlice:      isSlice,
+	}
 }
 
 func MakeTypeData(pkgName, typeName, dataType string, isPointer, isSlice bool) *TypeData {
@@ -55,7 +74,7 @@ func MakeTypeData(pkgName, typeName, dataType string, isPointer, isSlice bool) *
 		Reference:    makeReferenceName(pkgName, typeName),
 		Package:      pkgName,
 		Name:         typeName,
-		ReceiverName: typeName,
+		ReceiverName: makeReceiverName(typeName),
 		DataType:     dataType,
 		IsPointer:    isPointer,
 		IsSlice:      isSlice,
@@ -100,4 +119,49 @@ func MakeTypeDataBelongsTo(pkgName, typeName string) *TypeData {
 
 func MakeTypeDataHasMany(pkgName, typeName string) *TypeData {
 	return MakeTypeData(pkgName, typeName, "", true, true)
+}
+
+// Returns the provided reference string with any pointer or slice prefixes removed.
+// Also returns boolean values indicating whether the reference was determined to be a pointer or slice.
+// This function checks for both pointer and slice references because the checks for pointers and slices need to be done
+// in the correct order.  I.e., the [] needs to be trimmed before we can check if the string starts with *.
+func isReferenceSliceOrPointerAndTrim(reference string) (trimmedReference string, isSlice, isPointer bool) {
+	result := reference
+	if strings.HasPrefix(result, "[]") {
+		isSlice = true
+		result = strings.TrimPrefix(result, "[]")
+	}
+	if strings.HasPrefix(result, "*") {
+		isPointer = true
+		result = strings.TrimPrefix(result, "*")
+	}
+	return result, isSlice, isPointer
+}
+
+func getPkgAndTypeFromReference(trimmedReference string) (pkgName, typeName string) {
+	if strings.Contains(trimmedReference, ".") {
+		parts := strings.Split(trimmedReference, ".")
+		return parts[0], parts[1]
+	}
+	return "", trimmedReference
+}
+
+func isBuiltIn(reference string) (dataType string, isBuiltin bool) {
+	dataType, isBuiltin = builtinToDataTypeMap[reference]
+	return
+}
+
+func makeReferenceName(pkgName, typeName string) string {
+	ref := typeName
+	if pkgName != "" {
+		ref = fmt.Sprintf("%s.%s", pkgName, typeName)
+	}
+	return ref
+}
+
+func makeReceiverName(typeName string) string {
+	if len(typeName) < 1 {
+		return ""
+	}
+	return strings.ToLower(typeName[0:1])
 }
