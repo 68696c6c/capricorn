@@ -153,7 +153,18 @@ app:
         type: UserType
       body: return string(t), nil
   domains:
-  - controller:
+  - packagedata:
+      reference: organizations
+      name:
+        space: organizations
+        snake: organizations
+        kebob: organizations
+        exported: Organizations
+        unexported: organizations
+      path:
+        base: github.com/68696c6c/test-example/app
+        full: github.com/68696c6c/test-example/app/organizations
+    controller:
       name:
         base: controller
         full: controller.go
@@ -736,7 +747,18 @@ app:
         path:
           base: github.com/68696c6c/test-example/app
           full: github.com/68696c6c/test-example/app/organizations
-  - controller:
+  - packagedata:
+      reference: users
+      name:
+        space: users
+        snake: users
+        kebob: users
+        exported: Users
+        unexported: users
+      path:
+        base: github.com/68696c6c/test-example/app
+        full: github.com/68696c6c/test-example/app/users
+    controller:
       name:
         base: controller
         full: controller.go
@@ -1386,7 +1408,18 @@ app:
           r.db.First(&User{\n\t\tEmail: email,\n\t})\n\tif !query.RecordNotFound()
           {\n\t\treturn errors.New(\"user email already exists\")\n\t}\n\n\treturn
           nil\n"
-  - controller:
+  - packagedata:
+      reference: tokens
+      name:
+        space: tokens
+        snake: tokens
+        kebob: tokens
+        exported: Tokens
+        unexported: tokens
+      path:
+        base: github.com/68696c6c/test-example/app
+        full: github.com/68696c6c/test-example/app/tokens
+    controller:
       name:
         base: controller
         full: controller.go
@@ -1846,6 +1879,81 @@ app:
           !ok {\n\t\treturn errors.New(\"invalid token key\")\n\t}\n\n\tquery := r.db.First(&Token{\n\t\tKey:
           key,\n\t})\n\tif !query.RecordNotFound() {\n\t\treturn errors.New(\"token
           key already exists\")\n\t}\n\n\treturn nil\n"
+db:
+  migrations:
+  - name:
+      base: 20201030175625_initial_migration.go
+      full: 20201030175625_initial_migration.go.go
+    path:
+      base: github.com/68696c6c/test-example/db/migrations
+      full: github.com/68696c6c/test-example/db/migrations/20201030175625_initial_migration.go.go
+    package:
+      reference: migrations
+      name:
+        space: migrations
+        snake: migrations
+        kebob: migrations
+        exported: Migrations
+        unexported: migrations
+      path:
+        base: github.com/68696c6c/test-example/db
+        full: github.com/68696c6c/test-example/db/migrations
+    imports:
+      standard:
+      - database/sql
+      app:
+      - github.com/68696c6c/test-example/app/organizations
+      - github.com/68696c6c/test-example/app/users
+      - github.com/68696c6c/test-example/app/tokens
+      vendor:
+      - github.com/68696c6c/goat
+      - github.com/pkg/errors
+      - github.com/pressly/goose
+    init_function:
+      name: init
+      imports:
+        vendor:
+        - github.com/pressly/goose
+      body: "\n\tgoose.AddMigration(upInitialMigration, downInitialMigration)\n"
+    functions:
+    - name: upInitialMigration
+      imports:
+        standard:
+        - database/sql
+        app:
+        - github.com/68696c6c/test-example/app/organizations
+        - github.com/68696c6c/test-example/app/users
+        - github.com/68696c6c/test-example/app/tokens
+        vendor:
+        - github.com/68696c6c/goat
+        - github.com/pkg/errors
+      arguments:
+      - name: tx
+        type: '*sql.Tx'
+      return_values:
+      - type: error
+      body: "\n\tgoat.Init()\n\n\tdb, err := goat.GetMigrationDB()\n\tif err != nil
+        {\n\t\treturn errors.Wrap(err, \"failed to initialize migration connection\")\n\t}\n\tdb.AutoMigrate(&organizations.Organization{})\ndb.AutoMigrate(&users.User{})\ndb.AutoMigrate(&tokens.Token{})\n\n\treturn
+        nil\n"
+    - name: downInitialMigration
+      imports:
+        standard:
+        - database/sql
+        app:
+        - github.com/68696c6c/test-example/app/organizations
+        - github.com/68696c6c/test-example/app/users
+        - github.com/68696c6c/test-example/app/tokens
+        vendor:
+        - github.com/68696c6c/goat
+        - github.com/pkg/errors
+      arguments:
+      - name: tx
+        type: '*sql.Tx'
+      return_values:
+      - type: error
+      body: "\n\tgoat.Init()\n\n\tdb, err := goat.GetMigrationDB()\n\tif err != nil
+        {\n\t\treturn errors.Wrap(err, \"failed to initialize migration connection\")\n\t}\n\tdb.DropTable(&organizations.Organization{})\ndb.DropTable(&users.User{})\ndb.DropTable(&tokens.Token{})\n\n\treturn
+        nil\n"
 main:
   name:
     base: main

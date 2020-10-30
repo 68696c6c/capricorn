@@ -13,9 +13,6 @@ type Meta struct {
 	PackageData  data.PackageData
 }
 
-type ContainerFieldMeta struct {
-}
-
 type Container struct {
 	FileData    data.FileData
 	PathData    data.PathData

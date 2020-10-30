@@ -1,6 +1,7 @@
 package models
 
 import (
+	"github.com/68696c6c/capricorn/generator/models/data"
 	"github.com/68696c6c/capricorn/generator/models/templates/golang"
 	"github.com/68696c6c/capricorn/generator/models/templates/src/utils"
 	"github.com/68696c6c/capricorn/generator/models/templates/src/validators"
@@ -25,8 +26,8 @@ func NewModelFromMeta(meta utils.ServiceMeta, validationReceiver string) *Model 
 	}
 }
 
-func (m *Model) GetTypeName() string {
-	return m.base.Name.Exported
+func (m *Model) GetType() data.TypeData {
+	return m.base.TypeData
 }
 
 func (m *Model) GetValidationFields() []*validators.ValidationField {

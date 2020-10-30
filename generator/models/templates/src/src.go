@@ -6,6 +6,7 @@ import (
 	"github.com/68696c6c/capricorn/generator/models/templates/golang"
 	"github.com/68696c6c/capricorn/generator/models/templates/src/app"
 	"github.com/68696c6c/capricorn/generator/models/templates/src/controllers"
+	"github.com/68696c6c/capricorn/generator/models/templates/src/database"
 	enumMeta "github.com/68696c6c/capricorn/generator/models/templates/src/enums/meta"
 	enumString "github.com/68696c6c/capricorn/generator/models/templates/src/enums/string"
 	"github.com/68696c6c/capricorn/generator/models/templates/src/models"
@@ -27,6 +28,7 @@ type SRC struct {
 
 	App  App         `yaml:"app,omitempty"`
 	CMD  CMD         `yaml:"cmd,omitempty"`
+	DB   DB          `yaml:"db,omitempty"`
 	HTTP HTTP        `yaml:"http,omitempty"`
 	Main golang.File `yaml:"main,omitempty"`
 }
@@ -63,6 +65,7 @@ type HTTP struct {
 }
 
 type Domain struct {
+	PackageData     data.PackageData
 	Controller      golang.File `yaml:"controller,omitempty"`
 	ControllerTest  golang.File `yaml:"controller_test,omitempty"`
 	Repo            golang.File `yaml:"repo,omitempty"`
@@ -73,6 +76,7 @@ type Domain struct {
 	ServiceTest     golang.File `yaml:"service_test,omitempty"`
 	Validator       golang.File `yaml:"validator,omitempty"`
 	ValidatorTest   golang.File `yaml:"validator_test,omitempty"`
+	modelType       data.TypeData
 	containerFields []utils.ContainerFieldMeta
 }
 
@@ -87,6 +91,9 @@ func NewSRCDDD(m module.Module, rootPath string) SRC {
 			Enums:     makeEnums(m),
 			Container: makeContainer(m, domains),
 			Domains:   domains,
+		},
+		DB: DB{
+			Migrations: makeInitialMigrations(m, domains),
 		},
 		Main: NewMainGo(rootPath, m.Packages.SRC.GetImport(), m.Packages.CMD.GetImport()),
 	}
@@ -105,6 +112,23 @@ func makeContainer(m module.Module, domains []Domain) golang.File {
 		Name:         name,
 	}, fields)
 	return container.MustGetFile()
+}
+
+func makeInitialMigrations(m module.Module, domains []Domain) []golang.File {
+	var imports []string
+	var modelRefs []string
+	for _, d := range domains {
+		imports = append(imports, d.PackageData.GetImport())
+		modelRefs = append(modelRefs, d.modelType.Reference)
+	}
+
+	mig := database.NewInitialMigration(database.MigrationMeta{
+		PackageData: m.Packages.Migrations,
+		AppImports:  imports,
+		ModelRefs:   modelRefs,
+	})
+
+	return []golang.File{mig.MustGetFile()}
 }
 
 func makeEnums(m module.Module) []golang.File {
@@ -165,8 +189,7 @@ func makeDomain(r module.Resource, baseDomainPath string) Domain {
 		PackageData:  pkgData,
 		Name:         r.Inflection.Single,
 	}, validationReceiver)
-	// In a non-DDD app, we would use the Reference instead of the Name.
-	modelType := model.GetTypeName()
+	modelType := model.GetType()
 
 	validator := validators.NewValidatorFromMeta(utils.ServiceMeta{
 		ReceiverName: validationReceiver,
@@ -182,7 +205,8 @@ func makeDomain(r module.Resource, baseDomainPath string) Domain {
 		Resource:     r,
 		PackageData:  pkgData,
 		Name:         rName,
-		ModelType:    modelType,
+		// In a non-DDD app, we would use the Reference instead of the Name.
+		ModelType: modelType.Name,
 	})
 	repoType := repo.GetInterfaceType()
 
@@ -192,7 +216,8 @@ func makeDomain(r module.Resource, baseDomainPath string) Domain {
 		Resource:     r,
 		PackageData:  pkgData,
 		Name:         cName,
-		ModelType:    modelType,
+		// In a non-DDD app, we would use the Reference instead of the Name.
+		ModelType: modelType.Name,
 	}, controllers.ControllerMeta{
 		CreateRequestType:    createRequestName.Exported,
 		UpdateRequestType:    updateRequestName.Exported,
@@ -219,11 +244,13 @@ func makeDomain(r module.Resource, baseDomainPath string) Domain {
 
 	domainKey := r.Inflection.Plural.Kebob
 	return Domain{
-		Model:      model.MustGetFile(),
-		Validator:  validator.MustGetFile(),
-		Repo:       repo.MustGetFile(),
-		Controller: controller.MustGetFile(),
-		Service:    service.MustGetFile(),
+		PackageData: pkgData,
+		Model:       model.MustGetFile(),
+		Validator:   validator.MustGetFile(),
+		Repo:        repo.MustGetFile(),
+		Controller:  controller.MustGetFile(),
+		Service:     service.MustGetFile(),
+		modelType:   modelType,
 		containerFields: []utils.ContainerFieldMeta{
 			{
 				DomainKey:     domainKey,

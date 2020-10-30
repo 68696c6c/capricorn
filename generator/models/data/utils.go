@@ -14,6 +14,7 @@ const (
 	ImportGorm       = "github.com/jinzhu/gorm"
 	ImportValidation = "github.com/go-ozzo/ozzo-validation"
 	ImportLogrus     = "github.com/sirupsen/logrus"
+	ImportGoose      = "github.com/pressly/goose"
 )
 
 type Template interface {
