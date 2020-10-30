@@ -13,6 +13,7 @@ type Repo struct {
 	implementationName string
 	interfaceName      string
 	methodMeta         methods.Meta
+	constructor        golang.Function
 }
 
 func NewRepoFromMeta(meta utils.ServiceMeta) *Repo {
@@ -29,6 +30,17 @@ func NewRepoFromMeta(meta utils.ServiceMeta) *Repo {
 			ModelType:   meta.ModelType,
 		},
 	}
+}
+
+func (m *Repo) GetName() data.Name {
+	return m.base.Name
+}
+
+func (m *Repo) GetConstructor() golang.Function {
+	if !m.base.Built {
+		m.build()
+	}
+	return m.constructor
 }
 
 func (m *Repo) GetInterfaceType() data.TypeData {
@@ -63,6 +75,7 @@ func (m *Repo) build() {
 
 	// Default functions.
 	constructor := NewConstructor(m.interfaceName, m.implementationName, m.methodMeta.DBFieldName)
+	m.constructor = constructor.MustGetFunction()
 	functions = append(functions, constructor.MustGetFunction())
 	imports = golang.MergeImports(imports, constructor.GetImports())
 

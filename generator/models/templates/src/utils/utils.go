@@ -4,7 +4,35 @@ import (
 	"github.com/68696c6c/capricorn/generator/models/data"
 	"github.com/68696c6c/capricorn/generator/models/module"
 	"github.com/68696c6c/capricorn/generator/models/templates/golang"
+	"github.com/pkg/errors"
 )
+
+const (
+	ServiceTypeRepo    ServiceType = "repo"
+	ServiceTypeService ServiceType = "service"
+)
+
+var validServiceTypes = map[string]ServiceType{"repo": ServiceTypeRepo, "service": ServiceTypeService}
+
+type ServiceType string
+
+func ServiceTypeFromString(input string) (ServiceType, error) {
+	result, ok := validServiceTypes[input]
+	if ok {
+		return result, nil
+	}
+	return ServiceType(""), errors.Errorf("invalid ServiceType '%s'", input)
+}
+
+type ContainerFieldMeta struct {
+	data.Name
+	data.TypeData
+	ServiceType
+	golang.Field
+	PackageImport string
+	DomainKey     string
+	Constructor   golang.Function
+}
 
 type ServiceMeta struct {
 	Name         data.Name

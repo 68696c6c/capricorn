@@ -21,21 +21,22 @@ type Project struct {
 
 func NewProjectFromModule(m module.Module, projectPath string, ddd bool) (Project, error) {
 	// @TODO @CHECKPOINT working on generating project from a module.
-	// rootPackage := m.Package.Reference
-	// rootPath, err := getProjectRootPath(projectPath, rootPackage)
-	// if err != nil {
-	// 	return Project{}, err
-	// }
-	//
-	// var projectSRC src.SRC
-	// if ddd {
-	// 	projectSRC = src.NewSRCDDD(m, rootPath)
-	// } else {
-	//
-	// }
-	//
-	// result := Project{
-	// 	SRC: projectSRC,
-	// }
-	return Project{}, nil
+	rootPackage := m.Package.Reference
+	rootPath, err := getProjectRootPath(projectPath, rootPackage)
+	if err != nil {
+		return Project{}, err
+	}
+
+	var projectSRC src.SRC
+	if ddd {
+		projectSRC = src.NewSRCDDD(m, rootPath)
+	} else {
+
+	}
+
+	result := Project{
+		SRC: projectSRC,
+	}
+
+	return result, nil
 }

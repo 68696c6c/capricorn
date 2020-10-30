@@ -4,6 +4,7 @@ import (
 	"github.com/68696c6c/capricorn/generator/models/data"
 	"github.com/68696c6c/capricorn/generator/models/module"
 	"github.com/68696c6c/capricorn/generator/models/templates/golang"
+	"github.com/68696c6c/capricorn/generator/models/templates/src/app"
 	"github.com/68696c6c/capricorn/generator/models/templates/src/controllers"
 	enumMeta "github.com/68696c6c/capricorn/generator/models/templates/src/enums/meta"
 	enumString "github.com/68696c6c/capricorn/generator/models/templates/src/enums/string"
@@ -62,31 +63,48 @@ type HTTP struct {
 }
 
 type Domain struct {
-	Controller     golang.File `yaml:"controller,omitempty"`
-	ControllerTest golang.File `yaml:"controller_test,omitempty"`
-	Repo           golang.File `yaml:"repo,omitempty"`
-	RepoTest       golang.File `yaml:"repo_test,omitempty"`
-	Model          golang.File `yaml:"model,omitempty"`
-	ModelTest      golang.File `yaml:"model_test,omitempty"`
-	Service        golang.File `yaml:"service,omitempty"`
-	ServiceTest    golang.File `yaml:"service_test,omitempty"`
-	Validator      golang.File `yaml:"validator,omitempty"`
-	ValidatorTest  golang.File `yaml:"validator_test,omitempty"`
+	Controller      golang.File `yaml:"controller,omitempty"`
+	ControllerTest  golang.File `yaml:"controller_test,omitempty"`
+	Repo            golang.File `yaml:"repo,omitempty"`
+	RepoTest        golang.File `yaml:"repo_test,omitempty"`
+	Model           golang.File `yaml:"model,omitempty"`
+	ModelTest       golang.File `yaml:"model_test,omitempty"`
+	Service         golang.File `yaml:"service,omitempty"`
+	ServiceTest     golang.File `yaml:"service_test,omitempty"`
+	Validator       golang.File `yaml:"validator,omitempty"`
+	ValidatorTest   golang.File `yaml:"validator_test,omitempty"`
+	containerFields []utils.ContainerFieldMeta
 }
 
 func NewSRCDDD(m module.Module, rootPath string) SRC {
+	domains := makeDomains(m)
 	return SRC{
 		_module:  m,
 		basePath: rootPath,
 		Path:     data.MakePathData(rootPath, m.Packages.SRC.Reference),
 		Package:  m.Packages.SRC,
 		App: App{
-			Enums: makeEnums(m),
-			// Container: makeContainer(c),
-			Domains: makeDomains(m),
+			Enums:     makeEnums(m),
+			Container: makeContainer(m, domains),
+			Domains:   domains,
 		},
 		Main: NewMainGo(rootPath, m.Packages.SRC.GetImport(), m.Packages.CMD.GetImport()),
 	}
+}
+
+func makeContainer(m module.Module, domains []Domain) golang.File {
+	var fields []utils.ContainerFieldMeta
+	for _, d := range domains {
+		fields = append(fields, d.containerFields...)
+	}
+	name := data.MakeName("app")
+	container := app.NewContainer(app.Meta{
+		ReceiverName: "a",
+		FileName:     name.Snake,
+		PackageData:  m.Packages.App,
+		Name:         name,
+	}, fields)
+	return container.MustGetFile()
 }
 
 func makeEnums(m module.Module) []golang.File {
@@ -132,6 +150,7 @@ func makeDomain(r module.Resource, baseDomainPath string) Domain {
 	rName := data.MakeName("repo")
 	mName := data.MakeName("model")
 	vName := data.MakeName("validator")
+	sName := data.MakeName("service")
 	validationReceiver := "r"
 	createRequestName := data.MakeName("create_request")
 	updateRequestName := data.MakeName("update_request")
@@ -156,6 +175,7 @@ func makeDomain(r module.Resource, baseDomainPath string) Domain {
 		PackageData:  pkgData,
 	}, model.GetValidationFields())
 
+	unscopedRepoName := r.Inflection.Plural.Exported + "Repo"
 	repo := repos.NewRepoFromMeta(utils.ServiceMeta{
 		ReceiverName: "r",
 		FileName:     rName.Snake,
@@ -164,7 +184,6 @@ func makeDomain(r module.Resource, baseDomainPath string) Domain {
 		Name:         rName,
 		ModelType:    modelType,
 	})
-	// In a non-DDD app, we would use the Reference instead of the Name.
 	repoType := repo.GetInterfaceType()
 
 	controller := controllers.NewControllerFromMeta(utils.ServiceMeta{
@@ -183,20 +202,53 @@ func makeDomain(r module.Resource, baseDomainPath string) Domain {
 		Exported:             true,
 	})
 
-	sName := data.MakeName(r.Inflection.Plural.Kebob + "-service")
+	unscopedServiceName := r.Inflection.Plural.Exported + "Service"
 	service := services.NewServiceFromMeta(utils.ServiceMeta{
 		ReceiverName: "s",
 		FileName:     sName.Snake,
 		Resource:     r,
 		PackageData:  pkgData,
-		Name:         r.Inflection.Plural,
+		Name:         sName,
+	}, services.ServiceMeta{
+		ImplementationName: unscopedServiceName,
+		// In a non-DDD app, we would use repoType.Reference instead of repoType.Name since the repo would be in a different package.
+		RepoTypeRef: repoType.Name,
+		RepoName:    repo.GetName(),
 	})
+	serviceType := service.GetInterfaceType()
 
+	domainKey := r.Inflection.Plural.Kebob
 	return Domain{
 		Model:      model.MustGetFile(),
 		Validator:  validator.MustGetFile(),
 		Repo:       repo.MustGetFile(),
 		Controller: controller.MustGetFile(),
 		Service:    service.MustGetFile(),
+		containerFields: []utils.ContainerFieldMeta{
+			{
+				DomainKey:     domainKey,
+				PackageImport: pkgData.GetImport(),
+				Name:          repo.GetName(),
+				Constructor:   repo.GetConstructor(),
+				TypeData:      repoType,
+				ServiceType:   utils.ServiceTypeRepo,
+				Field: golang.Field{
+					Name: unscopedRepoName,
+					Type: repoType.Reference,
+				},
+			},
+			{
+				DomainKey:     domainKey,
+				PackageImport: pkgData.GetImport(),
+				Name:          service.GetName(),
+				Constructor:   service.GetConstructor(),
+				TypeData:      serviceType,
+				ServiceType:   utils.ServiceTypeService,
+				Field: golang.Field{
+					Name: unscopedServiceName,
+					Type: serviceType.Reference,
+				},
+			},
+		},
 	}
 }

@@ -17,7 +17,7 @@ func TestSRC_NewSRCDDD(t *testing.T) {
 	resultYAML := result.String()
 	println(resultYAML)
 
-	assert.Equal(t, FixtureSRCYAML, resultYAML)
+	assert.Equal(t, FixtureSRCYAML, resultYAML, "result does not match snapshot")
 }
 
 const FixtureSRCYAML = `package:
@@ -28,6 +28,73 @@ path:
   base: /base/path/test-example
   full: /base/path/test-example
 app:
+  container:
+    name:
+      base: app
+      full: app.go
+    path:
+      base: github.com/68696c6c/test-example/app
+      full: github.com/68696c6c/test-example/app/app.go
+    package:
+      reference: app
+      name:
+        space: app
+        snake: app
+        kebob: app
+        exported: App
+        unexported: app
+      path:
+        base: github.com/68696c6c/test-example
+        full: github.com/68696c6c/test-example/app
+    imports:
+      app:
+      - github.com/68696c6c/test-example/app/organizations
+      - github.com/68696c6c/test-example/app/users
+      - github.com/68696c6c/test-example/app/tokens
+      vendor:
+      - github.com/68696c6c/goat
+      - github.com/jinzhu/gorm
+      - github.com/sirupsen/logrus
+    vars:
+    - name: container
+      type: App
+    structs:
+    - name: App
+      fields:
+      - name: OrganizationsRepo
+        type: organizations.Repo
+      - name: OrganizationsService
+        type: organizations.Service
+      - name: UsersRepo
+        type: users.Repo
+      - name: UsersService
+        type: users.Service
+      - name: TokensRepo
+        type: tokens.Repo
+      - name: TokensService
+        type: tokens.Service
+    functions:
+    - name: GetApp
+      imports:
+        app:
+        - github.com/68696c6c/test-example/app/organizations
+        - github.com/68696c6c/test-example/app/users
+        - github.com/68696c6c/test-example/app/tokens
+        vendor:
+        - github.com/jinzhu/gorm
+      arguments:
+      - name: d
+        type: '*gorm.DB'
+      - name: l
+        type: '*logrus.Log'
+      return_values:
+      - type: App
+      - type: error
+      body: "\n\tif  != (App{}) {\n\t\treturn , nil\n\t}\n\t\n\trepo := organizations.NewRepo(d)\nrepo
+        := users.NewRepo(d)\nrepo := tokens.NewRepo(d)\n\n\t = App{\n\t\tDB: d,\n\t\tLogger:
+        l,\n\t\tErrors: goat.NewErrorHandler(l),\n\t\tOrganizationsRepo: repo\nservice:
+        organizations.NewService(repo),\nUsersRepo: repo\nservice: users.NewService(repo),\nTokensRepo:
+        repo\nservice: tokens.NewService(repo),\n\t}\n\n\treturn , nil\n"
   enums:
   - imports:
       standard:
@@ -623,11 +690,11 @@ app:
           validation.Required),\n\t)\n"
     service:
       name:
-        base: organizations_service
-        full: organizations_service.go
+        base: service
+        full: service.go
       path:
         base: github.com/68696c6c/test-example/app/organizations
-        full: github.com/68696c6c/test-example/app/organizations/organizations_service.go
+        full: github.com/68696c6c/test-example/app/organizations/service.go
       package:
         reference: organizations
         name:
@@ -640,14 +707,17 @@ app:
           base: github.com/68696c6c/test-example/app
           full: github.com/68696c6c/test-example/app/organizations
       interfaces:
-      - name: OrganizationsService
+      - name: Service
       structs:
-      - name: Organizations
+      - name: OrganizationsService
       functions:
-      - name: NewOrganizationsService
+      - name: NewService
+        arguments:
+        - name: repo
+          type: Repo
         return_values:
-        - type: OrganizationsService
-        body: "\n\treturn &Organizations{}\n"
+        - type: Service
+        body: "\n\treturn &OrganizationsService{\n\t\trepo: repo,\n\t}\n"
     validator:
       name:
         base: validator
@@ -1233,11 +1303,11 @@ app:
           validation.Required, newUserEmailUniqueRule(d)),\n\t)\n"
     service:
       name:
-        base: users_service
-        full: users_service.go
+        base: service
+        full: service.go
       path:
         base: github.com/68696c6c/test-example/app/users
-        full: github.com/68696c6c/test-example/app/users/users_service.go
+        full: github.com/68696c6c/test-example/app/users/service.go
       package:
         reference: users
         name:
@@ -1250,14 +1320,17 @@ app:
           base: github.com/68696c6c/test-example/app
           full: github.com/68696c6c/test-example/app/users
       interfaces:
-      - name: UsersService
+      - name: Service
       structs:
-      - name: Users
+      - name: UsersService
       functions:
-      - name: NewUsersService
+      - name: NewService
+        arguments:
+        - name: repo
+          type: Repo
         return_values:
-        - type: UsersService
-        body: "\n\treturn &Users{}\n"
+        - type: Service
+        body: "\n\treturn &UsersService{\n\t\trepo: repo,\n\t}\n"
     validator:
       name:
         base: validator
@@ -1680,11 +1753,11 @@ app:
           newTokenKeyUniqueRule(d)),\nvalidation.Field(&r.Expires, validation.Required),\n\t)\n"
     service:
       name:
-        base: tokens_service
-        full: tokens_service.go
+        base: service
+        full: service.go
       path:
         base: github.com/68696c6c/test-example/app/tokens
-        full: github.com/68696c6c/test-example/app/tokens/tokens_service.go
+        full: github.com/68696c6c/test-example/app/tokens/service.go
       package:
         reference: tokens
         name:
@@ -1697,24 +1770,27 @@ app:
           base: github.com/68696c6c/test-example/app
           full: github.com/68696c6c/test-example/app/tokens
       interfaces:
-      - name: TokensService
+      - name: Service
         functions:
         - name: refresh
           receiver:
             name: s
-            type: Tokens
+            type: Service
           body: "\n\treturn\n"
       structs:
-      - name: Tokens
+      - name: TokensService
       functions:
-      - name: NewTokensService
+      - name: NewService
+        arguments:
+        - name: repo
+          type: Repo
         return_values:
-        - type: TokensService
-        body: "\n\treturn &Tokens{}\n"
+        - type: Service
+        body: "\n\treturn &TokensService{\n\t\trepo: repo,\n\t}\n"
       - name: refresh
         receiver:
           name: s
-          type: Tokens
+          type: Service
         body: "\n\treturn\n"
     validator:
       name:

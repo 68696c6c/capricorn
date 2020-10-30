@@ -1,24 +1,30 @@
 package services
 
 import (
+	"github.com/68696c6c/capricorn/generator/models/data"
 	"github.com/68696c6c/capricorn/generator/models/templates/golang"
 	"github.com/68696c6c/capricorn/generator/utils"
 )
 
 var constructorBodyTemplate = `
-	return &{{ .StructName }}{}
+	return &{{ .StructName }}{
+		{{ .RepoFieldName }}: {{ .RepoArgName }},
+	}
 `
 
 type Constructor struct {
-	name       string
-	receiver   golang.Value
-	imports    golang.Imports
-	args       []golang.Value
-	returns    []golang.Value
-	StructName string
+	name          string
+	receiver      golang.Value
+	imports       golang.Imports
+	args          []golang.Value
+	returns       []golang.Value
+	StructName    string
+	RepoFieldName string
+	RepoArgName   string
 }
 
-func NewConstructor(interfaceName, implementationName string) Constructor {
+func NewConstructor(interfaceName, implementationName, repoTypeRef string, repoName data.Name) Constructor {
+	repoArgName := repoName.Unexported
 	return Constructor{
 		name:     "New" + interfaceName,
 		receiver: golang.Value{},
@@ -27,13 +33,20 @@ func NewConstructor(interfaceName, implementationName string) Constructor {
 			App:      nil,
 			Vendor:   nil,
 		},
-		args: []golang.Value{},
+		args: []golang.Value{
+			{
+				Name: repoArgName,
+				Type: repoTypeRef,
+			},
+		},
 		returns: []golang.Value{
 			{
 				Type: interfaceName,
 			},
 		},
-		StructName: implementationName,
+		StructName:    implementationName,
+		RepoFieldName: repoName.Unexported,
+		RepoArgName:   repoArgName,
 	}
 }
 

@@ -6,12 +6,15 @@ import (
 	"github.com/68696c6c/capricorn/generator/utils"
 )
 
-const ImportGoat = "github.com/68696c6c/goat"
-const ImportQuery = "github.com/68696c6c/goat/query"
-const ImportGin = "github.com/gin-gonic/gin"
-const ImportErrors = "github.com/pkg/errors"
-const ImportGorm = "github.com/jinzhu/gorm"
-const ImportValidation = "github.com/go-ozzo/ozzo-validation"
+const (
+	ImportGoat       = "github.com/68696c6c/goat"
+	ImportQuery      = "github.com/68696c6c/goat/query"
+	ImportGin        = "github.com/gin-gonic/gin"
+	ImportErrors     = "github.com/pkg/errors"
+	ImportGorm       = "github.com/jinzhu/gorm"
+	ImportValidation = "github.com/go-ozzo/ozzo-validation"
+	ImportLogrus     = "github.com/sirupsen/logrus"
+)
 
 type Template interface {
 	Generate() error
