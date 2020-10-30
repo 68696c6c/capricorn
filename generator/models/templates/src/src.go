@@ -9,6 +9,7 @@ import (
 	enumString "github.com/68696c6c/capricorn/generator/models/templates/src/enums/string"
 	"github.com/68696c6c/capricorn/generator/models/templates/src/models"
 	"github.com/68696c6c/capricorn/generator/models/templates/src/repos"
+	"github.com/68696c6c/capricorn/generator/models/templates/src/services"
 	"github.com/68696c6c/capricorn/generator/models/templates/src/utils"
 	"github.com/68696c6c/capricorn/generator/models/templates/src/validators"
 
@@ -130,7 +131,6 @@ func makeDomain(r module.Resource, baseDomainPath string) Domain {
 	cName := data.MakeName("controller")
 	rName := data.MakeName("repo")
 	mName := data.MakeName("model")
-	// sName := data.MakeName("service")
 	vName := data.MakeName("validator")
 	validationReceiver := "r"
 	createRequestName := data.MakeName("create_request")
@@ -183,19 +183,20 @@ func makeDomain(r module.Resource, baseDomainPath string) Domain {
 		Exported:             true,
 	})
 
+	sName := data.MakeName(r.Inflection.Plural.Kebob + "-service")
+	service := services.NewServiceFromMeta(utils.ServiceMeta{
+		ReceiverName: "s",
+		FileName:     sName.Snake,
+		Resource:     r,
+		PackageData:  pkgData,
+		Name:         r.Inflection.Plural,
+	})
+
 	return Domain{
 		Model:      model.MustGetFile(),
 		Validator:  validator.MustGetFile(),
 		Repo:       repo.MustGetFile(),
 		Controller: controller.MustGetFile(),
-		// Service: makeService(
-		// 	serviceMeta{
-		// 		resource:     r,
-		// 		packageData:  pkgData,
-		// 		name:         rName,
-		// 		fileName:     rName.Snake,
-		// 		receiverName: "s",
-		// 	},
-		// ),
+		Service:    service.MustGetFile(),
 	}
 }

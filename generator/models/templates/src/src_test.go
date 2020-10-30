@@ -621,6 +621,33 @@ app:
           type: '*Organization'
         body: "\n\treturn validation.ValidateStruct(r,\nvalidation.Field(&r.Name,
           validation.Required),\n\t)\n"
+    service:
+      name:
+        base: organizations_service
+        full: organizations_service.go
+      path:
+        base: github.com/68696c6c/test-example/app/organizations
+        full: github.com/68696c6c/test-example/app/organizations/organizations_service.go
+      package:
+        reference: organizations
+        name:
+          space: organizations
+          snake: organizations
+          kebob: organizations
+          exported: Organizations
+          unexported: organizations
+        path:
+          base: github.com/68696c6c/test-example/app
+          full: github.com/68696c6c/test-example/app/organizations
+      interfaces:
+      - name: OrganizationsService
+      structs:
+      - name: Organizations
+      functions:
+      - name: NewOrganizationsService
+        return_values:
+        - type: OrganizationsService
+        body: "\n\treturn &Organizations{}\n"
     validator:
       name:
         base: validator
@@ -1204,6 +1231,33 @@ app:
         body: "\n\treturn validation.ValidateStruct(r,\nvalidation.Field(&r.Type,
           validation.Required),\nvalidation.Field(&r.Name, validation.Required),\nvalidation.Field(&r.Email,
           validation.Required, newUserEmailUniqueRule(d)),\n\t)\n"
+    service:
+      name:
+        base: users_service
+        full: users_service.go
+      path:
+        base: github.com/68696c6c/test-example/app/users
+        full: github.com/68696c6c/test-example/app/users/users_service.go
+      package:
+        reference: users
+        name:
+          space: users
+          snake: users
+          kebob: users
+          exported: Users
+          unexported: users
+        path:
+          base: github.com/68696c6c/test-example/app
+          full: github.com/68696c6c/test-example/app/users
+      interfaces:
+      - name: UsersService
+      structs:
+      - name: Users
+      functions:
+      - name: NewUsersService
+        return_values:
+        - type: UsersService
+        body: "\n\treturn &Users{}\n"
     validator:
       name:
         base: validator
@@ -1624,6 +1678,44 @@ app:
           type: '*Token'
         body: "\n\treturn validation.ValidateStruct(r,\nvalidation.Field(&r.Key, validation.Required,
           newTokenKeyUniqueRule(d)),\nvalidation.Field(&r.Expires, validation.Required),\n\t)\n"
+    service:
+      name:
+        base: tokens_service
+        full: tokens_service.go
+      path:
+        base: github.com/68696c6c/test-example/app/tokens
+        full: github.com/68696c6c/test-example/app/tokens/tokens_service.go
+      package:
+        reference: tokens
+        name:
+          space: tokens
+          snake: tokens
+          kebob: tokens
+          exported: Tokens
+          unexported: tokens
+        path:
+          base: github.com/68696c6c/test-example/app
+          full: github.com/68696c6c/test-example/app/tokens
+      interfaces:
+      - name: TokensService
+        functions:
+        - name: refresh
+          receiver:
+            name: s
+            type: Tokens
+          body: "\n\treturn\n"
+      structs:
+      - name: Tokens
+      functions:
+      - name: NewTokensService
+        return_values:
+        - type: TokensService
+        body: "\n\treturn &Tokens{}\n"
+      - name: refresh
+        receiver:
+          name: s
+          type: Tokens
+        body: "\n\treturn\n"
     validator:
       name:
         base: validator
