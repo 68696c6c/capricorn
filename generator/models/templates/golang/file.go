@@ -2,6 +2,7 @@ package golang
 
 import (
 	"fmt"
+	"github.com/68696c6c/capricorn/generator/utils"
 	"strings"
 
 	"github.com/68696c6c/capricorn/generator/models/data"
@@ -109,4 +110,12 @@ func (m File) MustParse() string {
 	result = append(result, strings.Join(sections, "\n\n\n"))
 
 	return strings.Join(result, "\n") + "\n"
+}
+
+func (m File) Generate() error {
+	err := utils.WriteFile(m.Path.Base, m.Name.Full, m.MustParse())
+	if err != nil {
+		return err
+	}
+	return nil
 }

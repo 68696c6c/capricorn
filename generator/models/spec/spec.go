@@ -1,6 +1,7 @@
 package spec
 
 import (
+	"github.com/68696c6c/capricorn/generator/models/templates/ops"
 	"io/ioutil"
 
 	"github.com/68696c6c/capricorn/generator/models/data"
@@ -14,6 +15,7 @@ type Spec struct {
 	Module    string     `yaml:"module,omitempty"`
 	License   string     `yaml:"license,omitempty"`
 	Author    Author     `yaml:"author,omitempty"`
+	Ops       ops.Ops    `yaml:"ops,omitempty"`
 	Commands  []Command  `yaml:"commands,omitempty"`
 	Enums     []Enum     `yaml:"enums,omitempty"`
 	Resources []Resource `yaml:"resources,omitempty"`
@@ -77,14 +79,12 @@ func (m *ResourceField) UnmarshalYAML(unmarshal func(interface{}) error) error {
 	var resultUnique bool
 	var resultIndexed bool
 	for key, value := range result {
-		println("result key", key)
 		switch key {
 		case "name":
 			resultName = value
 		case "type":
 			resultType = value
 		case "required":
-			println("result required", value)
 			if value == "true" {
 				resultRequired = true
 			}

@@ -3,7 +3,7 @@
 # EXAMPLE_APP_PATH ?= ~/Code/capricorn-example
 
 EXAMPLE_SPEC_PATH ?= loom-rnd.yml
-EXAMPLE_APP_PATH ?= ~/Code/loom-rnd
+EXAMPLE_APP_PATH ?= ~/Code/loom-rnd-2
 
 # EXAMPLE_SPEC_PATH ?= loom.yml
 # EXAMPLE_APP_PATH ?= bitbucket.org/clearlinkit/loom-example

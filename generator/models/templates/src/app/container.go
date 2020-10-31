@@ -29,16 +29,17 @@ type Container struct {
 
 	singletonName string
 	fields        []utils.ContainerFieldMeta
+	initializer   golang.Function
 	dbField       golang.Field
 	errorsField   golang.Field
 	loggerField   golang.Field
 	built         bool
 }
 
-func NewContainer(meta Meta, fields []utils.ContainerFieldMeta) Container {
+func NewContainer(meta Meta, fields []utils.ContainerFieldMeta) *Container {
 	pkgData := meta.PackageData
 	fileData, pathData := data.MakeGoFileData(pkgData.GetImport(), meta.FileName)
-	return Container{
+	return &Container{
 		FileData:    fileData,
 		PathData:    pathData,
 		PackageData: meta.PackageData,
@@ -63,6 +64,10 @@ func NewContainer(meta Meta, fields []utils.ContainerFieldMeta) Container {
 			Type: "goat.ErrorHandler",
 		},
 	}
+}
+
+func (m *Container) GetInitializerRef() string {
+	return m.PackageData.GetName() + "." + m.initializer.Name
 }
 
 func (m *Container) MustGetFile() golang.File {
@@ -96,7 +101,8 @@ func (m *Container) build() {
 	var functions []golang.Function
 
 	initializer := NewInitializer(*m)
-	functions = append(functions, initializer.MustGetFunction())
+	m.initializer = initializer.MustGetFunction()
+	functions = append(functions, m.initializer)
 	imports = golang.MergeImports(imports, initializer.GetImports())
 
 	var fields []golang.Field

@@ -1,5 +1,7 @@
 package spec
 
+import "github.com/68696c6c/capricorn/generator/models/templates/ops"
+
 func GetFixtureInput() []byte {
 	input := `name: Test Example
 module: github.com/68696c6c/test-example
@@ -8,6 +10,16 @@ author:
   name: Aaron Hill
   email: 68696c6c@gmail.com
   organization: GOAT
+ops:
+  workdir: test-example
+  app_http_alias: test-example.local
+  database:
+    host: db
+    port: 3306
+    username: root
+    password: secret
+    name: test_example
+    debug: 1
 commands:
 - name: cmd
   use: This is an example command
@@ -80,6 +92,18 @@ func GetFixtureSpec() Spec {
 			Name:         "Aaron Hill",
 			Email:        "68696c6c@gmail.com",
 			Organization: "GOAT",
+		},
+		Ops: ops.Ops{
+			Workdir:      "test-example",
+			AppHTTPAlias: "test-example.local",
+			MainDatabase: ops.Database{
+				Host:     "db",
+				Port:     "3306",
+				Username: "root",
+				Password: "secret",
+				Name:     "test_example",
+				Debug:    "1",
+			},
 		},
 		Commands: []Command{
 			{
@@ -190,7 +214,7 @@ package:
     full: github.com/68696c6c/test-example
 ops:
   workdir: test-example
-  app_http_alias: test-example
+  app_http_alias: test-example.local
   database:
     host: db
     port: "3306"

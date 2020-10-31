@@ -5,6 +5,7 @@ import (
 	"github.com/68696c6c/capricorn/generator/models/module"
 	"github.com/68696c6c/capricorn/generator/models/templates/golang"
 	"github.com/68696c6c/capricorn/generator/models/templates/src/app"
+	"github.com/68696c6c/capricorn/generator/models/templates/src/cmd"
 	"github.com/68696c6c/capricorn/generator/models/templates/src/controllers"
 	"github.com/68696c6c/capricorn/generator/models/templates/src/database"
 	enumMeta "github.com/68696c6c/capricorn/generator/models/templates/src/enums/meta"
@@ -14,6 +15,7 @@ import (
 	"github.com/68696c6c/capricorn/generator/models/templates/src/services"
 	"github.com/68696c6c/capricorn/generator/models/templates/src/utils"
 	"github.com/68696c6c/capricorn/generator/models/templates/src/validators"
+	utils2 "github.com/68696c6c/capricorn/generator/utils"
 
 	"gopkg.in/yaml.v2"
 )
@@ -33,6 +35,37 @@ type SRC struct {
 	Main golang.File `yaml:"main,omitempty"`
 }
 
+func NewSRCDDD(m module.Module, rootPath, timestamp string) SRC {
+	domains := makeDomains(m)
+	container := makeContainer(m, domains)
+	http := makeHTTP(m)
+	return SRC{
+		_module:  m,
+		basePath: rootPath,
+		Path:     data.MakePathData(rootPath, m.Packages.SRC.Reference),
+		Package:  m.Packages.SRC,
+		App: App{
+			Enums:     makeEnums(m),
+			Container: container.MustGetFile(),
+			Domains:   domains,
+		},
+		CMD: makeCMD(m, container.GetInitializerRef(), http.GetRouterRef()),
+		DB: DB{
+			Migrations: makeInitialMigrations(m, domains, timestamp),
+		},
+		// HTTP: http.MustGetRoutesFile(),
+		Main: NewMainGo(rootPath, m.Packages.SRC.GetImport(), m.Packages.CMD.GetImport()),
+	}
+}
+
+func (m SRC) MustGenerate() {
+	m.App.MustGenerate()
+	m.CMD.MustGenerate()
+	m.DB.MustGenerate()
+	// m.HTTP.MustGenerate()
+	utils2.PanicError(m.Main.Generate())
+}
+
 func (m SRC) String() string {
 	out, err := yaml.Marshal(&m)
 	if err != nil {
@@ -47,6 +80,20 @@ type App struct {
 	Domains   []Domain      `yaml:"domains,omitempty"`
 }
 
+func (m App) MustGenerate() {
+	utils2.PanicError(m.Container.Generate())
+	for _, e := range m.Enums {
+		utils2.PanicError(e.Generate())
+	}
+	for _, d := range m.Domains {
+		utils2.PanicError(d.Controller.Generate())
+		utils2.PanicError(d.Repo.Generate())
+		utils2.PanicError(d.Model.Generate())
+		utils2.PanicError(d.Service.Generate())
+		utils2.PanicError(d.Validator.Generate())
+	}
+}
+
 type CMD struct {
 	Root    golang.File   `yaml:"root,omitempty"`
 	Server  golang.File   `yaml:"server,omitempty"`
@@ -55,14 +102,67 @@ type CMD struct {
 	Custom  []golang.File `yaml:"custom,omitempty"`
 }
 
+func makeCMD(m module.Module, appInitRef, routerRef string) CMD {
+	root := cmd.NewRoot(m)
+	server := cmd.NewServer(m, root.Name, appInitRef, routerRef)
+	migrate := cmd.NewMigrate(m, root.Name)
+	// seed := cmd.NewSeed(m, root.Name)
+	return CMD{
+		Root:    root.MustGetFile(),
+		Server:  server.MustGetFile(),
+		Migrate: migrate.MustGetFile(),
+		// Seed:    seed.MustGetFile(),
+		// Custom:  custom,
+	}
+}
+
+func (m CMD) MustGenerate() {
+	utils2.PanicError(m.Root.Generate())
+	utils2.PanicError(m.Server.Generate())
+	utils2.PanicError(m.Migrate.Generate())
+	utils2.PanicError(m.Seed.Generate())
+	for _, c := range m.Custom {
+		utils2.PanicError(c.Generate())
+		utils2.PanicError(c.Generate())
+		utils2.PanicError(c.Generate())
+		utils2.PanicError(c.Generate())
+		utils2.PanicError(c.Generate())
+	}
+}
+
 type DB struct {
 	Migrations []golang.File `yaml:"migrations,omitempty"`
 	Seeders    []golang.File `yaml:"seeders,omitempty"`
 }
 
+func (m DB) MustGenerate() {
+	for _, f := range m.Migrations {
+		utils2.PanicError(f.Generate())
+	}
+	for _, f := range m.Seeders {
+		utils2.PanicError(f.Generate())
+	}
+}
+
 type HTTP struct {
 	Routes golang.File `yaml:"routes,omitempty"`
 }
+
+func makeHTTP(m module.Module) *HTTP {
+	return &HTTP{}
+}
+
+func (m HTTP) GetRouterRef() string {
+	return "http.InitRouter"
+}
+
+// func (m HTTP) MustGetRoutesFile() golang.File {
+// 	return golang.File{}
+// }
+
+// func (m HTTP) MustGenerate() {
+// 	utils2.PanicError(m.Routes.Generate())
+// }
 
 type Domain struct {
 	PackageData     data.PackageData
@@ -80,38 +180,18 @@ type Domain struct {
 	containerFields []utils.ContainerFieldMeta
 }
 
-func NewSRCDDD(m module.Module, rootPath, timestamp string) SRC {
-	domains := makeDomains(m)
-	return SRC{
-		_module:  m,
-		basePath: rootPath,
-		Path:     data.MakePathData(rootPath, m.Packages.SRC.Reference),
-		Package:  m.Packages.SRC,
-		App: App{
-			Enums:     makeEnums(m),
-			Container: makeContainer(m, domains),
-			Domains:   domains,
-		},
-		DB: DB{
-			Migrations: makeInitialMigrations(m, domains, timestamp),
-		},
-		Main: NewMainGo(rootPath, m.Packages.SRC.GetImport(), m.Packages.CMD.GetImport()),
-	}
-}
-
-func makeContainer(m module.Module, domains []Domain) golang.File {
+func makeContainer(m module.Module, domains []Domain) *app.Container {
 	var fields []utils.ContainerFieldMeta
 	for _, d := range domains {
 		fields = append(fields, d.containerFields...)
 	}
 	name := data.MakeName("app")
-	container := app.NewContainer(app.Meta{
+	return app.NewContainer(app.Meta{
 		ReceiverName: "a",
 		FileName:     name.Snake,
 		PackageData:  m.Packages.App,
 		Name:         name,
 	}, fields)
-	return container.MustGetFile()
 }
 
 func makeInitialMigrations(m module.Module, domains []Domain, version string) []golang.File {

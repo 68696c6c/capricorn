@@ -120,6 +120,7 @@ func (m *Repo) build() {
 		}
 	}
 
+	m.base.Built = true
 	m.base.Imports = imports
 	m.base.Functions = functions
 	m.base.Interfaces = []golang.Interface{

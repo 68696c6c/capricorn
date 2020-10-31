@@ -1879,6 +1879,112 @@ app:
           !ok {\n\t\treturn errors.New(\"invalid token key\")\n\t}\n\n\tquery := r.db.First(&Token{\n\t\tKey:
           key,\n\t})\n\tif !query.RecordNotFound() {\n\t\treturn errors.New(\"token
           key already exists\")\n\t}\n\n\treturn nil\n"
+cmd:
+  root:
+    name:
+      base: root
+      full: root.go
+    path:
+      base: github.com/68696c6c/test-example/cmd
+      full: github.com/68696c6c/test-example/cmd/root.go
+    package:
+      reference: cmd
+      name:
+        space: cmd
+        snake: cmd
+        kebob: cmd
+        exported: Cmd
+        unexported: cmd
+      path:
+        base: github.com/68696c6c/test-example
+        full: github.com/68696c6c/test-example/cmd
+    imports:
+      standard:
+      - strings
+      vendor:
+      - github.com/spf13/cobra
+      - github.com/spf13/viper
+    init_function:
+      name: init
+      body: "\n\tviper.SetEnvKeyReplacer(strings.NewReplacer(\".\", \"_\"))\n\tviper.AutomaticEnv()\n\tviper.SetDefault(\"author\",
+        \"Aaron Hill <68696c6c@gmail.com>\")\n\tviper.SetDefault(\"license\", \"none\")\n"
+    vars:
+    - name: Root
+      value: "&cobra.Command{\n\tUse:   \"test-example\",\n\tShort: \"Root command
+        for test example\",\n}"
+  server:
+    name:
+      base: server
+      full: server.go
+    path:
+      base: github.com/68696c6c/test-example/cmd
+      full: github.com/68696c6c/test-example/cmd/server.go
+    package:
+      reference: cmd
+      name:
+        space: cmd
+        snake: cmd
+        kebob: cmd
+        exported: Cmd
+        unexported: cmd
+      path:
+        base: github.com/68696c6c/test-example
+        full: github.com/68696c6c/test-example/cmd
+    imports:
+      app:
+      - github.com/68696c6c/test-example/app
+      - github.com/68696c6c/test-example/http
+      vendor:
+      - github.com/68696c6c/goat
+      - github.com/pkg/errors
+      - github.com/spf13/cobra
+    init_function:
+      name: init
+      body: "\n\troot.AddCommand(&cobra.Command{\n\t\tUse:   \"server\",\n\t\tShort:
+        \"Runs the test example web server\",\n\t\tRun: func(cmd *cobra.Command, args
+        []string) {\n\t\t\t\n\tgoat.Init()\n\n\tlogger := goat.GetLogger()\n\n\tdb,
+        err := goat.GetMainDB()\n\tif err != nil {\n\t\tgoat.ExitError(errors.Wrap(err,
+        \"failed to initialize database connection\"))\n\t}\n\n\tservices, err :=
+        app.GetApp(db, logger)\n\tif err != nil {\n\t\tgoat.ExitError(errors.Wrap(err,
+        \"failed to initialize service container\"))\n\t}\n\n\thttp.InitRouter(services)\n\n\t\t}\n\t})\n"
+  migrate:
+    name:
+      base: migrate
+      full: migrate.go
+    path:
+      base: github.com/68696c6c/test-example/cmd
+      full: github.com/68696c6c/test-example/cmd/migrate.go
+    package:
+      reference: cmd
+      name:
+        space: cmd
+        snake: cmd
+        kebob: cmd
+        exported: Cmd
+        unexported: cmd
+      path:
+        base: github.com/68696c6c/test-example
+        full: github.com/68696c6c/test-example/cmd
+    imports:
+      app:
+      - _ "{migrations {migrations migrations migrations Migrations migrations} {github.com/68696c6c/test-example/db
+        github.com/68696c6c/test-example/db/migrations}}"
+      vendor:
+      - github.com/68696c6c/goat
+      - _ "github.com/go-sql-driver/mysql"
+      - github.com/pkg/errors
+      - github.com/pressly/goose
+      - github.com/spf13/cobra
+    init_function:
+      name: init
+      body: "\n\troot.AddCommand(&cobra.Command{\n\t\tUse:   \"migrate\",\n\t\tShort:
+        \"Runs the test example migrations\",\n\t\tRun: func(cmd *cobra.Command, args
+        []string) {\n\t\t\t\n\tgoat.Init()\n\n\tdb, err := goat.GetMainDB()\n\tif
+        err != nil {\n\t\tgoat.ExitError(errors.Wrap(err, \"error initializing migration
+        connection\"))\n\t}\n\n\tif err := goose.SetDialect(\"mysql\"); err != nil
+        {\n\t\tgoat.ExitError(errors.Wrap(err, \"error initializing goose\"))\n\t}\n\n\tvar
+        arguments []string\n\tif len(args) > 1 {\n\t\targuments = args[1:]\n\t}\n\n\tif
+        err := goose.Run(args[0], db.DB(), \".\", arguments...); err != nil {\n\t\tgoat.ExitError(err)\n\t}\n\n\tgoat.ExitSuccess()\n\n\t\t}\n\t})\n"
 db:
   migrations:
   - name:

@@ -77,6 +77,25 @@ func AppendFileText(fileName, text string) error {
 	return nil
 }
 
+func WriteFile(basePath, fileName, contents string) error {
+	filePath := fmt.Sprintf("%s/%s", basePath, fileName)
+	f, err := os.Create(filePath)
+	if err != nil {
+		return errors.Wrapf(err, "failed create file '%s'", filePath)
+	}
+
+	if _, err = f.WriteString(contents); err != nil {
+		return errors.Wrap(err, "failed to write to file")
+	}
+
+	err = f.Close()
+	if err != nil {
+		return errors.Wrapf(err, "failed to close file '%s'", filePath)
+	}
+
+	return nil
+}
+
 func GenerateFile(basePath, fileName, fileTemplate string, data interface{}) error {
 	t := template.Must(template.New(fileName).Parse(fileTemplate))
 
@@ -173,4 +192,10 @@ func RemoveDuplicateStrings(items []string) []string {
 		}
 	}
 	return result
+}
+
+func PanicError(err error) {
+	if err != nil {
+		panic(err)
+	}
 }

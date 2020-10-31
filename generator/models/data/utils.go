@@ -15,6 +15,9 @@ const (
 	ImportValidation = "github.com/go-ozzo/ozzo-validation"
 	ImportLogrus     = "github.com/sirupsen/logrus"
 	ImportGoose      = "github.com/pressly/goose"
+	ImportCobra      = "github.com/spf13/cobra"
+	ImportViper      = "github.com/spf13/viper"
+	ImportSqlDriver  = "_ \"github.com/go-sql-driver/mysql\""
 )
 
 type Template interface {
@@ -45,6 +48,10 @@ type PackageData struct {
 	Reference string   `yaml:"reference,omitempty"`
 	Name      Name     `yaml:"name,omitempty"`
 	Path      PathData `yaml:"path,omitempty"`
+}
+
+func (m PackageData) GetName() string {
+	return m.Name.Snake
 }
 
 func (m PackageData) GetImport() string {
