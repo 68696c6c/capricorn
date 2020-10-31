@@ -19,7 +19,7 @@ type Project struct {
 	SRC src.SRC `yaml:"src,omitempty"`
 }
 
-func NewProjectFromModule(m module.Module, projectPath string, ddd bool) (Project, error) {
+func NewProjectFromModule(m module.Module, projectPath, timestamp string, ddd bool) (Project, error) {
 	// @TODO @CHECKPOINT working on generating project from a module.
 	rootPackage := m.Package.Reference
 	rootPath, err := getProjectRootPath(projectPath, rootPackage)
@@ -29,9 +29,9 @@ func NewProjectFromModule(m module.Module, projectPath string, ddd bool) (Projec
 
 	var projectSRC src.SRC
 	if ddd {
-		projectSRC = src.NewSRCDDD(m, rootPath)
+		projectSRC = src.NewSRCDDD(m, rootPath, timestamp)
 	} else {
-
+		panic("not implemented yet")
 	}
 
 	result := Project{

@@ -13,7 +13,7 @@ func TestSRC_NewSRCDDD(t *testing.T) {
 	f := spec.GetFixtureSpec()
 	m := module.NewModuleFromSpec(f, true)
 
-	result := NewSRCDDD(m, "/base/path/test-example")
+	result := NewSRCDDD(m, "/base/path/test-example", "faketimestamp")
 	resultYAML := result.String()
 	println(resultYAML)
 
@@ -1882,11 +1882,11 @@ app:
 db:
   migrations:
   - name:
-      base: 20201030175625_initial_migration.go
-      full: 20201030175625_initial_migration.go.go
+      base: faketimestamp_initial_migration.go
+      full: faketimestamp_initial_migration.go.go
     path:
       base: github.com/68696c6c/test-example/db/migrations
-      full: github.com/68696c6c/test-example/db/migrations/20201030175625_initial_migration.go.go
+      full: github.com/68696c6c/test-example/db/migrations/faketimestamp_initial_migration.go.go
     package:
       reference: migrations
       name:

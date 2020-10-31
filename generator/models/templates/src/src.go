@@ -80,7 +80,7 @@ type Domain struct {
 	containerFields []utils.ContainerFieldMeta
 }
 
-func NewSRCDDD(m module.Module, rootPath string) SRC {
+func NewSRCDDD(m module.Module, rootPath, timestamp string) SRC {
 	domains := makeDomains(m)
 	return SRC{
 		_module:  m,
@@ -93,7 +93,7 @@ func NewSRCDDD(m module.Module, rootPath string) SRC {
 			Domains:   domains,
 		},
 		DB: DB{
-			Migrations: makeInitialMigrations(m, domains),
+			Migrations: makeInitialMigrations(m, domains, timestamp),
 		},
 		Main: NewMainGo(rootPath, m.Packages.SRC.GetImport(), m.Packages.CMD.GetImport()),
 	}
@@ -114,7 +114,7 @@ func makeContainer(m module.Module, domains []Domain) golang.File {
 	return container.MustGetFile()
 }
 
-func makeInitialMigrations(m module.Module, domains []Domain) []golang.File {
+func makeInitialMigrations(m module.Module, domains []Domain, version string) []golang.File {
 	var imports []string
 	var modelRefs []string
 	for _, d := range domains {
@@ -126,7 +126,7 @@ func makeInitialMigrations(m module.Module, domains []Domain) []golang.File {
 		PackageData: m.Packages.Migrations,
 		AppImports:  imports,
 		ModelRefs:   modelRefs,
-	})
+	}, version)
 
 	return []golang.File{mig.MustGetFile()}
 }

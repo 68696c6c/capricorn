@@ -7,6 +7,8 @@ import (
 )
 
 type MigrationMeta struct {
+	// If Timestamp is not "" it will be used for the file name instead an actual timestamp for e.g. testing.
+	Timestamp   string
 	PackageData data.PackageData
 	AppImports  []string
 	ModelRefs   []string
@@ -26,8 +28,8 @@ type InitialMigration struct {
 	built bool
 }
 
-func NewInitialMigration(meta MigrationMeta) InitialMigration {
-	fileName := makeGooseMigrationName("initial_migration")
+func NewInitialMigration(meta MigrationMeta, version string) InitialMigration {
+	fileName := makeGooseMigrationName(version, "initial_migration")
 	pkgData := meta.PackageData
 	fileData, pathData := data.MakeGoFileData(pkgData.GetImport(), fileName)
 	return InitialMigration{
