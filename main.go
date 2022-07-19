@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/68696c6c/capricorn/cmd"
+	"github.com/68696c6c/capricorn_rnd/cmd"
 )
 
 func main() {

@@ -6,12 +6,22 @@ import (
 	"go/build"
 	"io"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"text/template"
+	"time"
 
 	"github.com/pkg/errors"
 )
+
+func MustParse(name, template string, data interface{}) string {
+	result, err := ParseTemplateToString(name, template, data)
+	if err != nil {
+		panic(err)
+	}
+	return result
+}
 
 func JoinPath(parts ...string) string {
 	return strings.Join(parts, "/")
@@ -74,6 +84,25 @@ func AppendFileText(fileName, text string) error {
 	if _, err = f.WriteString(text); err != nil {
 		return errors.Wrap(err, "failed to write to file")
 	}
+	return nil
+}
+
+func WriteFile(basePath, fileName, contents string) error {
+	filePath := fmt.Sprintf("%s/%s", basePath, fileName)
+	f, err := os.Create(filePath)
+	if err != nil {
+		return errors.Wrapf(err, "failed create file '%s'", filePath)
+	}
+
+	if _, err = f.WriteString(contents); err != nil {
+		return errors.Wrap(err, "failed to write to file")
+	}
+
+	err = f.Close()
+	if err != nil {
+		return errors.Wrapf(err, "failed to close file '%s'", filePath)
+	}
+
 	return nil
 }
 
@@ -151,10 +180,55 @@ func separatedToSeparated(input string, separator rune) string {
 	return output
 }
 
+func SeparatedToSpace(input string) string {
+	return separatedToSeparated(input, ' ')
+}
+
 func SeparatedToSnake(input string) string {
 	return separatedToSeparated(input, '_')
 }
 
 func SeparatedToKebob(input string) string {
 	return separatedToSeparated(input, '-')
+}
+
+func RemoveDuplicateStrings(items []string) []string {
+	keys := make(map[string]bool)
+	var result []string
+	for _, i := range items {
+		if _, ok := keys[i]; !ok {
+			keys[i] = true
+			result = append(result, i)
+		}
+	}
+	return result
+}
+
+func PanicError(err error) {
+	if err != nil {
+		panic(err)
+	}
+}
+
+func InitModule(path, name string) error {
+	err := os.Chdir(path)
+	if err != nil {
+		return errors.Wrap(err, "failed to navigate to dir to initialize module")
+	}
+	c := exec.Command("go", "mod", "init", name)
+	c.Stdout = os.Stdout
+	c.Stderr = os.Stderr
+	err = c.Run()
+	if err != nil {
+		return errors.Wrap(err, "failed to init go modules")
+	}
+	return nil
+}
+
+func MakeGooseMigrationName(version, name string) string {
+	// This is copied from github.com/pressly/goose/create.go CreateWithTemplate function and should match what that function does.
+	if version == "" {
+		version = time.Now().Format("20060102150405")
+	}
+	return fmt.Sprintf("%v_%v.%v", version, name, "go")
 }
