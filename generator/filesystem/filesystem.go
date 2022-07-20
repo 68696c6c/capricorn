@@ -8,22 +8,6 @@ import (
 	"github.com/68696c6c/capricorn_rnd/generator/utils"
 )
 
-// type Generatable interface {
-// 	GetBasePath() string
-// 	GetFullName() string
-// 	MustGenerate()
-// }
-
-// type File interface {
-// 	SetName(string) File
-// 	GetName() string
-// 	SetExtension(string) File
-// 	GetExtension() string
-// 	GetFullName() string
-// 	SetContents(string) File
-// 	GetContents() string
-// }
-
 type File struct {
 	Name      string
 	Extension string

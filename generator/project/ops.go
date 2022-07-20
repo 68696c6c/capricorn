@@ -231,13 +231,67 @@ const gitignore = `
 vendor
 .app.env`
 
-func NewProjectDirFromSpec(projectSpec spec.Spec, ops spec.Ops) (girraph.Tree[filesystem.Directory], string) {
+const entrypoint = `#!/bin/sh
+set -e
+
+if [ -n "$CHAMBER_ENV" ]; then
+    echo "importing chamber secrets from ${APP_NAME}"
+    chamber exec "${APP_NAME}" -- "$@"
+else
+    eval "$@"
+fi`
+
+const preDeploy = `#!/bin/sh
+set -eu
+
+echo "Running migrations."
+./app migrate up
+
+echo "Done."`
+
+const gitkeep = `ВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВ
+ ВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВ
+ВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВ
+ВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВ
+ВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВ
+ВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВ
+ВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВ
+ВВВВВВВВВВВВВВВВВВВВВВВ                        ВВВВВВВВВВВВВВВВВВВВВВВВВВВВВ 
+ВВВВВВВВВВВВВВВВВВВВВВВ                          ВВВВВВВВВВВВВВВВВВВВВВВВВВВ
+ВВВВВВВВВВВВВВВВВВВВВВВ                            ВВВВВВВВВВВВВВВВВВВВВВВВВ
+ВВВВВВВВВВВВВВВВВВВВВВВ         ВВВВВВВВ            ВВВВВВВВВВВВВВВВВВВВВВВВ
+ВВВВВВВВВВВВВВВВВВВВВВВ         ВВВВВВВВВВ          ВВВВВВВВВВВВВВВВВВВВВВВВ
+ВВВВВВВВВВВВВВВВВВВВВВВ         ВВВВВВВВВВВ         ВВВВВВВВВВВВВВВВВВВВВВВВ
+ВВВВВВВВВВВВВВВВВВВВВВВ         ВВВВВВВВВВ         ВВВВВВВВВВВВВВВВВВВВВВВВВ
+ВВВВВВВВВВВВВВВВВВВВВВВ         ВВВВВВВВВ         ВВВВВВВВВВВВВВВВВВВВВВВВВВ
+ВВВВВВВВВВВВВВВВВВВВВВВ                         ВВВВВВВВВВВВВВВВВВВВВВВВВВВВ
+ВВВВВВВВВВВВВВВВВВВВВВВ                         ВВВВВВВВВВВВВВВВВВВВВВВВВВВВ
+ВВВВВВВВВВВВВВВВВВВВВВВ                             ВВВВВВВВВВВВВВВВВВВВВВВВ
+ВВВВВВВВВВВВВВВВВВВВВВВ                               ВВВВВВВВВВВВВВВВВВВВВВ
+ВВВВВВВВВВВВВВВВВВВВВВВ         ВВВВВВВВВВВВВ          ВВВВВВВВВВВВВВВВВВВВВ
+ВВВВВВВВВВВВВВВВВВВВВВВ         ВВВВВВВВВВВВВВ          ВВВВВВВВВВВВВВВВВВВВ
+ВВВВВВВВВВВВВВВВВВВВВВВ         ВВВВВВВВВВВВВВ          ВВВВВВВВВВВВВВВВВВВВ
+ВВВВВВВВВВВВВВВВВВВВВВВ         ВВВВВВВВВВВВВ           ВВВВВВВВВВВВВВВВВВВВ
+ВВВВВВВВВВВВВВВВВВВВВВВ         ВВВВВВВВВВВВ           ВВВВВВВВВВВВВВВВВВВВВ
+ВВВВВВВВВВВВВВВВВВВВВВВ                               ВВВВВВВВВВВВВВВВВВВВВВ
+ВВВВВВВВВВВВВВВВВВВВВВВ                             ВВВВВВВВВВВВВВВВВВВВВВВВ
+ВВВВВВВВВВВВВВВВВВВВВВВВ                          ВВВВВВВВВВВВВВВВВВВВВВВВВВ
+ВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВ
+ВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВ
+ВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВ
+ВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВ
+ВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВ
+ ВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВ
+   ВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВ
+      ВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВ`
+
+func NewProjectDirFromSpec(projectSpec spec.Spec) (girraph.Tree[filesystem.Directory], string) {
 	projectDir := filesystem.MakeDirectory(projectSpec.Name)
 	projectDir.GetMeta().SetFiles([]*filesystem.File{
-		makeAppEnv(ops),
-		makeDockerCompose(ops),
-		makeDockerfile(ops),
-		makeMakefile(ops),
+		makeAppEnv(projectSpec.Ops),
+		makeDockerCompose(projectSpec.Ops),
+		makeDockerfile(projectSpec.Ops),
+		makeMakefile(projectSpec.Ops),
 		filesystem.MakeFile(".gitignore", "").SetContents(gitignore),
 	})
 	srcDir := filesystem.MakeDirectory("src")
@@ -246,11 +300,11 @@ func NewProjectDirFromSpec(projectSpec spec.Spec, ops spec.Ops) (girraph.Tree[fi
 
 	build := filesystem.MakeDirectory("_build")
 	build.GetMeta().SetFiles([]*filesystem.File{
-		filesystem.MakeFile(".gitkeep", "").SetContents("hello"),
+		filesystem.MakeFile(".gitkeep", "").SetContents(gitkeep),
 	})
 	deploy := filesystem.MakeDirectory("_deploy")
 	deploy.GetMeta().SetFiles([]*filesystem.File{
-		filesystem.MakeFile(".gitkeep", "").SetContents("hello"),
+		filesystem.MakeFile(".gitkeep", "").SetContents(gitkeep),
 	})
 
 	inputs := filesystem.MakeDirectory("inputs")
@@ -273,12 +327,8 @@ func NewProjectDirFromSpec(projectSpec spec.Spec, ops spec.Ops) (girraph.Tree[fi
 	})
 	scripts := filesystem.MakeDirectory("scripts")
 	scripts.GetMeta().SetFiles([]*filesystem.File{
-		filesystem.MakeFile("entrypoint", "sh").SetContents("hello"),
-		filesystem.MakeFile("pre-deploy", "sh").SetContents("hello"),
-	})
-	scripts.GetMeta().SetFiles([]*filesystem.File{
-		filesystem.MakeFile("entrypoint", "sh").SetContents("hello"),
-		filesystem.MakeFile("pre-deploy", "sh").SetContents("hello"),
+		filesystem.MakeFile("entrypoint", "sh").SetContents(entrypoint),
+		filesystem.MakeFile("pre-deploy", "sh").SetContents(preDeploy),
 	})
 
 	opsDir.SetChildren([]girraph.Tree[filesystem.Directory]{
@@ -293,93 +343,3 @@ func NewProjectDirFromSpec(projectSpec spec.Spec, ops spec.Ops) (girraph.Tree[fi
 		srcDir,
 	}), path.Join(projectSpec.Name, "src")
 }
-
-// // TODO CHECKPOINT
-func MakeOps() girraph.Tree[filesystem.Directory] {
-	opsDir := filesystem.MakeDirectory("ops")
-
-	build := filesystem.MakeDirectory("_build")
-	build.GetMeta().SetFiles([]*filesystem.File{
-		filesystem.MakeFile(".gitkeep", "").SetContents("hello"),
-	})
-	deploy := filesystem.MakeDirectory("_deploy")
-	deploy.GetMeta().SetFiles([]*filesystem.File{
-		filesystem.MakeFile(".gitkeep", "").SetContents("hello"),
-	})
-
-	inputs := filesystem.MakeDirectory("inputs")
-	inputs.GetMeta().SetFiles([]*filesystem.File{
-		filesystem.MakeFile("development", "yml").SetContents("hello"),
-		filesystem.MakeFile("development.secrets", "yml").SetContents("hello"),
-	})
-	env := filesystem.MakeDirectory("env")
-	env.GetMeta().SetFiles([]*filesystem.File{
-		filesystem.MakeFile("development", "yml").SetContents("hello"),
-		filesystem.MakeFile("development.secrets", "yml").SetContents("hello"),
-	})
-	templates := filesystem.MakeDirectory("templates").SetChildren([]girraph.Tree[filesystem.Directory]{
-		inputs,
-		env,
-	})
-	templates.GetMeta().SetFiles([]*filesystem.File{
-		filesystem.MakeFile("app", "yml").SetContents("hello"),
-		filesystem.MakeFile("pipeline", "yml").SetContents("hello"),
-	})
-	scripts := filesystem.MakeDirectory("scripts")
-	scripts.GetMeta().SetFiles([]*filesystem.File{
-		filesystem.MakeFile("entrypoint", "sh").SetContents("hello"),
-		filesystem.MakeFile("pre-deploy", "sh").SetContents("hello"),
-	})
-	scripts.GetMeta().SetFiles([]*filesystem.File{
-		filesystem.MakeFile("entrypoint", "sh").SetContents("hello"),
-		filesystem.MakeFile("pre-deploy", "sh").SetContents("hello"),
-	})
-	return opsDir.SetChildren([]girraph.Tree[filesystem.Directory]{
-		build,
-		deploy,
-		scripts,
-		templates,
-	})
-}
-
-// func MakeOps() girraph.Tree[golang.Package] {
-// 	opsDir := golang.MakePackageNode("ops")
-// 	templates := golang.MakePackageNode("templates")
-// 	inputs := golang.MakePackageNode("inputs")
-// 	inputs.GetMeta().SetFiles([]*golang.File{
-// 		filesystem.MakeFile("development", "yml"),
-// 		filesystem.MakeFile("development.secrets", "yml"),
-// 	})
-// 	env := golang.MakePackageNode("env")
-// 	env.GetMeta().SetFiles([]*golang.File{
-// 		filesystem.MakeFile("development", "yml"),
-// 		filesystem.MakeFile("development.secrets", "yml"),
-// 	})
-// 	templates.GetMeta().SetFiles([]*golang.File{
-// 		filesystem.MakeFile("app", "yml"),
-// 		filesystem.MakeFile("pipeline", "yml"),
-// 	})
-// 	scripts := golang.MakePackageNode("scripts")
-// 	scripts.GetMeta().SetFiles([]*golang.File{
-// 		filesystem.MakeFile("entrypoint", "sh"),
-// 		filesystem.MakeFile("pre-deploy", "sh"),
-// 	})
-// 	build := golang.MakePackageNode("_build")
-// 	build.GetMeta().SetFiles([]*golang.File{
-// 		filesystem.MakeFile(".gitkeep", ""),
-// 	})
-// 	deploy := golang.MakePackageNode("_deploy")
-// 	deploy.GetMeta().SetFiles([]*golang.File{
-// 		filesystem.MakeFile(".gitkeep", ""),
-// 	})
-// 	scripts.GetMeta().SetFiles([]*golang.File{
-// 		filesystem.MakeFile("entrypoint", "sh"),
-// 		filesystem.MakeFile("pre-deploy", "sh"),
-// 	})
-// 	return opsDir.SetChildren([]girraph.Tree[golang.Package]{
-// 		build,
-// 		deploy,
-// 		scripts,
-// 		templates,
-// 	})
-// }

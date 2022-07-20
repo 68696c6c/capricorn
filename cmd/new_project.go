@@ -28,7 +28,7 @@ func init() {
 			projectSpec, err := spec.NewSpec(specFile)
 			handleError(err)
 
-			p, projectSrcDir := project.NewProjectDirFromSpec(projectSpec, projectSpec.Ops)
+			p, projectSrcDir := project.NewProjectDirFromSpec(projectSpec)
 			filesystem.SetPaths(projectPath, p)
 			filesystem.MustGenerate(p)
 
