@@ -31,7 +31,7 @@ const commandRootVar = `&cobra.Command{
 }`
 
 func makeCommandRoot(data CommandTemplateData) *golang.File {
-	return golang.MakeFile("root").SetImports(golang.Imports{
+	return golang.MakeGoFile("root").SetImports(golang.Imports{
 		Vendor: []golang.Package{PkgCobra, PkgViper},
 	}).SetVars([]*golang.Var{
 		{
@@ -76,7 +76,7 @@ const commandMigrate = `
 	})`
 
 func makeCommandMigrate(data CommandTemplateData) *golang.File {
-	return golang.MakeFile("migrate").SetImports(golang.Imports{
+	return golang.MakeGoFile("migrate").SetImports(golang.Imports{
 		Vendor: []golang.Package{PkgGoat, PkgCobra, PkgViper},
 		App:    []golang.Package{data.appPackage, data.httpPackage},
 	}).SetFunctions([]*golang.Function{
@@ -111,7 +111,7 @@ const commandSeed = `
 	})`
 
 func makeCommandSeed(data CommandTemplateData) *golang.File {
-	return golang.MakeFile("seed").SetImports(golang.Imports{
+	return golang.MakeGoFile("seed").SetImports(golang.Imports{
 		Vendor: []golang.Package{PkgGoat, PkgCobra, PkgViper},
 		App:    []golang.Package{data.appPackage, data.httpPackage},
 	}).SetFunctions([]*golang.Function{
@@ -146,7 +146,7 @@ const commandServer = `
 	})`
 
 func makeCommandServer(data CommandTemplateData) *golang.File {
-	return golang.MakeFile("server").SetImports(golang.Imports{
+	return golang.MakeGoFile("server").SetImports(golang.Imports{
 		Vendor: []golang.Package{PkgGoat, PkgCobra, PkgViper},
 		App:    []golang.Package{data.appPackage, data.httpPackage},
 	}).SetFunctions([]*golang.Function{

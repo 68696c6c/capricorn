@@ -3,7 +3,7 @@ package project
 import "github.com/68696c6c/capricorn_rnd/generator/golang"
 
 func MakeInitialSeeder() *golang.File {
-	return golang.MakeFile("initial").SetImports(golang.Imports{
+	return golang.MakeGoFile("initial").SetImports(golang.Imports{
 		Vendor: []golang.Package{PkgGoat, PkgGorm},
 	}).SetFunctions([]*golang.Function{
 		{

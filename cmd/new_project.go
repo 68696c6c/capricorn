@@ -1,11 +1,9 @@
 package cmd
 
 import (
-	"github.com/68696c6c/capricorn_rnd/generator/filesystem"
+	"github.com/spf13/cobra"
 	"os"
 	"path"
-
-	"github.com/spf13/cobra"
 
 	"github.com/68696c6c/capricorn_rnd/generator/golang"
 	"github.com/68696c6c/capricorn_rnd/generator/project"
@@ -28,18 +26,13 @@ func init() {
 			projectSpec, err := spec.NewSpec(specFile)
 			handleError(err)
 
-			p, projectSrcDir := project.NewProjectDirFromSpec(projectSpec)
-			filesystem.SetPaths(projectPath, p)
-			filesystem.MustGenerate(p)
+			projectTree, projectSrcDir := project.FromSpec(projectSpec)
 
-			baseImport := projectSpec.Module
-			srcPath := path.Join(projectPath, projectSrcDir)
-
-			projectTree := project.ProjectFromSpec(projectSpec)
-			golang.SetPaths(srcPath, baseImport, projectTree)
+			golang.SetPaths(projectPath, projectTree)
 			golang.MustGenerate(projectTree)
 
-			err = utils.InitModule(srcPath, baseImport)
+			srcPath := path.Join(projectPath, projectSrcDir)
+			err = utils.InitModule(srcPath, projectSpec.Module)
 			if err != nil {
 				panic(err)
 			}

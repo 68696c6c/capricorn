@@ -75,7 +75,7 @@ func MakeContainer(resourceFields []*golang.Field, containerFieldMap map[string]
 		InitializerName:      "GetApp",
 		ResourceDeclarations: strings.Join(references, "\n"),
 	}
-	return golang.MakeFile("app").SetImports(golang.Imports{
+	return golang.MakeGoFile("app").SetImports(golang.Imports{
 		App: []golang.Package{reposPkg},
 	}).SetVars([]*golang.Var{
 		{

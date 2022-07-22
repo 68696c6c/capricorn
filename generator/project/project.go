@@ -2,6 +2,7 @@ package project
 
 import (
 	"fmt"
+	"path"
 	"strings"
 
 	"github.com/68696c6c/girraph"
@@ -11,13 +12,35 @@ import (
 	"github.com/68696c6c/capricorn_rnd/generator/utils"
 )
 
+func FromSpec(projectSpec spec.Spec) (girraph.Tree[golang.Package], string) {
+	projectDir := golang.MakePackageNode(projectSpec.Name)
+	projectDir.GetMeta().SetFiles([]*golang.File{
+		makeAppEnv(projectSpec.Ops),
+		makeAppTemplateEnv(projectSpec.Ops),
+		makeDockerCompose(projectSpec.Ops),
+		makeDockerfile(projectSpec.Ops),
+		makeMakefile(projectSpec.Ops),
+		golang.MakeFile(".gitignore", "").SetContents(gitignore),
+	})
+
+	srcDir, srcPath := makeSrc(projectSpec)
+	projectDir.SetChildren([]girraph.Tree[golang.Package]{
+		makeOps(),
+		srcDir,
+	})
+
+	return projectDir, srcPath
+}
+
 func newProject(baseImport string) girraph.Tree[golang.Package] {
 	result := golang.MakePackageNode("")
 	result.GetMeta().SetReference("main").SetImport(baseImport)
 	return result
 }
 
-func ProjectFromSpec(projectSpec spec.Spec) girraph.Tree[golang.Package] {
+func makeSrc(projectSpec spec.Spec) (girraph.Tree[golang.Package], string) {
+	srcDir := golang.MakePackageNode("src")
+
 	project := newProject(projectSpec.Module)
 
 	app := golang.MakePackageNode("app")
@@ -110,19 +133,27 @@ func ProjectFromSpec(projectSpec spec.Spec) girraph.Tree[golang.Package] {
 	cmdDir.GetMeta().SetFiles(commands)
 	for _, c := range projectSpec.Commands {
 		cmdName := strings.Replace(c.Name, ":", "_", -1)
-		cmdDir.GetMeta().AddFile(golang.MakeFile(cmdName))
+		cmdDir.GetMeta().AddFile(golang.MakeGoFile(cmdName))
 	}
 	rootCommandReference := fmt.Sprintf("cmd.%s", rootCommandName)
 	project.GetMeta().SetFiles([]*golang.File{
 		MakeMain(rootCommandReference, cmdDir.GetMeta()),
 	})
 
-	return project.SetChildren([]girraph.Tree[golang.Package]{
+	project.SetChildren([]girraph.Tree[golang.Package]{
 		app,
 		cmdDir,
 		database,
 		http,
 	})
+
+	srcDir.SetChildren([]girraph.Tree[golang.Package]{
+		project,
+	})
+
+	golang.SetImports(projectSpec.Module, project)
+
+	return srcDir, path.Join(projectSpec.Name, "src")
 }
 
 func MakeMain(rootCommandReference string, cmdPkg golang.Package) *golang.File {
@@ -131,7 +162,7 @@ func MakeMain(rootCommandReference string, cmdPkg golang.Package) *golang.File {
 		fmt.Println(err)
 		os.Exit(-1)
 	}`, rootCommandReference)
-	return golang.MakeFile("main").SetFunctions([]*golang.Function{
+	return golang.MakeGoFile("main").SetFunctions([]*golang.Function{
 		{
 			Name: "main",
 			Imports: golang.Imports{

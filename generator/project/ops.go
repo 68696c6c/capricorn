@@ -1,11 +1,10 @@
 package project
 
 import (
-	"github.com/68696c6c/capricorn_rnd/generator/filesystem"
+	"github.com/68696c6c/capricorn_rnd/generator/golang"
 	"github.com/68696c6c/capricorn_rnd/generator/spec"
 	"github.com/68696c6c/capricorn_rnd/generator/utils"
 	"github.com/68696c6c/girraph"
-	"path"
 )
 
 const appEnv = `
@@ -16,12 +15,28 @@ DB_PASSWORD={{ .MainDatabase.Password }}
 DB_DATABASE={{ .MainDatabase.Name }}
 DB_DEBUG={{ .MainDatabase.Debug }}`
 
-func makeAppEnv(ops spec.Ops) *filesystem.File {
+func makeAppEnv(ops spec.Ops) *golang.File {
 	body, err := utils.ParseTemplateToString("tmp_template_appEnv", appEnv, ops)
 	if err != nil {
 		panic(err)
 	}
-	return filesystem.MakeFile("app", "env").SetContents(body)
+	return golang.MakeFile(".app", "env").SetContents(body)
+}
+
+const appTemplateEnv = `
+DB_HOST={{ .MainDatabase.Host }}
+DB_PORT={{ .MainDatabase.Port }}
+DB_USERNAME={{ .MainDatabase.Username }}
+DB_PASSWORD=
+DB_DATABASE={{ .MainDatabase.Name }}
+DB_DEBUG={{ .MainDatabase.Debug }}`
+
+func makeAppTemplateEnv(ops spec.Ops) *golang.File {
+	body, err := utils.ParseTemplateToString("tmp_template_appTemplateEnv", appTemplateEnv, ops)
+	if err != nil {
+		panic(err)
+	}
+	return golang.MakeFile(".app.template", "env").SetContents(body)
 }
 
 const dockerCompose = `version: "3.6"
@@ -71,12 +86,12 @@ services:
     volumes:
       - db-volume:/var/lib/mysql`
 
-func makeDockerCompose(ops spec.Ops) *filesystem.File {
+func makeDockerCompose(ops spec.Ops) *golang.File {
 	body, err := utils.ParseTemplateToString("tmp_template_dockerCompose", dockerCompose, ops)
 	if err != nil {
 		panic(err)
 	}
-	return filesystem.MakeFile("docker-compose", "yml").SetContents(body)
+	return golang.MakeFile("docker-compose", "yml").SetContents(body)
 }
 
 const dockerfile = `version: "3.6"
@@ -126,12 +141,12 @@ services:
     volumes:
       - db-volume:/var/lib/mysql`
 
-func makeDockerfile(ops spec.Ops) *filesystem.File {
+func makeDockerfile(ops spec.Ops) *golang.File {
 	body, err := utils.ParseTemplateToString("tmp_template_dockerfile", dockerfile, ops)
 	if err != nil {
 		panic(err)
 	}
-	return filesystem.MakeFile("Dockerfile", "").SetContents(body)
+	return golang.MakeFile("Dockerfile", "").SetContents(body)
 }
 
 const makefile = `DCR = docker-compose run --rm
@@ -217,12 +232,12 @@ lint:
 lint-fix:
 	$(DCR) $(APP_NAME) golangci-lint run --fix`
 
-func makeMakefile(ops spec.Ops) *filesystem.File {
+func makeMakefile(ops spec.Ops) *golang.File {
 	body, err := utils.ParseTemplateToString("tmp_template_makefile", makefile, ops)
 	if err != nil {
 		panic(err)
 	}
-	return filesystem.MakeFile("Makefile", "").SetContents(body)
+	return golang.MakeFile("Makefile", "").SetContents(body)
 }
 
 const gitignore = `
@@ -285,61 +300,44 @@ const gitkeep = `ВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВ�
    ВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВ
       ВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВВ`
 
-func NewProjectDirFromSpec(projectSpec spec.Spec) (girraph.Tree[filesystem.Directory], string) {
-	projectDir := filesystem.MakeDirectory(projectSpec.Name)
-	projectDir.GetMeta().SetFiles([]*filesystem.File{
-		makeAppEnv(projectSpec.Ops),
-		makeDockerCompose(projectSpec.Ops),
-		makeDockerfile(projectSpec.Ops),
-		makeMakefile(projectSpec.Ops),
-		filesystem.MakeFile(".gitignore", "").SetContents(gitignore),
-	})
-	srcDir := filesystem.MakeDirectory("src")
-
-	opsDir := filesystem.MakeDirectory("ops")
-
-	build := filesystem.MakeDirectory("_build")
-	build.GetMeta().SetFiles([]*filesystem.File{
-		filesystem.MakeFile(".gitkeep", "").SetContents(gitkeep),
-	})
-	deploy := filesystem.MakeDirectory("_deploy")
-	deploy.GetMeta().SetFiles([]*filesystem.File{
-		filesystem.MakeFile(".gitkeep", "").SetContents(gitkeep),
+func makeOps() girraph.Tree[golang.Package] {
+	build := golang.MakePackageNode("_build")
+	build.GetMeta().SetFiles([]*golang.File{
+		golang.MakeFile(".gitkeep", "").SetContents(gitkeep),
 	})
 
-	inputs := filesystem.MakeDirectory("inputs")
-	inputs.GetMeta().SetFiles([]*filesystem.File{
-		filesystem.MakeFile("development", "yml").SetContents("hello"),
-		filesystem.MakeFile("development.secrets", "yml").SetContents("hello"),
+	deploy := golang.MakePackageNode("_deploy")
+	deploy.GetMeta().SetFiles([]*golang.File{
+		golang.MakeFile(".gitkeep", "").SetContents(gitkeep),
 	})
-	env := filesystem.MakeDirectory("env")
-	env.GetMeta().SetFiles([]*filesystem.File{
-		filesystem.MakeFile("development", "yml").SetContents("hello"),
-		filesystem.MakeFile("development.secrets", "yml").SetContents("hello"),
+
+	env := golang.MakePackageNode("env")
+	env.GetMeta().SetFiles([]*golang.File{
+		golang.MakeFile("development", "yml").SetContents("hello"),
+		golang.MakeFile("development.secrets", "yml").SetContents("hello"),
 	})
-	templates := filesystem.MakeDirectory("templates").SetChildren([]girraph.Tree[filesystem.Directory]{
-		inputs,
+
+	inputs := golang.MakePackageNode("inputs")
+	inputs.GetMeta().SetFiles([]*golang.File{
+		golang.MakeFile("development", "yml").SetContents("hello"),
+		golang.MakeFile("development.secrets", "yml").SetContents("hello"),
+	})
+
+	templates := golang.MakePackageNode("templates").SetChildren([]girraph.Tree[golang.Package]{
 		env,
-	})
-	templates.GetMeta().SetFiles([]*filesystem.File{
-		filesystem.MakeFile("app", "yml").SetContents("hello"),
-		filesystem.MakeFile("pipeline", "yml").SetContents("hello"),
-	})
-	scripts := filesystem.MakeDirectory("scripts")
-	scripts.GetMeta().SetFiles([]*filesystem.File{
-		filesystem.MakeFile("entrypoint", "sh").SetContents(entrypoint),
-		filesystem.MakeFile("pre-deploy", "sh").SetContents(preDeploy),
+		inputs,
 	})
 
-	opsDir.SetChildren([]girraph.Tree[filesystem.Directory]{
+	scripts := golang.MakePackageNode("scripts")
+	scripts.GetMeta().SetFiles([]*golang.File{
+		golang.MakeFile("entrypoint", "sh").SetContents(entrypoint),
+		golang.MakeFile("pre-deploy", "sh").SetContents(preDeploy),
+	})
+
+	return golang.MakePackageNode("ops").SetChildren([]girraph.Tree[golang.Package]{
 		build,
 		deploy,
 		scripts,
 		templates,
 	})
-
-	return projectDir.SetChildren([]girraph.Tree[filesystem.Directory]{
-		opsDir,
-		srcDir,
-	}), path.Join(projectSpec.Name, "src")
 }

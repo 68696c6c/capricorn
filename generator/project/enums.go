@@ -162,7 +162,7 @@ func MakeEnum(enum spec.Enum) (*golang.File, string) {
 		Values:                 strings.Join(values, "\n"),
 	}
 
-	return golang.MakeFile(name.Snake).SetTypeAliases([]*golang.Value{
+	return golang.MakeGoFile(name.Snake).SetTypeAliases([]*golang.Value{
 		{
 			Name: name.Exported,
 			Type: "string",

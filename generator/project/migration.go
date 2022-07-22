@@ -117,7 +117,7 @@ func MakeInitialMigration(modelReferences []string, modelsPkg golang.Package) *g
 	}
 
 	migrationName := utils.MakeGooseMigrationName("", "initial_migration")
-	return golang.MakeFile(migrationName).SetImports(golang.Imports{
+	return golang.MakeGoFile(migrationName).SetImports(golang.Imports{
 		Standard: []golang.Package{PkgStdSqlDriver},
 		Vendor:   []golang.Package{PkgGoat, PkgGoose, modelsPkg},
 		App:      []golang.Package{modelsPkg},

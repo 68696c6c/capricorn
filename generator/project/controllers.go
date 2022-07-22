@@ -397,7 +397,7 @@ func MakeController(name utils.Inflection, actions []string, modelTypeName, mode
 			},
 		})
 	}
-	return golang.MakeFile(name.Plural.Snake).SetImports(golang.Imports{
+	return golang.MakeGoFile(name.Plural.Snake).SetImports(golang.Imports{
 		App: []golang.Package{modelsPkg, reposPkg},
 	}).SetStructs(structs).SetFunctions(functions), data.ConstructorName, data.RequestTypeName
 }

@@ -73,7 +73,7 @@ func MakeRoutes(controllerActionsMap map[string]ControllerMeta, containerReferen
 		Routes:           strings.Join(routes, "\n"),
 		appPackage:       appPkg,
 	}
-	return golang.MakeFile("routes").SetFunctions([]*golang.Function{
+	return golang.MakeGoFile("routes").SetFunctions([]*golang.Function{
 		{
 			Name: data.InitRouterName,
 			Arguments: []golang.Value{

@@ -8,6 +8,7 @@ import (
 type File struct {
 	Name        string
 	Extension   string
+	Contents    string
 	Package     string
 	Imports     Imports
 	Vars        []*Var
@@ -18,7 +19,10 @@ type File struct {
 }
 
 func (f *File) GetFullName() string {
-	return fmt.Sprintf("%s.go", f.Name)
+	if f.Extension == "" {
+		return f.Name
+	}
+	return fmt.Sprintf("%s.%s", f.Name, f.Extension)
 }
 
 func (f *File) SetName(name string) *File {
@@ -133,7 +137,15 @@ func (f *File) MustStringFunctions() string {
 	return strings.Join(result, "\n\n")
 }
 
+func (f *File) SetContents(contents string) *File {
+	f.Contents = contents
+	return f
+}
+
 func (f *File) GetContents() string {
+	if f.Contents != "" {
+		return f.Contents
+	}
 	var sections []string
 
 	funcImports := Imports{
@@ -179,10 +191,17 @@ func (f *File) GetContents() string {
 	return strings.Join(result, "\n") + "\n"
 }
 
-func MakeFile(name string) *File {
+func MakeGoFile(name string) *File {
 	return &File{
 		Name:      name,
 		Package:   "",
 		Extension: "go",
+	}
+}
+
+func MakeFile(name, ext string) *File {
+	return &File{
+		Name:      name,
+		Extension: ext,
 	}
 }

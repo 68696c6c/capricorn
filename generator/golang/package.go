@@ -104,17 +104,25 @@ func MakePackage(importPath string) Package {
 	}
 }
 
-func SetPaths(basePath, baseImport string, node girraph.Tree[Package]) {
+func SetPaths(basePath string, node girraph.Tree[Package]) {
+	meta := node.GetMeta()
+	meta.SetBasePath(basePath)
+	path := meta.GetFullPath()
+	for _, child := range node.GetChildren() {
+		SetPaths(path, child)
+	}
+}
+
+func SetImports(baseImport string, node girraph.Tree[Package]) {
 	meta := node.GetMeta()
 	metaName := baseImport
 	if meta.GetName() != "" {
 		metaName = utils.JoinPath(baseImport, meta.GetName())
 	}
-	meta.SetImport(metaName).SetBasePath(basePath)
+	meta.SetImport(metaName)
 	imp := meta.GetImport()
-	path := meta.GetFullPath()
 	for _, child := range node.GetChildren() {
-		SetPaths(path, imp, child)
+		SetImports(imp, child)
 	}
 }
 

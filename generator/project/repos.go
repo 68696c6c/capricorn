@@ -364,7 +364,7 @@ func MakeRepo(name utils.Inflection, actions []string, modelReference string, mo
 			break
 		}
 	}
-	return golang.MakeFile(name.Plural.Snake).SetImports(golang.Imports{
+	return golang.MakeGoFile(name.Plural.Snake).SetImports(golang.Imports{
 		App: []golang.Package{modelsPkg},
 	}).SetInterfaces([]*golang.Interface{
 		{

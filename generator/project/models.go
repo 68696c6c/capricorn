@@ -99,7 +99,7 @@ func MakeModel(name utils.Inflection, resource spec.Resource, enumMap map[string
 		appImports = append(appImports, enumsPkg)
 	}
 
-	return golang.MakeFile(name.Single.Space).SetImports(golang.Imports{
+	return golang.MakeGoFile(name.Single.Space).SetImports(golang.Imports{
 		Vendor: []golang.Package{PkgGoat},
 		App:    appImports,
 	}).SetStructs([]*golang.Struct{
